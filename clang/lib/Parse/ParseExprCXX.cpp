@@ -1752,6 +1752,11 @@ ExprResult Parser::ParseCXXBoolLiteral() {
 ExprResult Parser::ParseThrowExpression() {
   assert(Tok.is(tok::kw_throw) && "Not throw!");
   SourceLocation ThrowLoc = ConsumeToken();           // Eat the throw token.
+  bool RejectInCNxt = getLangOpts().CNxtNoExceptions;
+
+  if (RejectInCNxt)
+    Diag(ThrowLoc, diag::err_cnxt_unsupported_feature)
+        << "throw expressions";
 
   // If the current token isn't the start of an assignment-expression,
   // then the expression is not present.  This handles things like:
@@ -1763,11 +1768,16 @@ ExprResult Parser::ParseThrowExpression() {
   case tok::r_brace:
   case tok::colon:
   case tok::comma:
+    if (RejectInCNxt)
+      return ExprError();
     return Actions.ActOnCXXThrow(getCurScope(), ThrowLoc, nullptr);
 
   default:
     ExprResult Expr(ParseAssignmentExpression());
-    if (Expr.isInvalid()) return Expr;
+    if (Expr.isInvalid())
+      return Expr;
+    if (RejectInCNxt)
+      return ExprError();
     return Actions.ActOnCXXThrow(getCurScope(), ThrowLoc, Expr.get());
   }
 }
@@ -2870,6 +2880,9 @@ Parser::ParseCXXNewExpression(bool UseGlobal, SourceLocation Start) {
   assert(Tok.is(tok::kw_new) && "expected 'new' token");
   ConsumeToken();   // Consume 'new'
 
+  if (getLangOpts().CNxtManagedMemory)
+    Diag(Start, diag::err_cnxt_unsupported_feature) << "'new' expressions";
+
   // A '(' now can be a new-placement or the '(' wrapping the type-id in the
   // second form of new-expression. It can't be a new-type-id.
 
@@ -3054,6 +3067,9 @@ ExprResult
 Parser::ParseCXXDeleteExpression(bool UseGlobal, SourceLocation Start) {
   assert(Tok.is(tok::kw_delete) && "Expected 'delete' keyword");
   ConsumeToken(); // Consume 'delete'
+
+  if (getLangOpts().CNxtManagedMemory)
+    Diag(Start, diag::err_cnxt_unsupported_feature) << "'delete' expressions";
 
   // Array delete?
   bool ArrayDelete = false;

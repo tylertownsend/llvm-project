@@ -278,6 +278,9 @@ def err_expected_less_after : Error<"expected '<' after '%0'">;
 def err_expected_lbrace_in_compound_literal : Error<
   "expected '{' in compound literal">;
 def err_expected_while : Error<"expected 'while' in do/while loop">;
+def err_cnxt_unsupported_feature : Error<"cNxt does not support %0">;
+def err_cnxt_requires_range_for : Error<
+  "cNxt only supports range-based 'for' loops">;
 
 def err_expected_semi_after_stmt : Error<"expected ';' after %0 statement">;
 def err_expected_semi_after_expr : Error<"expected ';' after expression">;

@@ -1798,6 +1798,10 @@ StmtResult Parser::ParseDoStatement(LabelDecl *PrecedingLabel) {
   assert(Tok.is(tok::kw_do) && "Not a do stmt!");
   SourceLocation DoLoc = ConsumeToken();  // eat the 'do'.
 
+  if (getLangOpts().CNxtSingleLoopForms)
+    Diag(DoLoc, diag::err_cnxt_unsupported_feature)
+        << "do/while statements";
+
   // C99 6.8.5p5 - In C99, the do statement is a block.  This is not
   // the case for C90.  Start the loop scope.
   unsigned ScopeFlags;
@@ -2279,6 +2283,9 @@ StmtResult Parser::ParseForStatement(SourceLocation *TrailingElseLoc,
   if (ForRangeInfo.ParsedForRangeDecl())
     return Actions.FinishCXXForRangeStmt(ForRangeStmt.get(), Body.get());
 
+  if (getLangOpts().CNxtSingleLoopForms)
+    Diag(ForLoc, diag::err_cnxt_requires_range_for);
+
   return Actions.ActOnForStmt(ForLoc, T.getOpenLocation(), FirstPart.get(),
                               SecondPart, ThirdPart, T.getCloseLocation(),
                               Body.get());
@@ -2287,6 +2294,9 @@ StmtResult Parser::ParseForStatement(SourceLocation *TrailingElseLoc,
 StmtResult Parser::ParseGotoStatement() {
   assert(Tok.is(tok::kw_goto) && "Not a goto stmt!");
   SourceLocation GotoLoc = ConsumeToken();  // eat the 'goto'.
+
+  if (getLangOpts().CNxt)
+    Diag(GotoLoc, diag::err_cnxt_unsupported_feature) << "goto statements";
 
   StmtResult Res;
   if (Tok.is(tok::identifier)) {
@@ -2552,6 +2562,12 @@ StmtResult Parser::ParseCXXTryBlock() {
 }
 
 StmtResult Parser::ParseCXXTryBlockCommon(SourceLocation TryLoc, bool FnTry) {
+  bool RejectInCNxt = getLangOpts().CNxtNoExceptions;
+
+  if (RejectInCNxt)
+    Diag(TryLoc, diag::err_cnxt_unsupported_feature)
+        << "try/catch statements";
+
   if (Tok.isNot(tok::l_brace))
     return StmtError(Diag(Tok, diag::err_expected) << tok::l_brace);
 
@@ -2580,10 +2596,11 @@ StmtResult Parser::ParseCXXTryBlockCommon(SourceLocation TryLoc, bool FnTry) {
     if(Handler.isInvalid())
       return Handler;
 
-    return Actions.ActOnSEHTryBlock(true /* IsCXXTry */,
-                                    TryLoc,
-                                    TryBlock.get(),
-                                    Handler.get());
+    if (RejectInCNxt)
+      return StmtError();
+
+    return Actions.ActOnSEHTryBlock(true /* IsCXXTry */, TryLoc,
+                                    TryBlock.get(), Handler.get());
   }
   else {
     StmtVector Handlers;
@@ -2602,6 +2619,9 @@ StmtResult Parser::ParseCXXTryBlockCommon(SourceLocation TryLoc, bool FnTry) {
     // Don't bother creating the full statement if we don't have any usable
     // handlers.
     if (Handlers.empty())
+      return StmtError();
+
+    if (RejectInCNxt)
       return StmtError();
 
     return Actions.ActOnCXXTryBlock(TryLoc, TryBlock.get(), Handlers);

@@ -224,6 +224,8 @@ This gives us language mode selection without yet changing the parser heavily.
 
 ### Phase 2: start as a restricted C++ subset with strong diagnostics
 
+Detailed write-up: `cnxt/docs/milestone-2.md`
+
 The fastest path to a working compiler is not "invent a brand new frontend" but
 "use the Clang C++ frontend as a host, then prohibit most of C++."
 
