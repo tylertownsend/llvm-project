@@ -4,16 +4,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M3-06 Lower `weak<T>` to an internal std-backed representation.
-2. M3-07 Enforce move-only semantics for `unique<T>`.
-3. M3-08 Enforce reference-count semantics and copy rules for `shared<T>`.
+1. M3-07 Enforce move-only semantics for `unique<T>`.
+2. M3-08 Enforce reference-count semantics and copy rules for `shared<T>`.
+3. M3-09 Enforce `weak<T>` access rules (upgrade/lock before dereference).
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
-- [x] M3-00 through M3-05
-- [ ] M3-06 through M3-13
+- [x] M3-00 through M3-06
+- [ ] M3-07 through M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
 
@@ -173,3 +173,15 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M3-08 can enforce `shared<T>` copy/reference-count semantics on top of the stabilized representation.
 - Direction check:
   - roadmap remains directionally correct; both `unique<T>` and `shared<T>` now lower through the same compiler-owned std-oriented prelude boundary.
+
+### 2026-03-15 - M3-06
+
+- Completed item: lower `weak<T>` to an internal std-backed representation.
+- What changed:
+  - cNxt prelude now maps `weak<T>` to `std::weak_ptr<T>`.
+  - internal fallback path now provides a minimal `std::weak_ptr` shape with `lock()` and `expired()` when `<memory>` is unavailable.
+  - added parser coverage in `clang/test/Parser/cnxt-weak-lowering.cpp` and updated prelude coverage in `clang/test/Preprocessor/cnxt-prelude.c`.
+- What is now unblocked:
+  - M3-07/M3-08/M3-09 can now enforce ownership semantics on top of a complete `unique/shared/weak` lowered surface.
+- Direction check:
+  - roadmap remains directionally correct; all three ownership handle spellings now flow through the same compiler-owned std-oriented lowering boundary.

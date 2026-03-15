@@ -88,11 +88,20 @@ static void AddImplicitCNxtPrelude(MacroBuilder &Builder) {
   Builder.append("  void reset(T *P = nullptr) { Ptr = P; }");
   Builder.append("  long use_count() const { return Ptr ? 1 : 0; }");
   Builder.append("};");
+  Builder.append("template <typename T> struct weak_ptr {");
+  Builder.append("  T *Ptr = nullptr;");
+  Builder.append("  shared_ptr<T> lock() const {");
+  Builder.append("    shared_ptr<T> Owner;");
+  Builder.append("    Owner.Ptr = Ptr;");
+  Builder.append("    return Owner;");
+  Builder.append("  }");
+  Builder.append("  bool expired() const { return Ptr == nullptr; }");
+  Builder.append("};");
   Builder.append("}");
   Builder.append("#endif");
   Builder.append("template <typename T> using unique = std::unique_ptr<T>;");
   Builder.append("template <typename T> using shared = std::shared_ptr<T>;");
-  Builder.append("template <typename T> struct weak {};");
+  Builder.append("template <typename T> using weak = std::weak_ptr<T>;");
   Builder.append("# 1 \"<built-in>\" 3");
 }
 

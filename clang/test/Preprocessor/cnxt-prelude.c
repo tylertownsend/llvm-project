@@ -3,6 +3,6 @@
 // CHECK: # 1 "<cnxt-prelude>" 3
 // CHECK: template <typename T> using unique = std::unique_ptr<T>;
 // CHECK: template <typename T> using shared = std::shared_ptr<T>;
-// CHECK: template <typename T> struct weak {};
+// CHECK: template <typename T> using weak = std::weak_ptr<T>;
 
 int sentinel;
