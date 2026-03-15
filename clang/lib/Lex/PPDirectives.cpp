@@ -2176,6 +2176,13 @@ void Preprocessor::HandleIncludeDirective(SourceLocation HashLoc,
                                           Token &IncludeTok,
                                           ConstSearchDirIterator LookupFrom,
                                           const FileEntry *LookupFromFile) {
+  if (getLangOpts().CNxt) {
+    Diag(IncludeTok.getLocation(), diag::err_pp_hash_error)
+        << "cNxt does not support textual include directives; use module imports";
+    DiscardUntilEndOfDirective();
+    return;
+  }
+
   Token FilenameTok;
   if (LexHeaderName(FilenameTok))
     return;

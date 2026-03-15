@@ -4,14 +4,13 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M2-13 Reject textual include-based cNxt package flows.
-2. M2-14 Add recovery-focused tests for the remaining restrictions.
+1. M2-14 Add recovery-focused tests for the remaining restrictions.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
-- [x] M2-01 through M2-12
-- [ ] M2-13 through M2-14
+- [x] M2-01 through M2-13
+- [ ] M2-14
 - [ ] M3-00 through M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
@@ -70,3 +69,15 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M2-14 recovery tests can include cast-restriction scenarios.
 - Direction check:
   - roadmap remains directionally correct; this reduces unsafe C++ escape hatches in cNxt.
+
+### 2026-03-15 - M2-13
+
+- Completed item: reject textual include-based cNxt package flows.
+- What changed:
+  - preprocessor include handling now emits a cNxt policy error for textual include directives.
+  - include directive is discarded after the diagnostic to keep parsing stable.
+  - added `clang/test/Preprocessor/cnxt-no-include.c` coverage.
+- What is now unblocked:
+  - M2-14 can consolidate and harden recovery-oriented restriction tests as the final milestone-2 item.
+- Direction check:
+  - roadmap remains directionally correct; this reinforces module/import-first cNxt package flow.

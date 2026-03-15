@@ -40,7 +40,7 @@ Each line item should ship with targeted tests.
 - [x] M2-10 Reject inheritance and base-specifier syntax.
 - [x] M2-11 Reject operator overloading declarations.
 - [x] M2-12 Restrict C-style casts to explicit `unsafe` regions only.
-- [ ] M2-13 Reject textual include-based cNxt package flows (policy diagnostic).
+- [x] M2-13 Reject textual include-based cNxt package flows (policy diagnostic).
 - [ ] M2-14 Add recovery-focused tests for each new restriction.
 
 ## Milestone 3 Deliverables (Ownership Runtime)
