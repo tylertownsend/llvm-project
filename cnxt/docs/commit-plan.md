@@ -55,7 +55,7 @@ Decision for this milestone:
       memory headers and define fallback constraints if not.
 - [x] M3-01 Update cNxt docs to standardize ownership vocabulary on
       `unique/shared/weak` (replace prior `strong` wording).
-- [ ] M3-02 Parse and type-check `unique<T>`, `shared<T>`, and `weak<T>` in cNxt.
+- [x] M3-02 Parse and type-check `unique<T>`, `shared<T>`, and `weak<T>` in cNxt.
 - [ ] M3-03 Add an implicit cNxt prelude/injected declarations so ownership
       handles are available without explicit memory headers.
 - [ ] M3-04 Lower `unique<T>` to an internal std-backed representation.

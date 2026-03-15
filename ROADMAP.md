@@ -4,16 +4,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M3-02 Parse and type-check `unique<T>`, `shared<T>`, and `weak<T>`.
-2. M3-03 Add compiler-owned prelude/injected declarations for ownership handles.
-3. M3-04 Lower `unique<T>` to an internal std-backed representation.
+1. M3-03 Add compiler-owned prelude/injected declarations for ownership handles.
+2. M3-04 Lower `unique<T>` to an internal std-backed representation.
+3. M3-05 Lower `shared<T>` to an internal std-backed representation.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
-- [x] M3-00 through M3-01
-- [ ] M3-02 through M3-13
+- [x] M3-00 through M3-02
+- [ ] M3-03 through M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
 
@@ -119,3 +119,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M3-03 prelude design can expose finalized user-facing handle names.
 - Direction check:
   - roadmap remains directionally correct; docs now match intended ownership vocabulary.
+
+### 2026-03-15 - M3-02
+
+- Completed item: parse and type-check cNxt ownership handles `unique<T>`, `shared<T>`, and `weak<T>`.
+- What changed:
+  - parser now treats `unique/shared/weak` template-id spellings as cNxt ownership-handle exceptions instead of generic forbidden template argument lists.
+  - semantic initialization now injects implicit cNxt ownership handle class templates for `unique`, `shared`, and `weak`.
+  - added parser coverage in `clang/test/Parser/cnxt-ownership.cpp` for accepted handles while preserving rejection of non-handle template-ids and template declarations.
+- What is now unblocked:
+  - M3-03 can focus on shaping the compiler-owned prelude/injection boundary rather than basic handle name recognition.
+  - M3-04 and M3-05 lowering work can target already-parsed and typed handle surfaces.
+- Direction check:
+  - roadmap remains directionally correct; cNxt now has a compiler-owned ownership type surface while keeping the broader template restrictions in place.
