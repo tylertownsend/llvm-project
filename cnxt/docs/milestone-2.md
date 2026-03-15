@@ -33,7 +33,7 @@ Milestone 2 starts turning the language mode into a real dialect by:
 ### Out of scope
 
 - introducing `fn`, `match`, `defer`, or `for item in expr`
-- lowering ownership handles like `strong<T>` or `shared<T>`
+- lowering ownership handles like `unique<T>` or `shared<T>`
 - package manager work
 - module/package source layout enforcement
 - formatter or linter work

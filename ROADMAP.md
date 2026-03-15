@@ -4,16 +4,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M3-01 Standardize cNxt docs on `unique/shared/weak` ownership vocabulary.
-2. M3-02 Parse and type-check `unique<T>`, `shared<T>`, and `weak<T>`.
-3. M3-03 Add compiler-owned prelude/injected declarations for ownership handles.
+1. M3-02 Parse and type-check `unique<T>`, `shared<T>`, and `weak<T>`.
+2. M3-03 Add compiler-owned prelude/injected declarations for ownership handles.
+3. M3-04 Lower `unique<T>` to an internal std-backed representation.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
-- [x] M3-00
-- [ ] M3-01 through M3-13
+- [x] M3-00 through M3-01
+- [ ] M3-02 through M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
 
@@ -107,3 +107,15 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M3-03 prelude/module design with explicit constraints from measured behavior.
 - Direction check:
   - roadmap remains directionally correct; the spike confirms feasibility direction but highlights required compiler-owned boundaries.
+
+### 2026-03-15 - M3-01
+
+- Completed item: standardize ownership vocabulary on `unique/shared/weak`.
+- What changed:
+  - updated `cnxt/README.md` ownership model and roadmap references from `strong` to `unique`.
+  - updated milestone-2 scope text to reference `unique<T>` instead of `strong<T>`.
+- What is now unblocked:
+  - M3-02 parser/type work can target stable ownership spellings.
+  - M3-03 prelude design can expose finalized user-facing handle names.
+- Direction check:
+  - roadmap remains directionally correct; docs now match intended ownership vocabulary.

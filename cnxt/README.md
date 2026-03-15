@@ -95,7 +95,7 @@ The default data model is:
 
 v1 handle types:
 
-- `strong<T>`: move-only owning heap handle.
+- `unique<T>`: move-only owning heap handle.
 - `shared<T>`: reference-counted shared ownership.
 - `weak<T>`: non-owning weak reference to a `shared<T>`.
 - `ptr<T>`: non-owning raw pointer for `unsafe` and FFI only.
@@ -289,7 +289,7 @@ guide.
 Compiler responsibilities:
 
 - disallow implicit raw owning pointers in safe code
-- track handle conversions `strong -> shared -> weak`
+- track handle conversions `unique -> shared -> weak`
 - reject unsafe aliasing in safe code
 - require explicit `unsafe` for raw pointer arithmetic and FFI memory access
 - prefer deterministic destruction over tracing GC
@@ -398,7 +398,7 @@ Detailed write-up: `cnxt/docs/milestone-1.md`
 
 ### Milestone 3: ownership runtime
 
-- `strong/shared/weak`
+- `unique/shared/weak`
 - safe heap allocation APIs
 - `unsafe` FFI boundary
 

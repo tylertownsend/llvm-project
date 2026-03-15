@@ -53,7 +53,7 @@ Decision for this milestone:
 
 - [x] M3-00 Feasibility spike: prove std-backed lowering can work without user
       memory headers and define fallback constraints if not.
-- [ ] M3-01 Update cNxt docs to standardize ownership vocabulary on
+- [x] M3-01 Update cNxt docs to standardize ownership vocabulary on
       `unique/shared/weak` (replace prior `strong` wording).
 - [ ] M3-02 Parse and type-check `unique<T>`, `shared<T>`, and `weak<T>` in cNxt.
 - [ ] M3-03 Add an implicit cNxt prelude/injected declarations so ownership
