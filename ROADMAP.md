@@ -4,16 +4,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M3-10 Add diagnostics for illegal ownership conversions/escapes.
-2. M3-11 Add FFI boundary rules for raw pointers in `unsafe` code paths.
-3. M3-12 Add parser/sema/codegen tests for ownership baseline behavior.
+1. M3-11 Add FFI boundary rules for raw pointers in `unsafe` code paths.
+2. M3-12 Add parser/sema/codegen tests for ownership baseline behavior.
+3. M3-13 Add ABI/interoperability tests with mixed cNxt and C++ compilation.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
-- [x] M3-00 through M3-09
-- [ ] M3-10 through M3-13
+- [x] M3-00 through M3-10
+- [ ] M3-11 through M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
 
@@ -222,3 +222,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M3-12 baseline ownership behavior tests can rely on lock-before-use regression coverage.
 - Direction check:
   - roadmap remains directionally correct; weak-handle usage now emphasizes lock/upgrade access paths across both std-backed and fallback representations.
+
+### 2026-03-15 - M3-10
+
+- Completed item: add diagnostics for illegal ownership conversions in cNxt assignment flows.
+- What changed:
+  - added a dedicated cNxt Sema diagnostic for illegal ownership-handle conversion direction (`unique -> shared -> weak` is the only widening path).
+  - added ownership-kind classification and conversion-flow checks in semantic assignment handling, including overloaded assignment paths, so rejected flows report cNxt-specific diagnostics instead of generic overload failures.
+  - extended cNxt parser/semantic coverage in `clang/test/Parser/cnxt-ownership-conversions.cpp`.
+- What is now unblocked:
+  - M3-11 can focus on unsafe FFI raw-pointer boundary rules without ambiguity in ownership-handle conversion diagnostics.
+  - M3-12 baseline ownership test expansion can now assert explicit illegal-conversion diagnostics.
+- Direction check:
+  - roadmap remains directionally correct; ownership-handle semantics now expose explicit language-level diagnostics for illegal conversion direction.

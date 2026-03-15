@@ -9577,6 +9577,85 @@ static bool isVector(QualType QT, QualType ElementType) {
   return false;
 }
 
+namespace {
+enum class CNxtOwnershipKind { None, Unique, Shared, Weak };
+
+static CNxtOwnershipKind classifyCNxtOwnershipHandle(QualType QT) {
+  QT = QT.getCanonicalType().getUnqualifiedType();
+  auto classifyByName = [](StringRef Name) {
+    if (Name == "unique_ptr")
+      return CNxtOwnershipKind::Unique;
+    if (Name == "shared_ptr")
+      return CNxtOwnershipKind::Shared;
+    if (Name == "weak_ptr")
+      return CNxtOwnershipKind::Weak;
+    return CNxtOwnershipKind::None;
+  };
+
+  if (const auto *TST = QT->getAs<TemplateSpecializationType>()) {
+    const TemplateDecl *TD = TST->getTemplateName().getAsTemplateDecl();
+    if (TD && TD->getIdentifier())
+      return classifyByName(TD->getName());
+    return CNxtOwnershipKind::None;
+  }
+
+  if (const auto *RT = QT->getAs<RecordType>()) {
+    const auto *Spec = dyn_cast<ClassTemplateSpecializationDecl>(RT->getDecl());
+    if (Spec) {
+      if (const IdentifierInfo *II = Spec->getSpecializedTemplate()->getIdentifier())
+        return classifyByName(II->getName());
+    }
+  }
+
+  return CNxtOwnershipKind::None;
+}
+
+static bool isAllowedCNxtOwnershipFlow(CNxtOwnershipKind From,
+                                       CNxtOwnershipKind To) {
+  if (From == To)
+    return true;
+  return (From == CNxtOwnershipKind::Unique &&
+          To == CNxtOwnershipKind::Shared) ||
+         (From == CNxtOwnershipKind::Shared &&
+          To == CNxtOwnershipKind::Weak);
+}
+
+static StringRef cnxtOwnershipKindToString(CNxtOwnershipKind Kind) {
+  switch (Kind) {
+  case CNxtOwnershipKind::Unique:
+    return "unique";
+  case CNxtOwnershipKind::Shared:
+    return "shared";
+  case CNxtOwnershipKind::Weak:
+    return "weak";
+  case CNxtOwnershipKind::None:
+    return "non-ownership";
+  }
+  llvm_unreachable("invalid cNxt ownership kind");
+}
+
+static bool diagnoseCNxtIllegalOwnershipAssignment(Sema &SemaRef,
+                                                   SourceLocation OpLoc,
+                                                   BinaryOperatorKind Opc,
+                                                   Expr *LHSExpr,
+                                                   Expr *RHSExpr) {
+  if (!SemaRef.getLangOpts().CNxt || Opc != BO_Assign)
+    return false;
+
+  CNxtOwnershipKind LKind =
+      classifyCNxtOwnershipHandle(LHSExpr->getType().getCanonicalType());
+  CNxtOwnershipKind RKind =
+      classifyCNxtOwnershipHandle(RHSExpr->getType().getCanonicalType());
+  if (LKind == CNxtOwnershipKind::None || RKind == CNxtOwnershipKind::None ||
+      isAllowedCNxtOwnershipFlow(RKind, LKind))
+    return false;
+
+  SemaRef.Diag(OpLoc, diag::err_cnxt_illegal_ownership_conversion)
+      << cnxtOwnershipKindToString(RKind) << cnxtOwnershipKindToString(LKind);
+  return true;
+}
+} // namespace
+
 /// CheckAssignmentConstraints (C99 6.5.16) - This routine currently
 /// has code to accommodate several GCC extensions when type checking
 /// pointers. Here are some objectionable examples that GCC considers warnings:
@@ -9610,6 +9689,16 @@ AssignConvertType Sema::CheckAssignmentConstraints(QualType LHSType,
   if (LHSType == RHSType) {
     Kind = CK_NoOp;
     return AssignConvertType::Compatible;
+  }
+
+  if (getLangOpts().CNxt) {
+    CNxtOwnershipKind LKind = classifyCNxtOwnershipHandle(LHSType);
+    CNxtOwnershipKind RKind = classifyCNxtOwnershipHandle(RHSType);
+    if (LKind != CNxtOwnershipKind::None && RKind != CNxtOwnershipKind::None &&
+        !isAllowedCNxtOwnershipFlow(RKind, LKind)) {
+      Kind = CK_NoOp;
+      return AssignConvertType::IllegalCNxtOwnershipConversion;
+    }
   }
 
   // If the LHS has an __auto_type, there are no additional type constraints
@@ -16048,6 +16137,10 @@ ExprResult Sema::BuildBinOp(Scope *S, SourceLocation OpLoc,
       return ExprError();
   }
 
+  if (diagnoseCNxtIllegalOwnershipAssignment(*this, OpLoc, Opc, LHSExpr,
+                                             RHSExpr))
+    return ExprError();
+
   if (getLangOpts().CPlusPlus) {
     // Otherwise, build an overloaded op if either expression is type-dependent
     // or has an overloadable type.
@@ -17673,6 +17766,13 @@ bool Sema::DiagnoseAssignmentResult(AssignConvertType ConvTy,
     Diag(Loc, diag::err_incompatible_obt_kinds_assignment)
         << DstType << SrcType << getOBTKindName(DstType)
         << getOBTKindName(SrcType);
+    isInvalid = true;
+    return true;
+  }
+  case AssignConvertType::IllegalCNxtOwnershipConversion: {
+    Diag(Loc, diag::err_cnxt_illegal_ownership_conversion)
+        << cnxtOwnershipKindToString(classifyCNxtOwnershipHandle(SrcType))
+        << cnxtOwnershipKindToString(classifyCNxtOwnershipHandle(DstType));
     isInvalid = true;
     return true;
   }

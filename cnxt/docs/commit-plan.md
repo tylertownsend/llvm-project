@@ -64,7 +64,7 @@ Decision for this milestone:
 - [x] M3-07 Enforce move-only semantics for `unique<T>`.
 - [x] M3-08 Enforce reference-count semantics and copy rules for `shared<T>`.
 - [x] M3-09 Enforce `weak<T>` access rules (upgrade/lock before dereference).
-- [ ] M3-10 Add diagnostics for illegal ownership conversions/escapes.
+- [x] M3-10 Add diagnostics for illegal ownership conversions/escapes.
 - [ ] M3-11 Add FFI boundary rules for raw pointers in `unsafe` code paths.
 - [ ] M3-12 Add parser/sema/codegen tests for ownership baseline behavior.
 - [ ] M3-13 Add ABI/interoperability tests with mixed cNxt and C++ compilation.

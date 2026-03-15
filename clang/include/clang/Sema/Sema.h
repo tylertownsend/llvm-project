@@ -782,6 +782,10 @@ enum class AssignConvertType {
   /// CompatibleOBTDiscards - Assignment discards overflow behavior
   CompatibleOBTDiscards,
 
+  /// IllegalCNxtOwnershipConversion - assignment between cNxt ownership
+  /// handles that violates the language conversion flow.
+  IllegalCNxtOwnershipConversion,
+
   /// Incompatible - We reject this conversion outright, it is invalid to
   /// represent it in the AST.
   Incompatible
