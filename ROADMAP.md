@@ -4,16 +4,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M3-05 Lower `shared<T>` to an internal std-backed representation.
-2. M3-06 Lower `weak<T>` to an internal std-backed representation.
-3. M3-07 Enforce move-only semantics for `unique<T>`.
+1. M3-06 Lower `weak<T>` to an internal std-backed representation.
+2. M3-07 Enforce move-only semantics for `unique<T>`.
+3. M3-08 Enforce reference-count semantics and copy rules for `shared<T>`.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
-- [x] M3-00 through M3-04
-- [ ] M3-05 through M3-13
+- [x] M3-00 through M3-05
+- [ ] M3-06 through M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
 
@@ -160,3 +160,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M3-07 can build on `unique<T>` now being represented as `std::unique_ptr` at the language boundary.
 - Direction check:
   - roadmap remains directionally correct; `unique<T>` now has a concrete std-oriented lowering path while preserving no-header requirements for user source.
+
+### 2026-03-15 - M3-05
+
+- Completed item: lower `shared<T>` to an internal std-backed representation.
+- What changed:
+  - cNxt prelude now maps `shared<T>` to `std::shared_ptr<T>`.
+  - internal fallback path now provides a minimal `std::shared_ptr` shape when `<memory>` is unavailable.
+  - added parser coverage in `clang/test/Parser/cnxt-shared-lowering.cpp` and updated prelude coverage in `clang/test/Preprocessor/cnxt-prelude.c`.
+- What is now unblocked:
+  - M3-06 can align `weak<T>` to the same std-backed/fallback prelude strategy.
+  - M3-08 can enforce `shared<T>` copy/reference-count semantics on top of the stabilized representation.
+- Direction check:
+  - roadmap remains directionally correct; both `unique<T>` and `shared<T>` now lower through the same compiler-owned std-oriented prelude boundary.

@@ -82,10 +82,16 @@ static void AddImplicitCNxtPrelude(MacroBuilder &Builder) {
   Builder.append("  T *get() const { return Ptr; }");
   Builder.append("  void reset(T *P = nullptr) { Ptr = P; }");
   Builder.append("};");
+  Builder.append("template <typename T> struct shared_ptr {");
+  Builder.append("  T *Ptr = nullptr;");
+  Builder.append("  T *get() const { return Ptr; }");
+  Builder.append("  void reset(T *P = nullptr) { Ptr = P; }");
+  Builder.append("  long use_count() const { return Ptr ? 1 : 0; }");
+  Builder.append("};");
   Builder.append("}");
   Builder.append("#endif");
   Builder.append("template <typename T> using unique = std::unique_ptr<T>;");
-  Builder.append("template <typename T> struct shared {};");
+  Builder.append("template <typename T> using shared = std::shared_ptr<T>;");
   Builder.append("template <typename T> struct weak {};");
   Builder.append("# 1 \"<built-in>\" 3");
 }
