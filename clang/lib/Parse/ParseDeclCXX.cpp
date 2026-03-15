@@ -2238,7 +2238,14 @@ void Parser::ParseClassSpecifier(tok::TokenKind TagTokKind,
 
 void Parser::ParseBaseClause(Decl *ClassDecl) {
   assert(Tok.is(tok::colon) && "Not a base clause");
-  ConsumeToken();
+  SourceLocation ColonLoc = ConsumeToken();
+
+  if (getLangOpts().CNxt) {
+    Diag(ColonLoc, diag::err_cnxt_unsupported_feature)
+        << "inheritance base clauses";
+    SkipUntil(tok::l_brace, StopAtSemi | StopBeforeMatch);
+    return;
+  }
 
   // Build up an array of parsed base specifiers.
   SmallVector<CXXBaseSpecifier *, 8> BaseInfo;

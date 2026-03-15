@@ -43,3 +43,9 @@ void reject_new() {
 void reject_delete(int *ptr) {
   delete ptr; // expected-error {{cNxt does not support 'delete' expressions}}
 }
+
+struct Base {};
+
+struct Derived
+    : Base { // expected-error {{cNxt does not support inheritance base clauses}}
+};

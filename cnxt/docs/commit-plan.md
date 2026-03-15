@@ -37,7 +37,7 @@ Each line item should ship with targeted tests.
 - [x] M2-07 Reject `new` / `delete` expressions in cNxt mode.
 - [x] M2-08 Add parser coverage for the first enforcement slice.
 - [x] M2-09 Reject template declarations and explicit/implicit template use.
-- [ ] M2-10 Reject inheritance and base-specifier syntax.
+- [x] M2-10 Reject inheritance and base-specifier syntax.
 - [ ] M2-11 Reject operator overloading declarations.
 - [ ] M2-12 Restrict C-style casts to explicit `unsafe` regions only.
 - [ ] M2-13 Reject textual include-based cNxt package flows (policy diagnostic).

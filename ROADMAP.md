@@ -4,18 +4,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M2-09 Reject template declarations and template argument use in cNxt mode.
-2. M2-10 Reject inheritance and base-specifier syntax in cNxt mode.
-3. M2-11 Reject operator overloading declarations in cNxt mode.
-4. M2-12 Restrict C-style casts to explicit `unsafe` regions only.
-5. M2-13 Reject textual include-based cNxt package flows.
-6. M2-14 Add recovery-focused tests for the remaining restrictions.
+1. M2-11 Reject operator overloading declarations in cNxt mode.
+2. M2-12 Restrict C-style casts to explicit `unsafe` regions only.
+3. M2-13 Reject textual include-based cNxt package flows.
+4. M2-14 Add recovery-focused tests for the remaining restrictions.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
-- [x] M2-01 through M2-09
-- [ ] M2-10 through M2-14
+- [x] M2-01 through M2-10
+- [ ] M2-11 through M2-14
 - [ ] M3-00 through M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
@@ -35,3 +33,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M2-14 recovery-oriented restriction test expansion.
 - Direction check:
   - roadmap remains directionally correct; this keeps cNxt as an intentionally restricted C++ subset.
+
+### 2026-03-15 - M2-10
+
+- Completed item: reject inheritance and base-specifier syntax in cNxt mode.
+- What changed:
+  - parser now rejects base clauses (`: Base`) for cNxt class/struct declarations.
+  - parser recovery skips base specifiers and resumes at class body parsing.
+  - extended `clang/test/Parser/cnxt-restrictions.cpp` with inheritance coverage.
+- What is now unblocked:
+  - M2-11 operator overloading restrictions can be implemented without base-clause parser conflicts.
+  - M2-14 additional restriction recovery tests can include inheritance scenarios.
+- Direction check:
+  - roadmap remains directionally correct; cNxt restriction enforcement continues to tighten surface area safely.
