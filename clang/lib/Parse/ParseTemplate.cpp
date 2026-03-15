@@ -35,6 +35,15 @@ Parser::ParseDeclarationStartingWithTemplate(DeclaratorContext Context,
                                              ParsedAttributes &AccessAttrs) {
   ObjCDeclContextSwitch ObjCDC(*this);
 
+  if (getLangOpts().CNxtNoTemplates) {
+    Diag(Tok.getLocation(), diag::err_cnxt_unsupported_feature)
+        << "template declarations";
+    SkipUntil(tok::semi, tok::r_brace, StopAtSemi | StopBeforeMatch);
+    TryConsumeToken(tok::semi);
+    DeclEnd = PrevTokLocation;
+    return nullptr;
+  }
+
   if (Tok.is(tok::kw_template) && NextToken().isNot(tok::less)) {
     return ParseExplicitInstantiation(Context, SourceLocation(), ConsumeToken(),
                                       DeclEnd, AccessAttrs,
@@ -1114,6 +1123,11 @@ bool Parser::AnnotateTemplateIdToken(TemplateTy Template, TemplateNameKind TNK,
 
   // Consume the template-name.
   SourceLocation TemplateNameLoc = TemplateName.getSourceRange().getBegin();
+  bool RejectTemplateIdsInCNxt = getLangOpts().CNxtNoTemplates;
+  if (RejectTemplateIdsInCNxt) {
+    Diag(TemplateNameLoc, diag::err_cnxt_unsupported_feature)
+        << "template argument lists";
+  }
 
   // Parse the enclosed template argument list.
   SourceLocation LAngleLoc, RAngleLoc;
@@ -1129,6 +1143,9 @@ bool Parser::AnnotateTemplateIdToken(TemplateTy Template, TemplateNameKind TNK,
     if (RAngleLoc.isInvalid())
       return true;
   }
+
+  if (RejectTemplateIdsInCNxt)
+    ArgsInvalid = true;
 
   ASTTemplateArgsPtr TemplateArgsPtr(TemplateArgs);
 
