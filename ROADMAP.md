@@ -4,13 +4,14 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M2-14 Add recovery-focused tests for the remaining restrictions.
+1. M3-00 Feasibility spike for std-backed ownership handles without user `<memory>` includes.
+2. M3-01 Standardize cNxt docs on `unique/shared/weak` ownership vocabulary.
+3. M3-02 Parse and type-check `unique<T>`, `shared<T>`, and `weak<T>`.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
-- [x] M2-01 through M2-13
-- [ ] M2-14
+- [x] M2-01 through M2-14
 - [ ] M3-00 through M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
@@ -81,3 +82,14 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M2-14 can consolidate and harden recovery-oriented restriction tests as the final milestone-2 item.
 - Direction check:
   - roadmap remains directionally correct; this reinforces module/import-first cNxt package flow.
+
+### 2026-03-15 - M2-14
+
+- Completed item: add recovery-focused tests for remaining milestone-2 restrictions.
+- What changed:
+  - added parser recovery coverage in `clang/test/Parser/cnxt-recovery.cpp` spanning template, inheritance, operator-overload, and cast restrictions.
+  - extended `clang/test/Preprocessor/cnxt-no-include.c` so verification requires post-include parsing to continue.
+- What is now unblocked:
+  - milestone 2 is complete; milestone 3 ownership feasibility and vocabulary work can begin.
+- Direction check:
+  - roadmap remains directionally correct; restriction enforcement now has explicit recovery regression coverage.
