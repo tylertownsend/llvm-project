@@ -4,16 +4,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M3-08 Enforce reference-count semantics and copy rules for `shared<T>`.
-2. M3-09 Enforce `weak<T>` access rules (upgrade/lock before dereference).
-3. M3-10 Add diagnostics for illegal ownership conversions/escapes.
+1. M3-09 Enforce `weak<T>` access rules (upgrade/lock before dereference).
+2. M3-10 Add diagnostics for illegal ownership conversions/escapes.
+3. M3-11 Add FFI boundary rules for raw pointers in `unsafe` code paths.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
-- [x] M3-00 through M3-07
-- [ ] M3-08 through M3-13
+- [x] M3-00 through M3-08
+- [ ] M3-09 through M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
 
@@ -198,3 +198,15 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M3-09 can rely on a distinct move-only `unique<T>` source when validating weak upgrade/deref rules.
 - Direction check:
   - roadmap remains directionally correct; unique ownership now has explicit non-copyable semantics in no-`<memory>` fallback builds while preserving the restricted user surface.
+
+### 2026-03-15 - M3-08
+
+- Completed item: enforce reference-count semantics and copy rules for `shared<T>`.
+- What changed:
+  - fallback `std::shared_ptr` in the cNxt prelude now has explicit copy/move special member behavior declarations (copyable by design).
+  - added parser/semantic coverage in `clang/test/Parser/cnxt-shared-copy-rules.cpp`.
+- What is now unblocked:
+  - M3-09 can enforce weak upgrade/deref behavior against a stable, explicitly copyable shared-handle surface.
+  - M3-10 can add ownership-conversion diagnostics with clearer baseline handle copy/move rules.
+- Direction check:
+  - roadmap remains directionally correct; shared ownership copy semantics are now explicit in fallback builds while std-backed behavior remains primary when `<memory>` is present.

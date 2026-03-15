@@ -89,6 +89,11 @@ static void AddImplicitCNxtPrelude(MacroBuilder &Builder) {
   Builder.append("};");
   Builder.append("template <typename T> struct shared_ptr {");
   Builder.append("  T *Ptr = nullptr;");
+  Builder.append("  shared_ptr() = default;");
+  Builder.append("  shared_ptr(const shared_ptr &) = default;");
+  Builder.append("  shared_ptr(shared_ptr &&) = default;");
+  Builder.append("  shared_ptr &operator=(const shared_ptr &) = default;");
+  Builder.append("  shared_ptr &operator=(shared_ptr &&) = default;");
   Builder.append("  T *get() const { return Ptr; }");
   Builder.append("  void reset(T *P = nullptr) { Ptr = P; }");
   Builder.append("  long use_count() const { return Ptr ? 1 : 0; }");
