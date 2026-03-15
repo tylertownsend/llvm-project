@@ -51,7 +51,7 @@ Decision for this milestone:
 - Backend lowering should reuse C++ memory machinery where feasible (for example,
   `std::unique_ptr`, `std::shared_ptr`, `std::weak_ptr`) behind the language surface.
 
-- [ ] M3-00 Feasibility spike: prove std-backed lowering can work without user
+- [x] M3-00 Feasibility spike: prove std-backed lowering can work without user
       memory headers and define fallback constraints if not.
 - [ ] M3-01 Update cNxt docs to standardize ownership vocabulary on
       `unique/shared/weak` (replace prior `strong` wording).

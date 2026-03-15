@@ -4,15 +4,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M3-00 Feasibility spike for std-backed ownership handles without user `<memory>` includes.
-2. M3-01 Standardize cNxt docs on `unique/shared/weak` ownership vocabulary.
-3. M3-02 Parse and type-check `unique<T>`, `shared<T>`, and `weak<T>`.
+1. M3-01 Standardize cNxt docs on `unique/shared/weak` ownership vocabulary.
+2. M3-02 Parse and type-check `unique<T>`, `shared<T>`, and `weak<T>`.
+3. M3-03 Add compiler-owned prelude/injected declarations for ownership handles.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
-- [ ] M3-00 through M3-13
+- [x] M3-00
+- [ ] M3-01 through M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
 
@@ -93,3 +94,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - milestone 2 is complete; milestone 3 ownership feasibility and vocabulary work can begin.
 - Direction check:
   - roadmap remains directionally correct; restriction enforcement now has explicit recovery regression coverage.
+
+### 2026-03-15 - M3-00
+
+- Completed item: feasibility spike for std-backed ownership handles without user memory headers.
+- What changed:
+  - added `cnxt/docs/m3-00-feasibility.md` with experiment matrix and concrete outcomes.
+  - documented current blockers and fallback constraints.
+- What is now unblocked:
+  - M3-01 ownership vocabulary standardization with evidence-backed assumptions.
+  - M3-02 parser/type work for ownership handle spellings.
+  - M3-03 prelude/module design with explicit constraints from measured behavior.
+- Direction check:
+  - roadmap remains directionally correct; the spike confirms feasibility direction but highlights required compiler-owned boundaries.
