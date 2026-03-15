@@ -191,6 +191,11 @@ LANGSTANDARD(gnucxx26, "gnu++2c",
              CPlusPlus20 | CPlusPlus23 | CPlusPlus26 | Digraphs | HexFloat | GNUMode, 202400)
 LANGSTANDARD_ALIAS(gnucxx26, "gnu++26")
 
+LANGSTANDARD(cnxt1, "cnxt1",
+             CNxt, "cNxt v1",
+             LineComment | CPlusPlus | CPlusPlus11 | CPlusPlus14 |
+             CPlusPlus17 | HexFloat, std::nullopt)
+
 // OpenCL
 LANGSTANDARD(opencl10, "cl1.0",
              OpenCL, "OpenCL 1.0",

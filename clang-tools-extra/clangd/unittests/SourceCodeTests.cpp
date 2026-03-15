@@ -787,6 +787,8 @@ TEST(SourceCodeTests, isHeaderFile) {
   EXPECT_FALSE(isHeaderFile("foo.cxx"));
   EXPECT_FALSE(isHeaderFile("foo.cc"));
   EXPECT_FALSE(isHeaderFile("foo.c"));
+  EXPECT_FALSE(isHeaderFile("foo.cn"));
+  EXPECT_FALSE(isHeaderFile("foo.cnxt"));
   EXPECT_FALSE(isHeaderFile("foo.mm"));
   EXPECT_FALSE(isHeaderFile("foo.m"));
 

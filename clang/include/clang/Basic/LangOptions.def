@@ -57,6 +57,14 @@ LANGOPT(CPlusPlus17       , 1, 0, NotCompatible, "C++17")
 LANGOPT(CPlusPlus20       , 1, 0, NotCompatible, "C++20")
 LANGOPT(CPlusPlus23       , 1, 0, NotCompatible, "C++23")
 LANGOPT(CPlusPlus26       , 1, 0, NotCompatible, "C++26")
+LANGOPT(CNxt              , 1, 0, NotCompatible, "cNxt")
+LANGOPT(CNxtManagedMemory , 1, 0, NotCompatible, "cNxt managed memory")
+LANGOPT(CNxtNoExceptions  , 1, 0, NotCompatible, "cNxt exception-free mode")
+LANGOPT(CNxtNoTemplates   , 1, 0, NotCompatible, "cNxt template-free mode")
+LANGOPT(CNxtNoRawOwningPointers, 1, 0, NotCompatible,
+        "cNxt raw owning pointer ban")
+LANGOPT(CNxtSingleLoopForms, 1, 0, NotCompatible,
+        "cNxt single loop surface forms")
 LANGOPT(ObjC              , 1, 0, NotCompatible, "Objective-C")
 LANGOPT(ObjCDefaultSynthProperties , 1, 0, Benign,
         "Objective-C auto-synthesized properties")

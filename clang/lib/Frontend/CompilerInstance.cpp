@@ -1088,6 +1088,8 @@ void CompilerInstance::LoadRequestedPlugins() {
 /// Determine the appropriate source input kind based on language
 /// options.
 static Language getLanguageFromOptions(const LangOptions &LangOpts) {
+  if (LangOpts.CNxt)
+    return Language::CNxt;
   if (LangOpts.OpenCL)
     return Language::OpenCL;
   if (LangOpts.CUDA)

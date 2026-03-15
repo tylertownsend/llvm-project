@@ -1117,4 +1117,20 @@ TEST_F(CommandLineTest, WarningSuppressionMappings) {
   Invocation.generateCC1CommandLine(GeneratedArgs, *this);
   EXPECT_THAT(GeneratedArgs, Contains(StrEq(Args[0])));
 }
+
+TEST_F(CommandLineTest, CNxtRoundTrip) {
+  const char *Args[] = {"-x", "cnxt", "-std=cnxt1", "test.cn"};
+
+  ASSERT_TRUE(CompilerInvocation::CreateFromArgs(Invocation, Args, *Diags));
+  EXPECT_EQ(Invocation.getFrontendOpts().DashX.getLanguage(), Language::CNxt);
+  EXPECT_EQ(Invocation.getLangOpts().LangStd, LangStandard::lang_cnxt1);
+  EXPECT_TRUE(Invocation.getLangOpts().CNxt);
+  EXPECT_TRUE(Invocation.getLangOpts().CNxtManagedMemory);
+  EXPECT_TRUE(Invocation.getLangOpts().CPlusPlus17);
+
+  Invocation.generateCC1CommandLine(GeneratedArgs, *this);
+  EXPECT_THAT(GeneratedArgs, Contains(StrEq("-x")));
+  EXPECT_THAT(GeneratedArgs, Contains(StrEq("cnxt")));
+  EXPECT_THAT(GeneratedArgs, Contains(StrEq("-std=cnxt1")));
+}
 } // anonymous namespace

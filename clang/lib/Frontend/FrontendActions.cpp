@@ -1137,6 +1137,7 @@ void PrintPreambleAction::ExecuteAction() {
   switch (getCurrentFileKind().getLanguage()) {
   case Language::C:
   case Language::CXX:
+  case Language::CNxt:
   case Language::ObjC:
   case Language::ObjCXX:
   case Language::OpenCL:

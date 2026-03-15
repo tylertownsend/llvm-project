@@ -916,6 +916,18 @@ TEST(TransferCompileCommandTest, Smoke) {
   EXPECT_EQ(Transferred.Directory, "dir");
 }
 
+TEST(TransferCompileCommandTest, CNxtUnknownExtension) {
+  CompileCommand Cmd;
+  Cmd.Filename = "foo.cn";
+  Cmd.CommandLine = {"clang", "-std=cnxt1", "foo.cn"};
+
+  CompileCommand Transferred =
+      transferCompileCommand(std::move(Cmd), "foo.txt");
+  EXPECT_THAT(Transferred.CommandLine,
+              ElementsAre("clang", "-x", "cnxt", "-std=cnxt1", "--",
+                          "foo.txt"));
+}
+
 TEST(CompileCommandTest, EqualityOperator) {
   CompileCommand CCRef("/foo/bar", "hello.c", {"a", "b"}, "hello.o");
   CompileCommand CCTest = CCRef;

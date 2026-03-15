@@ -1,0 +1,1 @@
+int cnxt_test_cn(void) { return 0; }

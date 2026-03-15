@@ -106,6 +106,8 @@ void LangOptions::setLangDefaults(LangOptions &Opts, Language Lang,
     Opts.ObjC = 1;
   }
 
+  Opts.CNxt = Lang == Language::CNxt;
+
   if (LangStd == LangStandard::lang_unspecified)
     LangStd = getDefaultLanguageStandard(Lang, T);
   const LangStandard &Std = LangStandard::getLangStandardForKind(LangStd);
@@ -131,6 +133,14 @@ void LangOptions::setLangDefaults(LangOptions &Opts, Language Lang,
   Opts.RawStringLiterals = Std.hasRawStringLiterals();
   Opts.AllowLiteralDigitSeparator = Std.allowLiteralDigitSeparator();
   Opts.NamedLoops = Std.isC2y();
+
+  if (Opts.CNxt) {
+    Opts.CNxtManagedMemory = 1;
+    Opts.CNxtNoExceptions = 1;
+    Opts.CNxtNoTemplates = 1;
+    Opts.CNxtNoRawOwningPointers = 1;
+    Opts.CNxtSingleLoopForms = 1;
+  }
 
   Opts.HLSL = Lang == Language::HLSL;
   if (Opts.HLSL) {

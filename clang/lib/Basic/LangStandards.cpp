@@ -27,6 +27,8 @@ StringRef clang::languageToString(Language L) {
     return "C";
   case Language::CXX:
     return "C++";
+  case Language::CNxt:
+    return "cNxt";
   case Language::ObjC:
     return "Objective-C";
   case Language::ObjCXX:
@@ -110,6 +112,8 @@ LangStandard::Kind clang::getDefaultLanguageStandard(clang::Language Lang,
     return LangStandard::lang_gnu17;
   case Language::ObjC:
     return LangStandard::lang_gnu11;
+  case Language::CNxt:
+    return LangStandard::lang_cnxt1;
   case Language::CXX:
   case Language::ObjCXX:
   case Language::CUDA:

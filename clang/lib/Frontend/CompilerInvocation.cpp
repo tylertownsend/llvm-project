@@ -2977,6 +2977,9 @@ static void GenerateFrontendArgs(const FrontendOptions &Opts,
     case Language::CXX:
       Lang = "c++";
       break;
+    case Language::CNxt:
+      Lang = "cnxt";
+      break;
     case Language::ObjC:
       Lang = "objective-c";
       break;
@@ -3207,6 +3210,7 @@ static bool ParseFrontendArgs(FrontendOptions &Opts, ArgList &Args,
                 .Case("cuda", Language::CUDA)
                 .Case("hip", Language::HIP)
                 .Case("c++", Language::CXX)
+                .Case("cnxt", Language::CNxt)
                 .Case("objective-c", Language::ObjC)
                 .Case("objective-c++", Language::ObjCXX)
                 .Case("hlsl", Language::HLSL)
@@ -3638,6 +3642,9 @@ static bool IsInputCompatibleWithStandard(InputKind IK,
   case Language::ObjCXX:
     return S.getLanguage() == Language::CXX;
 
+  case Language::CNxt:
+    return S.getLanguage() == Language::CNxt;
+
   case Language::CUDA:
     // FIXME: What -std= values should be permitted for CUDA compilations?
     return S.getLanguage() == Language::CUDA ||
@@ -3668,6 +3675,8 @@ static StringRef GetInputKindName(InputKind IK) {
     return "Objective-C";
   case Language::CXX:
     return "C++";
+  case Language::CNxt:
+    return "cNxt";
   case Language::ObjCXX:
     return "Objective-C++";
   case Language::OpenCL:

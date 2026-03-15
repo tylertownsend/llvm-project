@@ -138,6 +138,7 @@ bool types::isAcceptedByClang(ID Id) {
   case TY_HIP_DEVICE:
   case TY_ObjC: case TY_PP_ObjC: case TY_PP_ObjC_Alias:
   case TY_CXX: case TY_PP_CXX:
+  case TY_CNxt: case TY_PP_CNxt:
   case TY_ObjCXX: case TY_PP_ObjCXX: case TY_PP_ObjCXX_Alias:
   case TY_CHeader: case TY_PP_CHeader:
   case TY_CLHeader:
@@ -195,6 +196,8 @@ bool types::isDerivedFromC(ID Id) {
   case TY_ObjC:
   case TY_PP_CXX:
   case TY_CXX:
+  case TY_PP_CNxt:
+  case TY_CNxt:
   case TY_PP_ObjCXX:
   case TY_PP_ObjCXX_Alias:
   case TY_ObjCXX:
@@ -244,6 +247,7 @@ bool types::isCXX(ID Id) {
     return false;
 
   case TY_CXX: case TY_PP_CXX:
+  case TY_CNxt: case TY_PP_CNxt:
   case TY_ObjCXX: case TY_PP_ObjCXX: case TY_PP_ObjCXX_Alias:
   case TY_CXXHeader: case TY_PP_CXXHeader:
   case TY_CXXSHeader:
@@ -327,6 +331,9 @@ types::ID types::lookupTypeForExtension(llvm::StringRef Ext) {
       .Case("cli", TY_PP_CL)
       .Case("clcpp", TY_CLCXX)
       .Case("clii", TY_PP_CLCXX)
+      .Case("cn", TY_CNxt)
+      .Case("cni", TY_PP_CNxt)
+      .Case("cnxt", TY_CNxt)
       .Case("cp", TY_CXX)
       .Case("cu", TY_CUDA)
       .Case("hh", TY_CXXHeader)

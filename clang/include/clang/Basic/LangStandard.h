@@ -34,6 +34,7 @@ enum class Language : uint8_t {
   ///@{ Languages that the frontend can parse and compile.
   C,
   CXX,
+  CNxt,
   ObjC,
   ObjCXX,
   OpenCL,
