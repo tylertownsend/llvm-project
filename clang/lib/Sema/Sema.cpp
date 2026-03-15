@@ -580,48 +580,6 @@ void Sema::Initialize() {
       PushOnScopeChains(Context.getBuiltinMSVaListDecl(), TUScope);
   }
 
-  if (getLangOpts().CNxt) {
-    auto AddImplicitCNxtOwnershipHandleTemplate = [&](StringRef Name) {
-      DeclarationName HandleName = &Context.Idents.get(Name);
-      if (IdResolver.begin(HandleName) != IdResolver.end())
-        return;
-
-      auto *Record = CXXRecordDecl::Create(Context, TagTypeKind::Struct,
-                                           CurContext, SourceLocation(),
-                                           SourceLocation(),
-                                           HandleName.getAsIdentifierInfo(),
-                                           /*PrevDecl=*/nullptr);
-      Record->setImplicit(true);
-      Record->setLexicalDeclContext(CurContext);
-      Record->startDefinition();
-      Record->completeDefinition();
-
-      auto *TemplateParam = TemplateTypeParmDecl::Create(
-          Context, CurContext, SourceLocation(), SourceLocation(),
-          /*Depth=*/0, /*Position=*/0, &Context.Idents.get("T"),
-          /*Typename=*/true, /*ParameterPack=*/false,
-          /*HasTypeConstraint=*/false);
-      TemplateParam->setImplicit(true);
-
-      NamedDecl *TemplateParams[] = {TemplateParam};
-      auto *Params = TemplateParameterList::Create(
-          Context, SourceLocation(), SourceLocation(), TemplateParams,
-          SourceLocation(), /*RequiresClause=*/nullptr);
-
-      auto *Template = ClassTemplateDecl::Create(
-          Context, CurContext, SourceLocation(), HandleName, Params, Record);
-      Template->setImplicit(true);
-      Template->setLexicalDeclContext(CurContext);
-      Record->setDescribedClassTemplate(Template);
-
-      PushOnScopeChains(Template, TUScope);
-    };
-
-    AddImplicitCNxtOwnershipHandleTemplate("unique");
-    AddImplicitCNxtOwnershipHandleTemplate("shared");
-    AddImplicitCNxtOwnershipHandleTemplate("weak");
-  }
-
   DeclarationName BuiltinVaList = &Context.Idents.get("__builtin_va_list");
   if (IdResolver.begin(BuiltinVaList) == IdResolver.end())
     PushOnScopeChains(Context.getBuiltinVaListDecl(), TUScope);

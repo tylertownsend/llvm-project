@@ -4,16 +4,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M3-03 Add compiler-owned prelude/injected declarations for ownership handles.
-2. M3-04 Lower `unique<T>` to an internal std-backed representation.
-3. M3-05 Lower `shared<T>` to an internal std-backed representation.
+1. M3-04 Lower `unique<T>` to an internal std-backed representation.
+2. M3-05 Lower `shared<T>` to an internal std-backed representation.
+3. M3-06 Lower `weak<T>` to an internal std-backed representation.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
-- [x] M3-00 through M3-02
-- [ ] M3-03 through M3-13
+- [x] M3-00 through M3-03
+- [ ] M3-04 through M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
 
@@ -125,10 +125,24 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - Completed item: parse and type-check cNxt ownership handles `unique<T>`, `shared<T>`, and `weak<T>`.
 - What changed:
   - parser now treats `unique/shared/weak` template-id spellings as cNxt ownership-handle exceptions instead of generic forbidden template argument lists.
-  - semantic initialization now injects implicit cNxt ownership handle class templates for `unique`, `shared`, and `weak`.
+  - compiler-provided ownership-handle declarations were introduced so cNxt handle spellings can type-check without user-authored templates.
   - added parser coverage in `clang/test/Parser/cnxt-ownership.cpp` for accepted handles while preserving rejection of non-handle template-ids and template declarations.
 - What is now unblocked:
   - M3-03 can focus on shaping the compiler-owned prelude/injection boundary rather than basic handle name recognition.
   - M3-04 and M3-05 lowering work can target already-parsed and typed handle surfaces.
 - Direction check:
   - roadmap remains directionally correct; cNxt now has a compiler-owned ownership type surface while keeping the broader template restrictions in place.
+
+### 2026-03-15 - M3-03
+
+- Completed item: add compiler-owned cNxt prelude/injected ownership declarations.
+- What changed:
+  - frontend preprocessor initialization now injects a dedicated `<cnxt-prelude>` block that declares `unique<T>`, `shared<T>`, and `weak<T>`.
+  - cNxt template-declaration restriction now exempts compiler-prelude locations while preserving user-file template rejection.
+  - moved ownership declaration injection out of Sema initialization and into the preprocessor prelude path.
+  - added preprocessor coverage in `clang/test/Preprocessor/cnxt-prelude.c` and kept parser restriction coverage green.
+- What is now unblocked:
+  - M3-04 can lower `unique<T>` with a stable compiler-owned declaration boundary.
+  - M3-05 and M3-06 lowering can reuse the same prelude injection mechanism.
+- Direction check:
+  - roadmap remains directionally correct; ownership handles are now provided through an explicit compiler-owned prelude path rather than ad hoc declaration injection.

@@ -47,7 +47,12 @@ Parser::ParseDeclarationStartingWithTemplate(DeclaratorContext Context,
                                              ParsedAttributes &AccessAttrs) {
   ObjCDeclContextSwitch ObjCDC(*this);
 
-  if (getLangOpts().CNxtNoTemplates) {
+  SourceLocation SpellingLoc =
+      PP.getSourceManager().getSpellingLoc(Tok.getLocation());
+  PresumedLoc Presumed = PP.getSourceManager().getPresumedLoc(SpellingLoc);
+  bool IsCNxtPrelude =
+      Presumed.isValid() && StringRef(Presumed.getFilename()) == "<cnxt-prelude>";
+  if (getLangOpts().CNxtNoTemplates && !IsCNxtPrelude) {
     Diag(Tok.getLocation(), diag::err_cnxt_unsupported_feature)
         << "template declarations";
     SkipUntil(tok::semi, tok::r_brace, StopAtSemi | StopBeforeMatch);

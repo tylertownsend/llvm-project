@@ -71,6 +71,14 @@ static void AddImplicitInclude(MacroBuilder &Builder, StringRef File) {
   Builder.append(Twine("#include \"") + File + "\"");
 }
 
+static void AddImplicitCNxtPrelude(MacroBuilder &Builder) {
+  Builder.append("# 1 \"<cnxt-prelude>\" 3");
+  Builder.append("template <typename T> struct unique {};");
+  Builder.append("template <typename T> struct shared {};");
+  Builder.append("template <typename T> struct weak {};");
+  Builder.append("# 1 \"<built-in>\" 3");
+}
+
 static void AddImplicitIncludeMacros(MacroBuilder &Builder, StringRef File) {
   Builder.append(Twine("#__include_macros \"") + File + "\"");
   // Marker token to stop the __include_macros fetch loop.
@@ -1562,6 +1570,8 @@ void clang::InitializePreprocessor(Preprocessor &PP,
   // marks <built-in> as being a system header, which suppresses warnings when
   // the same macro is defined multiple times.
   Builder.append("# 1 \"<built-in>\" 3");
+  if (LangOpts.CNxt)
+    AddImplicitCNxtPrelude(Builder);
 
   // Install things like __POWERPC__, __GNUC__, etc into the macro table.
   if (InitOpts.UsePredefines) {
