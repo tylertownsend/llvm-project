@@ -8111,6 +8111,12 @@ Sema::ActOnCastExpr(Scope *S, SourceLocation LParenLoc,
   QualType castType = castTInfo->getType();
   Ty = CreateParsedType(castType, castTInfo);
 
+  if (getLangOpts().CNxt && !castType->isVoidType()) {
+    Diag(LParenLoc, diag::err_cnxt_unsupported_declaration)
+        << "C-style casts outside unsafe regions";
+    return ExprError();
+  }
+
   bool isVectorLiteral = false;
 
   // Check for an altivec or OpenCL literal,

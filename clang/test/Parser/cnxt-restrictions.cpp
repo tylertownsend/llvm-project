@@ -57,3 +57,7 @@ struct OverloadedOperators {
   explicit
   operator bool() const; // expected-error {{cNxt does not support operator overloading declarations}}
 };
+
+int reject_c_style_cast(double value) {
+  return (int)value; // expected-error {{cNxt does not support C-style casts outside unsafe regions}}
+}

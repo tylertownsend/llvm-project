@@ -4,15 +4,14 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M2-12 Restrict C-style casts to explicit `unsafe` regions only.
-2. M2-13 Reject textual include-based cNxt package flows.
-3. M2-14 Add recovery-focused tests for the remaining restrictions.
+1. M2-13 Reject textual include-based cNxt package flows.
+2. M2-14 Add recovery-focused tests for the remaining restrictions.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
-- [x] M2-01 through M2-11
-- [ ] M2-12 through M2-14
+- [x] M2-01 through M2-12
+- [ ] M2-13 through M2-14
 - [ ] M3-00 through M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
@@ -58,3 +57,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M2-14 can now include operator-overload recovery assertions.
 - Direction check:
   - roadmap remains directionally correct; this prevents C++ operator-surface leakage into cNxt.
+
+### 2026-03-15 - M2-12
+
+- Completed item: restrict C-style casts to explicit `unsafe` regions.
+- What changed:
+  - semantic cast handling now rejects C-style casts in cNxt mode.
+  - added dedicated cNxt Sema diagnostic for unsupported non-declaration features.
+  - extended `clang/test/Parser/cnxt-restrictions.cpp` with C-style cast rejection coverage.
+- What is now unblocked:
+  - M2-13 include-flow policy enforcement is independent and ready.
+  - M2-14 recovery tests can include cast-restriction scenarios.
+- Direction check:
+  - roadmap remains directionally correct; this reduces unsafe C++ escape hatches in cNxt.
