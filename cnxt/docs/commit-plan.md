@@ -58,7 +58,7 @@ Decision for this milestone:
 - [x] M3-02 Parse and type-check `unique<T>`, `shared<T>`, and `weak<T>` in cNxt.
 - [x] M3-03 Add an implicit cNxt prelude/injected declarations so ownership
       handles are available without explicit memory headers.
-- [ ] M3-04 Lower `unique<T>` to an internal std-backed representation.
+- [x] M3-04 Lower `unique<T>` to an internal std-backed representation.
 - [ ] M3-05 Lower `shared<T>` to an internal std-backed representation.
 - [ ] M3-06 Lower `weak<T>` to an internal std-backed representation.
 - [ ] M3-07 Enforce move-only semantics for `unique<T>`.

@@ -47,12 +47,8 @@ Parser::ParseDeclarationStartingWithTemplate(DeclaratorContext Context,
                                              ParsedAttributes &AccessAttrs) {
   ObjCDeclContextSwitch ObjCDC(*this);
 
-  SourceLocation SpellingLoc =
-      PP.getSourceManager().getSpellingLoc(Tok.getLocation());
-  PresumedLoc Presumed = PP.getSourceManager().getPresumedLoc(SpellingLoc);
-  bool IsCNxtPrelude =
-      Presumed.isValid() && StringRef(Presumed.getFilename()) == "<cnxt-prelude>";
-  if (getLangOpts().CNxtNoTemplates && !IsCNxtPrelude) {
+  if (getLangOpts().CNxtNoTemplates &&
+      !PP.getSourceManager().isInSystemHeader(Tok.getLocation())) {
     Diag(Tok.getLocation(), diag::err_cnxt_unsupported_feature)
         << "template declarations";
     SkipUntil(tok::semi, tok::r_brace, StopAtSemi | StopBeforeMatch);
@@ -1142,6 +1138,7 @@ bool Parser::AnnotateTemplateIdToken(TemplateTy Template, TemplateNameKind TNK,
   SourceLocation TemplateNameLoc = TemplateName.getSourceRange().getBegin();
   bool RejectTemplateIdsInCNxt =
       getLangOpts().CNxtNoTemplates &&
+      !PP.getSourceManager().isInSystemHeader(TemplateNameLoc) &&
       !isCNxtOwnershipHandleTemplateId(TemplateName, SS);
   if (RejectTemplateIdsInCNxt) {
     Diag(TemplateNameLoc, diag::err_cnxt_unsupported_feature)

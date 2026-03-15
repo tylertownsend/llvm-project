@@ -4,16 +4,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M3-04 Lower `unique<T>` to an internal std-backed representation.
-2. M3-05 Lower `shared<T>` to an internal std-backed representation.
-3. M3-06 Lower `weak<T>` to an internal std-backed representation.
+1. M3-05 Lower `shared<T>` to an internal std-backed representation.
+2. M3-06 Lower `weak<T>` to an internal std-backed representation.
+3. M3-07 Enforce move-only semantics for `unique<T>`.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
-- [x] M3-00 through M3-03
-- [ ] M3-04 through M3-13
+- [x] M3-00 through M3-04
+- [ ] M3-05 through M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
 
@@ -146,3 +146,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M3-05 and M3-06 lowering can reuse the same prelude injection mechanism.
 - Direction check:
   - roadmap remains directionally correct; ownership handles are now provided through an explicit compiler-owned prelude path rather than ad hoc declaration injection.
+
+### 2026-03-15 - M3-04
+
+- Completed item: lower `unique<T>` to an internal std-backed representation.
+- What changed:
+  - cNxt prelude now maps `unique<T>` to `std::unique_ptr<T>`.
+  - prelude uses `#if __has_include(<memory>)` to prefer real `<memory>` when available and provides a minimal internal `std::unique_ptr` fallback when it is not.
+  - template/include cNxt restrictions were tightened to still reject user-source forms while allowing compiler-prelude and system-header processing needed for internal lowering.
+  - added parser coverage in `clang/test/Parser/cnxt-unique-lowering.cpp` and updated prelude coverage in `clang/test/Preprocessor/cnxt-prelude.c`.
+- What is now unblocked:
+  - M3-05 and M3-06 can mirror this pattern for `shared<T>` and `weak<T>`.
+  - M3-07 can build on `unique<T>` now being represented as `std::unique_ptr` at the language boundary.
+- Direction check:
+  - roadmap remains directionally correct; `unique<T>` now has a concrete std-oriented lowering path while preserving no-header requirements for user source.

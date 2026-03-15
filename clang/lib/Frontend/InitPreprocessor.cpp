@@ -73,7 +73,18 @@ static void AddImplicitInclude(MacroBuilder &Builder, StringRef File) {
 
 static void AddImplicitCNxtPrelude(MacroBuilder &Builder) {
   Builder.append("# 1 \"<cnxt-prelude>\" 3");
-  Builder.append("template <typename T> struct unique {};");
+  Builder.append("#if __has_include(<memory>)");
+  Builder.append("#include <memory>");
+  Builder.append("#else");
+  Builder.append("namespace std {");
+  Builder.append("template <typename T> struct unique_ptr {");
+  Builder.append("  T *Ptr = nullptr;");
+  Builder.append("  T *get() const { return Ptr; }");
+  Builder.append("  void reset(T *P = nullptr) { Ptr = P; }");
+  Builder.append("};");
+  Builder.append("}");
+  Builder.append("#endif");
+  Builder.append("template <typename T> using unique = std::unique_ptr<T>;");
   Builder.append("template <typename T> struct shared {};");
   Builder.append("template <typename T> struct weak {};");
   Builder.append("# 1 \"<built-in>\" 3");
