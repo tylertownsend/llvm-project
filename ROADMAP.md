@@ -4,16 +4,15 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M2-11 Reject operator overloading declarations in cNxt mode.
-2. M2-12 Restrict C-style casts to explicit `unsafe` regions only.
-3. M2-13 Reject textual include-based cNxt package flows.
-4. M2-14 Add recovery-focused tests for the remaining restrictions.
+1. M2-12 Restrict C-style casts to explicit `unsafe` regions only.
+2. M2-13 Reject textual include-based cNxt package flows.
+3. M2-14 Add recovery-focused tests for the remaining restrictions.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
-- [x] M2-01 through M2-10
-- [ ] M2-11 through M2-14
+- [x] M2-01 through M2-11
+- [ ] M2-12 through M2-14
 - [ ] M3-00 through M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
@@ -46,3 +45,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M2-14 additional restriction recovery tests can include inheritance scenarios.
 - Direction check:
   - roadmap remains directionally correct; cNxt restriction enforcement continues to tighten surface area safely.
+
+### 2026-03-15 - M2-11
+
+- Completed item: reject operator overloading declarations in cNxt mode.
+- What changed:
+  - semantic analysis now rejects operator-function, literal-operator, and conversion-operator declarations in cNxt mode.
+  - added cNxt-specific Sema diagnostic: `err_cnxt_unsupported_declaration`.
+  - extended `clang/test/Parser/cnxt-restrictions.cpp` with operator-overload rejection coverage.
+- What is now unblocked:
+  - M2-12 cast restriction work can proceed with clearer operator surface limits.
+  - M2-14 can now include operator-overload recovery assertions.
+- Direction check:
+  - roadmap remains directionally correct; this prevents C++ operator-surface leakage into cNxt.

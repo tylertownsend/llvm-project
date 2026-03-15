@@ -49,3 +49,11 @@ struct Base {};
 struct Derived
     : Base { // expected-error {{cNxt does not support inheritance base clauses}}
 };
+
+struct OverloadedOperators {
+  int
+  operator+(const OverloadedOperators &) const; // expected-error {{cNxt does not support operator overloading declarations}}
+
+  explicit
+  operator bool() const; // expected-error {{cNxt does not support operator overloading declarations}}
+};

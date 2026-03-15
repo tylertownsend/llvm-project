@@ -10096,6 +10096,20 @@ Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
   DeclarationName Name = NameInfo.getName();
   StorageClass SC = getFunctionStorageClass(*this, D);
 
+  if (getLangOpts().CNxt) {
+    switch (Name.getNameKind()) {
+    case DeclarationName::CXXOperatorName:
+    case DeclarationName::CXXLiteralOperatorName:
+    case DeclarationName::CXXConversionFunctionName:
+      Diag(D.getIdentifierLoc(), diag::err_cnxt_unsupported_declaration)
+          << "operator overloading declarations";
+      D.setInvalidType();
+      break;
+    default:
+      break;
+    }
+  }
+
   if (DeclSpec::TSCS TSCS = D.getDeclSpec().getThreadStorageClassSpec())
     Diag(D.getDeclSpec().getThreadStorageClassSpecLoc(),
          diag::err_invalid_thread)

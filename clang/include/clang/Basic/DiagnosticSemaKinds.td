@@ -230,6 +230,8 @@ def err_vla_in_coroutine_unsupported : Error<
 def note_vla_unsupported : Note<
   "variable length arrays are not supported for the current target">;
 
+def err_cnxt_unsupported_declaration : Error<"cNxt does not support %0">;
+
 // C99 variably modified types
 def err_variably_modified_template_arg : Error<
   "variably modified type %0 cannot be used as a template argument">;
