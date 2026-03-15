@@ -10096,7 +10096,8 @@ Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
   DeclarationName Name = NameInfo.getName();
   StorageClass SC = getFunctionStorageClass(*this, D);
 
-  if (getLangOpts().CNxt) {
+  if (getLangOpts().CNxt &&
+      !getSourceManager().isInSystemHeader(D.getIdentifierLoc())) {
     switch (Name.getNameKind()) {
     case DeclarationName::CXXOperatorName:
     case DeclarationName::CXXLiteralOperatorName:

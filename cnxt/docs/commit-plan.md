@@ -61,7 +61,7 @@ Decision for this milestone:
 - [x] M3-04 Lower `unique<T>` to an internal std-backed representation.
 - [x] M3-05 Lower `shared<T>` to an internal std-backed representation.
 - [x] M3-06 Lower `weak<T>` to an internal std-backed representation.
-- [ ] M3-07 Enforce move-only semantics for `unique<T>`.
+- [x] M3-07 Enforce move-only semantics for `unique<T>`.
 - [ ] M3-08 Enforce reference-count semantics and copy rules for `shared<T>`.
 - [ ] M3-09 Enforce `weak<T>` access rules (upgrade/lock before dereference).
 - [ ] M3-10 Add diagnostics for illegal ownership conversions/escapes.

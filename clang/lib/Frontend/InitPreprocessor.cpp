@@ -79,6 +79,11 @@ static void AddImplicitCNxtPrelude(MacroBuilder &Builder) {
   Builder.append("namespace std {");
   Builder.append("template <typename T> struct unique_ptr {");
   Builder.append("  T *Ptr = nullptr;");
+  Builder.append("  unique_ptr() = default;");
+  Builder.append("  unique_ptr(const unique_ptr &) = delete;");
+  Builder.append("  unique_ptr(unique_ptr &&) = default;");
+  Builder.append("  unique_ptr &operator=(const unique_ptr &) = delete;");
+  Builder.append("  unique_ptr &operator=(unique_ptr &&) = default;");
   Builder.append("  T *get() const { return Ptr; }");
   Builder.append("  void reset(T *P = nullptr) { Ptr = P; }");
   Builder.append("};");
