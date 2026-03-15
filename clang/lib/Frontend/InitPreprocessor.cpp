@@ -99,7 +99,11 @@ static void AddImplicitCNxtPrelude(MacroBuilder &Builder) {
   Builder.append("  long use_count() const { return Ptr ? 1 : 0; }");
   Builder.append("};");
   Builder.append("template <typename T> struct weak_ptr {");
+  Builder.append("private:");
   Builder.append("  T *Ptr = nullptr;");
+  Builder.append("public:");
+  Builder.append("  weak_ptr() = default;");
+  Builder.append("  weak_ptr(const shared_ptr<T> &Owner) : Ptr(Owner.get()) {}");
   Builder.append("  shared_ptr<T> lock() const {");
   Builder.append("    shared_ptr<T> Owner;");
   Builder.append("    Owner.Ptr = Ptr;");

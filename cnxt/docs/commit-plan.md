@@ -63,7 +63,7 @@ Decision for this milestone:
 - [x] M3-06 Lower `weak<T>` to an internal std-backed representation.
 - [x] M3-07 Enforce move-only semantics for `unique<T>`.
 - [x] M3-08 Enforce reference-count semantics and copy rules for `shared<T>`.
-- [ ] M3-09 Enforce `weak<T>` access rules (upgrade/lock before dereference).
+- [x] M3-09 Enforce `weak<T>` access rules (upgrade/lock before dereference).
 - [ ] M3-10 Add diagnostics for illegal ownership conversions/escapes.
 - [ ] M3-11 Add FFI boundary rules for raw pointers in `unsafe` code paths.
 - [ ] M3-12 Add parser/sema/codegen tests for ownership baseline behavior.

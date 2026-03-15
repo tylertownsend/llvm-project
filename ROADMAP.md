@@ -4,16 +4,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M3-09 Enforce `weak<T>` access rules (upgrade/lock before dereference).
-2. M3-10 Add diagnostics for illegal ownership conversions/escapes.
-3. M3-11 Add FFI boundary rules for raw pointers in `unsafe` code paths.
+1. M3-10 Add diagnostics for illegal ownership conversions/escapes.
+2. M3-11 Add FFI boundary rules for raw pointers in `unsafe` code paths.
+3. M3-12 Add parser/sema/codegen tests for ownership baseline behavior.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
-- [x] M3-00 through M3-08
-- [ ] M3-09 through M3-13
+- [x] M3-00 through M3-09
+- [ ] M3-10 through M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
 
@@ -210,3 +210,15 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M3-10 can add ownership-conversion diagnostics with clearer baseline handle copy/move rules.
 - Direction check:
   - roadmap remains directionally correct; shared ownership copy semantics are now explicit in fallback builds while std-backed behavior remains primary when `<memory>` is present.
+
+### 2026-03-15 - M3-09
+
+- Completed item: enforce weak-handle lock-before-use access rules.
+- What changed:
+  - fallback `std::weak_ptr` in the cNxt prelude now hides raw storage and exposes lock/expired accessors, reducing direct raw-handle access.
+  - added parser/semantic coverage in `clang/test/Parser/cnxt-weak-lock-required.cpp` to require lock-style access.
+- What is now unblocked:
+  - M3-10 can add explicit ownership-conversion diagnostics on top of stable unique/shared/weak access patterns.
+  - M3-12 baseline ownership behavior tests can rely on lock-before-use regression coverage.
+- Direction check:
+  - roadmap remains directionally correct; weak-handle usage now emphasizes lock/upgrade access paths across both std-backed and fallback representations.
