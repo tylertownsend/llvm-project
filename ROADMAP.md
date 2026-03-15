@@ -4,16 +4,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M3-11 Add FFI boundary rules for raw pointers in `unsafe` code paths.
-2. M3-12 Add parser/sema/codegen tests for ownership baseline behavior.
-3. M3-13 Add ABI/interoperability tests with mixed cNxt and C++ compilation.
+1. M3-12 Add parser/sema/codegen tests for ownership baseline behavior.
+2. M3-13 Add ABI/interoperability tests with mixed cNxt and C++ compilation.
+3. M4-01 Define `Cnxt.toml` manifest schema and validation rules.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
-- [x] M3-00 through M3-10
-- [ ] M3-11 through M3-13
+- [x] M3-00 through M3-11
+- [ ] M3-12 through M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
 
@@ -235,3 +235,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M3-12 baseline ownership test expansion can now assert explicit illegal-conversion diagnostics.
 - Direction check:
   - roadmap remains directionally correct; ownership-handle semantics now expose explicit language-level diagnostics for illegal conversion direction.
+
+### 2026-03-15 - M3-11
+
+- Completed item: add raw-pointer FFI boundary rules for cNxt.
+- What changed:
+  - semantic declaration checks now reject raw pointer declarations in cNxt user code for variables and fields.
+  - cNxt function declarations now reject raw pointer signatures unless the declaration is `extern "C"` (FFI boundary).
+  - added parser/semantic coverage in `clang/test/Parser/cnxt-ffi-raw-pointers.cpp` for rejected global/local/field/function-pointer forms and accepted `extern "C"` pointer signatures.
+- What is now unblocked:
+  - M3-12 can consolidate ownership baseline tests with explicit raw-pointer boundary enforcement coverage.
+  - M3-13 interoperability tests can assume explicit `extern "C"` pointer-boundary behavior in cNxt mode.
+- Direction check:
+  - roadmap remains directionally correct; cNxt now enforces a concrete raw-pointer policy tied to explicit FFI boundaries.

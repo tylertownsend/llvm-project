@@ -7748,6 +7748,8 @@ void Sema::CheckAsmLabel(Scope *S, Expr *E, StorageClass SC,
   }
 }
 
+static bool containsCNxtRawPointerType(QualType QT);
+
 NamedDecl *Sema::ActOnVariableDeclarator(
     Scope *S, Declarator &D, DeclContext *DC, TypeSourceInfo *TInfo,
     LookupResult &Previous, MultiTemplateParamsArg TemplateParamLists,
@@ -8097,6 +8099,14 @@ NamedDecl *Sema::ActOnVariableDeclarator(
         B->setLocalExternDecl();
     else
       NewVD->setLocalExternDecl();
+  }
+
+  if (getLangOpts().CNxtNoRawOwningPointers &&
+      !getSourceManager().isInSystemHeader(NewVD->getLocation()) &&
+      containsCNxtRawPointerType(NewVD->getType())) {
+    Diag(NewVD->getLocation(), diag::err_cnxt_unsupported_declaration)
+        << "raw pointer declarations outside unsafe FFI boundaries";
+    NewVD->setInvalidDecl();
   }
 
   bool EmitTLSUnsupportedError = false;
@@ -10070,6 +10080,36 @@ static bool isStdBuiltin(ASTContext &Ctx, FunctionDecl *FD,
   }
 }
 
+static bool containsCNxtRawPointerType(QualType QT) {
+  QT = QT.getCanonicalType();
+  if (QT.isNull() || QT->isDependentType())
+    return false;
+
+  if (QT->isPointerType() || QT->isMemberPointerType())
+    return true;
+
+  if (const auto *RT = QT->getAs<ReferenceType>())
+    return containsCNxtRawPointerType(RT->getPointeeType());
+
+  if (const auto *AT = dyn_cast<ArrayType>(QT.getTypePtr()))
+    return containsCNxtRawPointerType(AT->getElementType());
+
+  if (const auto *FPT = QT->getAs<FunctionProtoType>()) {
+    if (containsCNxtRawPointerType(FPT->getReturnType()))
+      return true;
+    for (QualType ParamTy : FPT->param_types()) {
+      if (containsCNxtRawPointerType(ParamTy))
+        return true;
+    }
+    return false;
+  }
+
+  if (const auto *FNPT = QT->getAs<FunctionNoProtoType>())
+    return containsCNxtRawPointerType(FNPT->getReturnType());
+
+  return false;
+}
+
 NamedDecl*
 Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
                               TypeSourceInfo *TInfo, LookupResult &Previous,
@@ -10148,6 +10188,15 @@ Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
 
   if (IsLocalExternDecl)
     NewFD->setLocalExternDecl();
+
+  if (getLangOpts().CNxtNoRawOwningPointers &&
+      !getSourceManager().isInSystemHeader(NewFD->getLocation()) &&
+      !NewFD->isExternC() && containsCNxtRawPointerType(NewFD->getType())) {
+    Diag(NewFD->getLocation(), diag::err_cnxt_unsupported_declaration)
+        << "raw pointer function signatures outside unsafe FFI boundaries";
+    D.setInvalidType();
+    NewFD->setInvalidDecl();
+  }
 
   if (getLangOpts().CPlusPlus) {
     // The rules for implicit inlines changed in C++20 for methods and friends
@@ -19359,6 +19408,14 @@ FieldDecl *Sema::CheckFieldDecl(DeclarationName Name, QualType T,
                                              diag::err_abstract_type_in_decl,
                                              AbstractFieldType))
     InvalidDecl = true;
+
+  if (!InvalidDecl && getLangOpts().CNxtNoRawOwningPointers &&
+      !getSourceManager().isInSystemHeader(Loc) &&
+      containsCNxtRawPointerType(T)) {
+    Diag(Loc, diag::err_cnxt_unsupported_declaration)
+        << "raw pointer fields outside unsafe FFI boundaries";
+    InvalidDecl = true;
+  }
 
   if (InvalidDecl)
     BitWidth = nullptr;
