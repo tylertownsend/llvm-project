@@ -4,9 +4,9 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M5-05 Add refactor safety checks for restricted constructs.
-2. M5-06 Implement cNxt formatter baseline profile.
-3. M5-07 Add lints enforcing one-obvious-way language policies.
+1. M5-06 Implement cNxt formatter baseline profile.
+2. M5-07 Add lints enforcing one-obvious-way language policies.
+3. M5-08 Add fix-its for common restriction diagnostics (where safe).
 
 ## Deliverable Status
 
@@ -14,8 +14,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
 - [x] M4-01 through M4-14
-- [x] M5-01 through M5-04
-- [ ] M5-05 through M5-09
+- [x] M5-01 through M5-05
+- [ ] M5-06 through M5-09
 
 ## Completion Log
 
@@ -523,3 +523,15 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M5-09 IDE integration CI can include cNxt xrefs expectations as part of representative project validation.
 - Direction check:
   - roadmap remains directionally correct; cNxt navigation behavior now has dedicated locate/reference regression tests.
+
+### 2026-03-15 - M5-05
+
+- Completed item: add refactor safety checks for restricted constructs.
+- What changed:
+  - updated `clang-tools-extra/clangd/refactor/Tweak.cpp` with a cNxt-only safety guard that suppresses tweak preparation when the active selection/cursor touches restricted constructs (`goto`, `do`, `try/catch/throw`, `new/delete`, `template`, `#include`, and C-style `for(...)` patterns).
+  - extended `clang-tools-extra/clangd/unittests/tweaks/AnnotateHighlightingsTests.cpp` with cNxt regression coverage proving allowed code remains tweakable while restricted constructs are unavailable.
+- What is now unblocked:
+  - M5-06 formatter profile work can proceed with refactor actions now explicitly guarded around banned constructs.
+  - M5-08 fix-it work can target restricted diagnostics with less risk of conflicting refactor suggestions in the same regions.
+- Direction check:
+  - roadmap remains directionally correct; cNxt IDE refactor behavior now has an explicit safety boundary for restricted language surface.

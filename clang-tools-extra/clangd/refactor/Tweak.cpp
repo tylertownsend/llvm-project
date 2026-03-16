@@ -12,10 +12,13 @@
 #include "support/Logger.h"
 #include "support/Path.h"
 #include "llvm/ADT/STLExtras.h"
+#include "llvm/ADT/StringExtras.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringRef.h"
+#include "llvm/ADT/StringSwitch.h"
 #include "llvm/Support/Error.h"
 #include "llvm/Support/Registry.h"
+#include <algorithm>
 #include <functional>
 #include <memory>
 #include <utility>
@@ -42,6 +45,59 @@ void validateRegistry() {
     assert(Seen.try_emplace(E.getName()).second && "duplicate check id");
   }
 #endif
+}
+
+constexpr unsigned CNxtRestrictedContextWindow = 96;
+
+bool isCNxtRestrictedKeyword(llvm::StringRef Tok) {
+  return llvm::StringSwitch<bool>(Tok)
+      .Case("goto", true)
+      .Case("do", true)
+      .Case("try", true)
+      .Case("catch", true)
+      .Case("throw", true)
+      .Case("new", true)
+      .Case("delete", true)
+      .Case("template", true)
+      .Default(false);
+}
+
+bool containsCNxtRestrictedConstruct(llvm::StringRef Code) {
+  if (Code.contains("#include") || Code.contains("for(") ||
+      Code.contains("for ("))
+    return true;
+
+  for (size_t I = 0; I < Code.size();) {
+    if (!llvm::isAlpha(Code[I]) && Code[I] != '_') {
+      ++I;
+      continue;
+    }
+    const size_t Begin = I++;
+    while (I < Code.size() && (llvm::isAlnum(Code[I]) || Code[I] == '_'))
+      ++I;
+    if (isCNxtRestrictedKeyword(Code.slice(Begin, I)))
+      return true;
+  }
+  return false;
+}
+
+bool selectionTouchesCNxtRestrictedConstruct(const Tweak::Selection &S) {
+  if (!S.AST || !S.AST->getLangOpts().CNxt || S.Code.empty())
+    return false;
+
+  const unsigned CodeSize = S.Code.size();
+  unsigned Begin = std::min(S.SelectionBegin, CodeSize);
+  unsigned End = std::min(S.SelectionEnd, CodeSize);
+  if (End < Begin)
+    std::swap(Begin, End);
+
+  if (Begin == End) {
+    Begin = Begin > CNxtRestrictedContextWindow
+                ? Begin - CNxtRestrictedContextWindow
+                : 0;
+    End = std::min(CodeSize, End + CNxtRestrictedContextWindow);
+  }
+  return containsCNxtRestrictedConstruct(S.Code.slice(Begin, End));
 }
 
 std::vector<std::unique_ptr<Tweak>>
@@ -72,6 +128,9 @@ std::vector<std::unique_ptr<Tweak>>
 prepareTweaks(const Tweak::Selection &S,
               llvm::function_ref<bool(const Tweak &)> Filter,
               const FeatureModuleSet *Modules) {
+  if (selectionTouchesCNxtRestrictedConstruct(S))
+    return {};
+
   validateRegistry();
 
   std::vector<std::unique_ptr<Tweak>> Available;
@@ -90,6 +149,9 @@ prepareTweaks(const Tweak::Selection &S,
 llvm::Expected<std::unique_ptr<Tweak>>
 prepareTweak(StringRef ID, const Tweak::Selection &S,
              const FeatureModuleSet *Modules) {
+  if (selectionTouchesCNxtRestrictedConstruct(S))
+    return error("tweak unavailable on restricted cNxt constructs");
+
   for (auto &T : getAllTweaks(Modules)) {
     if (T->id() != ID)
       continue;
