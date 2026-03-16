@@ -4,9 +4,9 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M5-03 Add semantic token classification coverage for cNxt files.
-2. M5-04 Add go-to-definition/reference regression tests for cNxt sources.
-3. M5-05 Add refactor safety checks for restricted constructs.
+1. M5-04 Add go-to-definition/reference regression tests for cNxt sources.
+2. M5-05 Add refactor safety checks for restricted constructs.
+3. M5-06 Implement cNxt formatter baseline profile.
 
 ## Deliverable Status
 
@@ -14,8 +14,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
 - [x] M4-01 through M4-14
-- [x] M5-01 through M5-02
-- [ ] M5-03 through M5-09
+- [x] M5-01 through M5-03
+- [ ] M5-04 through M5-09
 
 ## Completion Log
 
@@ -499,3 +499,15 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M5-04 and M5-05 IDE regression work can assume cNxt restriction-aware completion ordering.
 - Direction check:
   - roadmap remains directionally correct; cNxt IDE defaults now bias toward language-first constructs and away from restricted C++ surfaces.
+
+### 2026-03-15 - M5-03
+
+- Completed item: add semantic token classification coverage for cNxt files.
+- What changed:
+  - extended `clang-tools-extra/clangd/unittests/SemanticHighlightingTests.cpp` with `CNxtFileCoverage`.
+  - new test builds ASTs for `.cn` and `.cnxt` files in cNxt mode and verifies semantic token annotations include expected class/function highlights.
+- What is now unblocked:
+  - M5-04 go-to-definition/reference regression work can build on explicit cNxt semantic token baseline coverage.
+  - M5-05 refactor-safety checks can assume cNxt semantic-highlighting pipeline remains exercised in tests.
+- Direction check:
+  - roadmap remains directionally correct; cNxt IDE tokenization now has dedicated regression coverage for cNxt file extensions.

@@ -26,6 +26,7 @@ namespace clangd {
 namespace {
 
 using testing::IsEmpty;
+using testing::HasSubstr;
 using testing::SizeIs;
 
 /// Annotates the input code with provided semantic highlightings. Results look
@@ -1316,6 +1317,36 @@ int *$Variable[[x]] = new int;
   Cfg.SemanticTokens.DisabledModifiers = {"Declaration", "Definition"};
   WithContextValue WithCfg(Config::Key, std::move(Cfg));
   checkHighlightings(AnnotatedCode, {}, ~ScopeModifierMask);
+}
+
+TEST(SemanticHighlighting, CNxtFileCoverage) {
+  auto CheckFile = [&](llvm::StringRef Filename) {
+    TestTU TU;
+    TU.Filename = Filename.str();
+    TU.Code = R"cnxt(
+      struct Box {
+        int value;
+      };
+      Box make(Box in) {
+        Box out;
+        out.value = in.value;
+        return out;
+      }
+    )cnxt";
+    TU.ExtraArgs = {"-x", "cnxt", "-std=cnxt1"};
+
+    auto AST = TU.build();
+    auto Tokens =
+        getSemanticHighlightings(AST, /*IncludeInactiveRegionTokens=*/true);
+    EXPECT_THAT(Tokens, testing::Not(IsEmpty()));
+
+    auto Annotated = annotate(TU.Code, Tokens);
+    EXPECT_THAT(Annotated, HasSubstr("$Class_def[[Box]]"));
+    EXPECT_THAT(Annotated, HasSubstr("$Function_def[[make]]"));
+  };
+
+  CheckFile("TestTU.cn");
+  CheckFile("TestTU.cnxt");
 }
 } // namespace
 } // namespace clangd
