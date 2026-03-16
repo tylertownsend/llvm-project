@@ -4,17 +4,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M4-04 Implement version constraint solving.
-2. M4-05 Implement lockfile format and deterministic lockfile generation.
-3. M4-06 Implement local cache layout for downloaded packages.
+1. M4-05 Implement lockfile format and deterministic lockfile generation.
+2. M4-06 Implement local cache layout for downloaded packages.
+3. M4-07 Implement package fetcher (registry and git source support).
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
-- [x] M4-01 through M4-03
-- [ ] M4-04 through M4-14
+- [x] M4-01 through M4-04
+- [ ] M4-05 through M4-14
 - [ ] M5-01 through M5-09
 
 ## Completion Log
@@ -311,3 +311,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M4-05 lockfile work can target deterministic graph outputs with explicit cycle/missing-node failure behavior.
 - Direction check:
   - roadmap remains directionally correct; milestone 4 now has parser + graph foundations with structured diagnostics for topology errors.
+
+### 2026-03-15 - M4-04
+
+- Completed item: implement version constraint solving.
+- What changed:
+  - added `cnxt/tools/version_solver.py` to solve manifest dependency requirements and emit structured diagnostics (`CNXT3001`-`CNXT3003`).
+  - implemented semver requirement parsing/intersection for exact, comparator, caret, and tilde constraints.
+  - added unit coverage in `cnxt/tools/tests/test_version_solver.py` for compatible intersections, conflicting constraints, unsupported requirements, local-version mismatch diagnostics, and caret behavior for `0.x.y`.
+- What is now unblocked:
+  - M4-05 can consume deterministic solved constraints when generating lockfiles.
+  - M4-07 package fetching can rely on already-detected version conflicts/invalid constraints before network resolution.
+- Direction check:
+  - roadmap remains directionally correct; package-manager flow now has parser, graph, and solver layers with test-backed diagnostics.
