@@ -169,6 +169,9 @@ Build command workflow baseline:
 Run command workflow baseline:
 `cnxt/specs/cnxt-run-command.md`.
 
+Test command workflow baseline:
+`cnxt/specs/cnxt-test-command.md`.
+
 Package manager commands:
 
 - `cnxt new`

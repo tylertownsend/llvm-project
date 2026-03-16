@@ -4,17 +4,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M4-10 Implement `cnxt test` command.
-2. M4-11 Implement workspace/project-root discovery behavior.
-3. M4-12 Add end-to-end tests for local path dependencies.
+1. M4-11 Implement workspace/project-root discovery behavior.
+2. M4-12 Add end-to-end tests for local path dependencies.
+3. M4-13 Add end-to-end tests for registry dependencies.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
-- [x] M4-01 through M4-09
-- [ ] M4-10 through M4-14
+- [x] M4-01 through M4-10
+- [ ] M4-11 through M4-14
 - [ ] M5-01 through M5-09
 
 ## Completion Log
@@ -402,3 +402,19 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M4-11 workspace discovery can be integrated once run/test command entry points are stable.
 - Direction check:
   - roadmap remains directionally correct; command surface now includes build and run baselines backed by lock/fetch/cache plumbing.
+
+### 2026-03-15 - M4-10
+
+- Completed item: implement `cnxt test` command.
+- What changed:
+  - added `cnxt/tools/cnxt_test.py` to build-or-reuse test artifacts and execute test binaries with structured per-test results.
+  - implemented test filtering, skip-build mode, and build/fetch integration via existing command pipeline.
+  - added test diagnostics (`CNXT7201`-`CNXT7203`) for no-tests, missing binaries, and failing test executions.
+  - added `cnxt/specs/cnxt-test-command.md` documenting baseline `cnxt test` behavior.
+  - added unit coverage in `cnxt/tools/tests/test_cnxt_test.py` for pass/fail/no-test scenarios.
+  - linked test-command spec from `cnxt/README.md`.
+- What is now unblocked:
+  - M4-11 workspace/project-root discovery can now be wired across build/run/test command entry points.
+  - M4-12 and M4-13 E2E command tests can target stable build/run/test command surfaces.
+- Direction check:
+  - roadmap remains directionally correct; milestone 4 now has baseline command coverage for build/run/test on top of lock/fetch/cache foundations.

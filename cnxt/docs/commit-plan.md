@@ -80,7 +80,7 @@ Decision for this milestone:
 - [x] M4-07 Implement package fetcher (registry and git source support).
 - [x] M4-08 Implement `cnxt build` command.
 - [x] M4-09 Implement `cnxt run` command.
-- [ ] M4-10 Implement `cnxt test` command.
+- [x] M4-10 Implement `cnxt test` command.
 - [ ] M4-11 Implement workspace/project-root discovery behavior.
 - [ ] M4-12 Add end-to-end tests for local path dependencies.
 - [ ] M4-13 Add end-to-end tests for registry dependencies.
