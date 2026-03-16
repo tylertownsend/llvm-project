@@ -4,16 +4,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M4-01 Define `Cnxt.toml` manifest schema and validation rules.
-2. M4-02 Implement manifest parser with structured diagnostics.
-3. M4-03 Implement dependency graph construction and cycle diagnostics.
+1. M4-02 Implement manifest parser with structured diagnostics.
+2. M4-03 Implement dependency graph construction and cycle diagnostics.
+3. M4-04 Implement version constraint solving.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
-- [ ] M4-01 through M4-14
+- [x] M4-01
+- [ ] M4-02 through M4-14
 - [ ] M5-01 through M5-09
 
 ## Completion Log
@@ -271,3 +272,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - milestone 3 is complete; milestone 4 package-manager implementation can start on top of a tested ownership baseline and interop boundary.
 - Direction check:
   - roadmap remains directionally correct; ownership runtime work now has cross-language ABI coverage in addition to parser/sema/codegen unit regression tests.
+
+### 2026-03-15 - M4-01
+
+- Completed item: define `Cnxt.toml` manifest schema and validation rules.
+- What changed:
+  - added `cnxt/specs/cnxt-manifest-schema.md` as the schema source-of-truth for manifest versioning, package metadata, dependency specification forms, target declarations, profiles, and workspace metadata.
+  - documented explicit validation constraints and baseline diagnostic IDs (`CNXT1001` through `CNXT1008`) for parser/validator implementation in the next deliverables.
+  - linked the schema spec from `cnxt/README.md` in the package-layout section.
+- What is now unblocked:
+  - M4-02 can implement a parser that validates against a concrete key/type/value contract instead of inferred conventions.
+  - M4-03 and M4-04 can build on standardized dependency/source/path semantics and error taxonomy.
+- Direction check:
+  - roadmap remains directionally correct; milestone 4 now has a concrete manifest contract suitable for incremental parser and resolver implementation.
