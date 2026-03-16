@@ -4,16 +4,15 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M3-13 Add ABI/interoperability tests with mixed cNxt and C++ compilation.
-2. M4-01 Define `Cnxt.toml` manifest schema and validation rules.
-3. M4-02 Implement manifest parser with structured diagnostics.
+1. M4-01 Define `Cnxt.toml` manifest schema and validation rules.
+2. M4-02 Implement manifest parser with structured diagnostics.
+3. M4-03 Implement dependency graph construction and cycle diagnostics.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
-- [x] M3-00 through M3-12
-- [ ] M3-13
+- [x] M3-00 through M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
 
@@ -260,3 +259,15 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M3-13 can focus on mixed cNxt/C++ ABI interoperability with baseline parser/sema/codegen ownership regressions already covered.
 - Direction check:
   - roadmap remains directionally correct; ownership milestone confidence is now anchored by dedicated parser, sema, and codegen regression tests.
+
+### 2026-03-15 - M3-13
+
+- Completed item: add mixed cNxt/C++ ABI interoperability coverage.
+- What changed:
+  - added `clang/test/CodeGenCXX/cnxt-ownership-interop.cpp` with split-file cNxt and C++ translation units.
+  - verified cNxt-side IR emission for extern-C ownership-handle and raw-pointer boundary functions.
+  - verified C++-side IR declarations/calls use ABI-compatible signatures when calling cNxt extern-C entry points.
+- What is now unblocked:
+  - milestone 3 is complete; milestone 4 package-manager implementation can start on top of a tested ownership baseline and interop boundary.
+- Direction check:
+  - roadmap remains directionally correct; ownership runtime work now has cross-language ABI coverage in addition to parser/sema/codegen unit regression tests.
