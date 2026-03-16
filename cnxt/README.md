@@ -163,6 +163,9 @@ Local cache layout conventions:
 Fetcher source contracts (registry + git):
 `cnxt/specs/cnxt-fetcher-sources.md`.
 
+Build command workflow baseline:
+`cnxt/specs/cnxt-build-command.md`.
+
 Package manager commands:
 
 - `cnxt new`

@@ -4,17 +4,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M4-08 Implement `cnxt build` command.
-2. M4-09 Implement `cnxt run` command.
-3. M4-10 Implement `cnxt test` command.
+1. M4-09 Implement `cnxt run` command.
+2. M4-10 Implement `cnxt test` command.
+3. M4-11 Implement workspace/project-root discovery behavior.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
-- [x] M4-01 through M4-07
-- [ ] M4-08 through M4-14
+- [x] M4-01 through M4-08
+- [ ] M4-09 through M4-14
 - [ ] M5-01 through M5-09
 
 ## Completion Log
@@ -369,3 +369,20 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M4-09/M4-10 command work can reuse the same fetch stage before compile/test orchestration.
 - Direction check:
   - roadmap remains directionally correct; package-manager foundations now include parsing, solving, locking, cache layout, and source fetching.
+
+### 2026-03-15 - M4-08
+
+- Completed item: implement `cnxt build` command.
+- What changed:
+  - added `cnxt/tools/cnxt_build.py` to orchestrate manifest validation, lockfile generation, optional dependency fetch, target derivation, compile-command emission, and compile/link execution.
+  - implemented `debug`/`release` profile flags and default target discovery (`src/main.cn`, `src/lib.cn`) with explicit `[targets]` support.
+  - emits deterministic `compile_commands.json` for derived compile steps.
+  - added build diagnostics (`CNXT7001`-`CNXT7004`) for lock/target/command failure scenarios.
+  - added `cnxt/specs/cnxt-build-command.md` documenting baseline workflow and diagnostics.
+  - added unit coverage in `cnxt/tools/tests/test_cnxt_build.py` for dry-run planning, missing-target failure, and executable build path with a mock compiler.
+  - linked build-command spec from `cnxt/README.md`.
+- What is now unblocked:
+  - M4-09 can reuse build orchestration to run built binaries.
+  - M4-10 can reuse build orchestration for test target execution.
+- Direction check:
+  - roadmap remains directionally correct; package-manager implementation now has a concrete build entry point on top of lock+fetch primitives.
