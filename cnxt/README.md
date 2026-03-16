@@ -172,6 +172,9 @@ Run command workflow baseline:
 Test command workflow baseline:
 `cnxt/specs/cnxt-test-command.md`.
 
+Workspace/project-root discovery rules:
+`cnxt/specs/cnxt-workspace-discovery.md`.
+
 Package manager commands:
 
 - `cnxt new`

@@ -25,8 +25,10 @@ def _load_module(module_name: str, path: Path):
 _TOOLS_DIR = Path(__file__).resolve().parent
 _build_module = _load_module("cnxt_build", _TOOLS_DIR / "cnxt_build.py")
 _manifest_module = _load_module("cnxt_manifest_parser", _TOOLS_DIR / "manifest_parser.py")
+_workspace_module = _load_module("cnxt_workspace_discovery", _TOOLS_DIR / "workspace_discovery.py")
 run_build = _build_module.run_build
 parse_manifest_file = _manifest_module.parse_manifest_file
+resolve_manifest_input = _workspace_module.resolve_manifest_input
 
 
 @dataclass(frozen=True)
@@ -106,7 +108,7 @@ def _select_binary_from_build(
 
 
 def run_package(
-    root_manifest: Path | str,
+    root_manifest: Path | str | None,
     run_args: list[str] | None = None,
     bin_name: str | None = None,
     profile: str = "debug",
@@ -116,10 +118,15 @@ def run_package(
     cache_root: Path | str | None = None,
     compiler: str = "clang",
 ) -> RunResult:
-    manifest_path = Path(root_manifest).resolve()
-    args = run_args if run_args is not None else []
+    discovery_result = resolve_manifest_input(root_manifest)
+    diagnostics: list[RunDiagnostic] = [_to_run_diag(diag) for diag in discovery_result.diagnostics]
+    if discovery_result.package_manifest is None:
+        return RunResult(
+            exit_code=None, stdout="", stderr="", binary_path=None, diagnostics=diagnostics
+        )
 
-    diagnostics: list[RunDiagnostic] = []
+    manifest_path = Path(discovery_result.package_manifest).resolve()
+    args = run_args if run_args is not None else []
     binary_path: str | None = None
 
     if skip_build:
@@ -221,7 +228,13 @@ def run_package(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build and run a cNxt package")
-    parser.add_argument("manifest", type=Path, help="Path to root Cnxt.toml")
+    parser.add_argument(
+        "manifest",
+        nargs="?",
+        type=Path,
+        default=None,
+        help="Path to Cnxt.toml or project directory (default: current directory)",
+    )
     parser.add_argument("--bin", dest="bin_name", default=None, help="Binary target name")
     parser.add_argument(
         "--profile",

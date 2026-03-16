@@ -4,17 +4,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M4-11 Implement workspace/project-root discovery behavior.
-2. M4-12 Add end-to-end tests for local path dependencies.
-3. M4-13 Add end-to-end tests for registry dependencies.
+1. M4-12 Add end-to-end tests for local path dependencies.
+2. M4-13 Add end-to-end tests for registry dependencies.
+3. M4-14 Add reproducibility tests for lockfile replay in CI.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
-- [x] M4-01 through M4-10
-- [ ] M4-11 through M4-14
+- [x] M4-01 through M4-11
+- [ ] M4-12 through M4-14
 - [ ] M5-01 through M5-09
 
 ## Completion Log
@@ -418,3 +418,18 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M4-12 and M4-13 E2E command tests can target stable build/run/test command surfaces.
 - Direction check:
   - roadmap remains directionally correct; milestone 4 now has baseline command coverage for build/run/test on top of lock/fetch/cache foundations.
+
+### 2026-03-15 - M4-11
+
+- Completed item: implement workspace/project-root discovery behavior.
+- What changed:
+  - added `cnxt/tools/workspace_discovery.py` with upward manifest search, workspace-root/member resolution, and structured discovery diagnostics (`CNXT8001`, `CNXT8002`).
+  - integrated discovery into `cnxt_build.py`, `cnxt_run.py`, and `cnxt_test.py` so commands accept manifest files, project directories, or current-directory defaults.
+  - added `cnxt/specs/cnxt-workspace-discovery.md` documenting resolution rules and command integration.
+  - added unit coverage in `cnxt/tools/tests/test_workspace_discovery.py` for workspace-member resolution, missing-manifest errors, and command integration from directory input.
+  - linked workspace discovery spec from `cnxt/README.md`.
+- What is now unblocked:
+  - M4-12 and M4-13 end-to-end test suites can now exercise command flows from workspace/member working directories.
+  - M4-14 reproducibility testing can run through stable command entry-point resolution logic.
+- Direction check:
+  - roadmap remains directionally correct; milestone 4 command ergonomics now include explicit project/workspace discovery behavior.

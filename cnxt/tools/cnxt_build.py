@@ -27,9 +27,11 @@ _TOOLS_DIR = Path(__file__).resolve().parent
 _manifest_module = _load_module("cnxt_manifest_parser", _TOOLS_DIR / "manifest_parser.py")
 _lockfile_module = _load_module("cnxt_lockfile_generator", _TOOLS_DIR / "lockfile_generator.py")
 _fetch_module = _load_module("cnxt_package_fetcher", _TOOLS_DIR / "package_fetcher.py")
+_workspace_module = _load_module("cnxt_workspace_discovery", _TOOLS_DIR / "workspace_discovery.py")
 parse_manifest_file = _manifest_module.parse_manifest_file
 write_lockfile = _lockfile_module.write_lockfile
 fetch_packages = _fetch_module.fetch_packages
+resolve_manifest_input = _workspace_module.resolve_manifest_input
 
 
 @dataclass(frozen=True)
@@ -204,7 +206,7 @@ def _run_commands(commands: list[list[str]]) -> list[BuildDiagnostic]:
 
 
 def run_build(
-    root_manifest: Path | str,
+    root_manifest: Path | str | None,
     profile: str = "debug",
     dry_run: bool = False,
     skip_fetch: bool = False,
@@ -212,11 +214,16 @@ def run_build(
     cache_root: Path | str | None = None,
     compiler: str = "clang",
 ) -> BuildResult:
-    manifest_path = Path(root_manifest).resolve()
-    parse_result = parse_manifest_file(manifest_path)
+    discovery_result = resolve_manifest_input(root_manifest)
     diagnostics: list[BuildDiagnostic] = [
-        _manifest_diag_to_build(diag) for diag in parse_result.diagnostics
+        _manifest_diag_to_build(diag) for diag in discovery_result.diagnostics
     ]
+    if discovery_result.package_manifest is None:
+        return BuildResult(artifacts=[], diagnostics=diagnostics, compile_commands_path=None, lockfile_path=None)
+
+    manifest_path = Path(discovery_result.package_manifest).resolve()
+    parse_result = parse_manifest_file(manifest_path)
+    diagnostics.extend(_manifest_diag_to_build(diag) for diag in parse_result.diagnostics)
     if parse_result.manifest is None:
         diagnostics.append(
             BuildDiagnostic(
@@ -305,7 +312,13 @@ def run_build(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build a cNxt package")
-    parser.add_argument("manifest", type=Path, help="Path to root Cnxt.toml")
+    parser.add_argument(
+        "manifest",
+        nargs="?",
+        type=Path,
+        default=None,
+        help="Path to Cnxt.toml or project directory (default: current directory)",
+    )
     parser.add_argument(
         "--profile",
         choices=("debug", "release"),

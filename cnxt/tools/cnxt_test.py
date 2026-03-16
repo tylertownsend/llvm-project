@@ -24,7 +24,9 @@ def _load_module(module_name: str, path: Path):
 
 _TOOLS_DIR = Path(__file__).resolve().parent
 _build_module = _load_module("cnxt_build", _TOOLS_DIR / "cnxt_build.py")
+_workspace_module = _load_module("cnxt_workspace_discovery", _TOOLS_DIR / "workspace_discovery.py")
 run_build = _build_module.run_build
+resolve_manifest_input = _workspace_module.resolve_manifest_input
 
 
 @dataclass(frozen=True)
@@ -85,7 +87,7 @@ def _discover_test_artifacts(manifest_path: Path, profile: str) -> list[Path]:
 
 
 def run_tests(
-    root_manifest: Path | str,
+    root_manifest: Path | str | None,
     profile: str = "debug",
     filter_text: str | None = None,
     skip_build: bool = False,
@@ -94,8 +96,12 @@ def run_tests(
     cache_root: Path | str | None = None,
     compiler: str = "clang",
 ) -> TestResult:
-    manifest_path = Path(root_manifest).resolve()
-    diagnostics: list[TestDiagnostic] = []
+    discovery_result = resolve_manifest_input(root_manifest)
+    diagnostics: list[TestDiagnostic] = [_to_test_diag(diag) for diag in discovery_result.diagnostics]
+    if discovery_result.package_manifest is None:
+        return TestResult(executions=[], diagnostics=diagnostics)
+
+    manifest_path = Path(discovery_result.package_manifest).resolve()
     test_targets: list[tuple[str, Path]] = []
 
     if skip_build:
@@ -198,7 +204,13 @@ def run_tests(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build and run cNxt tests")
-    parser.add_argument("manifest", type=Path, help="Path to root Cnxt.toml")
+    parser.add_argument(
+        "manifest",
+        nargs="?",
+        type=Path,
+        default=None,
+        help="Path to Cnxt.toml or project directory (default: current directory)",
+    )
     parser.add_argument(
         "--profile",
         choices=("debug", "release"),
