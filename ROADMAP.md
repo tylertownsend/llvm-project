@@ -4,17 +4,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M4-13 Add end-to-end tests for registry dependencies.
-2. M4-14 Add reproducibility tests for lockfile replay in CI.
-3. M5-01 Ensure clangd fallback compile commands select cNxt mode.
+1. M4-14 Add reproducibility tests for lockfile replay in CI.
+2. M5-01 Ensure clangd fallback compile commands select cNxt mode.
+3. M5-02 Improve completion ranking for cNxt-first constructs and restrictions.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
-- [x] M4-01 through M4-12
-- [ ] M4-13 through M4-14
+- [x] M4-01 through M4-13
+- [ ] M4-14
 - [ ] M5-01 through M5-09
 
 ## Completion Log
@@ -446,3 +446,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M4-14 reproducibility checks can build on existing E2E command scaffolding.
 - Direction check:
   - roadmap remains directionally correct; local path dependency behavior is now covered with command-level integration tests rather than only unit slices.
+
+### 2026-03-15 - M4-13
+
+- Completed item: add end-to-end tests for registry dependencies.
+- What changed:
+  - added `cnxt/tools/tests/test_e2e_registry_dependencies.py` for registry-backed command-level integration coverage.
+  - E2E tests now validate build/run/test pipeline behavior with registry dependency resolution and cache population.
+  - added negative-path coverage where unsatisfied registry requirements fail builds with the expected diagnostic flow.
+- What is now unblocked:
+  - M4-14 reproducibility tests can now reuse both local-path and registry E2E fixtures.
+  - milestone 4 closure work can focus on deterministic replay guarantees rather than missing source-mode coverage.
+- Direction check:
+  - roadmap remains directionally correct; milestone 4 now has end-to-end coverage for both local path and registry dependency modes.
