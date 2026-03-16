@@ -4,17 +4,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M4-12 Add end-to-end tests for local path dependencies.
-2. M4-13 Add end-to-end tests for registry dependencies.
-3. M4-14 Add reproducibility tests for lockfile replay in CI.
+1. M4-13 Add end-to-end tests for registry dependencies.
+2. M4-14 Add reproducibility tests for lockfile replay in CI.
+3. M5-01 Ensure clangd fallback compile commands select cNxt mode.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
-- [x] M4-01 through M4-11
-- [ ] M4-12 through M4-14
+- [x] M4-01 through M4-12
+- [ ] M4-13 through M4-14
 - [ ] M5-01 through M5-09
 
 ## Completion Log
@@ -433,3 +433,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M4-14 reproducibility testing can run through stable command entry-point resolution logic.
 - Direction check:
   - roadmap remains directionally correct; milestone 4 command ergonomics now include explicit project/workspace discovery behavior.
+
+### 2026-03-15 - M4-12
+
+- Completed item: add end-to-end tests for local path dependencies.
+- What changed:
+  - added `cnxt/tools/tests/test_e2e_local_path_dependencies.py` covering integrated local path dependency flows.
+  - test coverage now exercises build/run/test command pipeline over local path package graphs, including lockfile generation and directory-input command invocation.
+  - E2E fixtures include workspace/member layouts and local path dependency manifests validated through command execution with mock compiler outputs.
+- What is now unblocked:
+  - M4-13 registry E2E tests can reuse the same end-to-end harness structure for non-local sources.
+  - M4-14 reproducibility checks can build on existing E2E command scaffolding.
+- Direction check:
+  - roadmap remains directionally correct; local path dependency behavior is now covered with command-level integration tests rather than only unit slices.

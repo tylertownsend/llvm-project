@@ -82,7 +82,7 @@ Decision for this milestone:
 - [x] M4-09 Implement `cnxt run` command.
 - [x] M4-10 Implement `cnxt test` command.
 - [x] M4-11 Implement workspace/project-root discovery behavior.
-- [ ] M4-12 Add end-to-end tests for local path dependencies.
+- [x] M4-12 Add end-to-end tests for local path dependencies.
 - [ ] M4-13 Add end-to-end tests for registry dependencies.
 - [ ] M4-14 Add reproducibility tests for lockfile replay in CI.
 
