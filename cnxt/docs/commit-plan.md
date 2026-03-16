@@ -93,7 +93,7 @@ Decision for this milestone:
 - [x] M5-03 Add semantic token classification coverage for cNxt files.
 - [x] M5-04 Add go-to-definition/reference regression tests for cNxt sources.
 - [x] M5-05 Add refactor safety checks for restricted constructs.
-- [ ] M5-06 Implement cNxt formatter baseline profile.
+- [x] M5-06 Implement cNxt formatter baseline profile.
 - [ ] M5-07 Add lints enforcing one-obvious-way language policies.
 - [ ] M5-08 Add fix-its for common restriction diagnostics (where safe).
 - [ ] M5-09 Add IDE integration tests to CI with representative cNxt projects.

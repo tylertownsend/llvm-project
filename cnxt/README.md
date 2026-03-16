@@ -175,6 +175,9 @@ Test command workflow baseline:
 Workspace/project-root discovery rules:
 `cnxt/specs/cnxt-workspace-discovery.md`.
 
+Formatter baseline profile:
+`cnxt/specs/cnxt-formatter-profile.md`.
+
 Package manager commands:
 
 - `cnxt new`

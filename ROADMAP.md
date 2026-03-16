@@ -4,9 +4,9 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M5-06 Implement cNxt formatter baseline profile.
-2. M5-07 Add lints enforcing one-obvious-way language policies.
-3. M5-08 Add fix-its for common restriction diagnostics (where safe).
+1. M5-07 Add lints enforcing one-obvious-way language policies.
+2. M5-08 Add fix-its for common restriction diagnostics (where safe).
+3. M5-09 Add IDE integration tests to CI with representative cNxt projects.
 
 ## Deliverable Status
 
@@ -14,8 +14,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
 - [x] M4-01 through M4-14
-- [x] M5-01 through M5-05
-- [ ] M5-06 through M5-09
+- [x] M5-01 through M5-06
+- [ ] M5-07 through M5-09
 
 ## Completion Log
 
@@ -535,3 +535,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M5-08 fix-it work can target restricted diagnostics with less risk of conflicting refactor suggestions in the same regions.
 - Direction check:
   - roadmap remains directionally correct; cNxt IDE refactor behavior now has an explicit safety boundary for restricted language surface.
+
+### 2026-03-15 - M5-06
+
+- Completed item: implement cNxt formatter baseline profile.
+- What changed:
+  - added `cnxt/tools/cnxt_format.py` with a single baseline profile, clang-format invocation, check/write modes, and structured diagnostics (`CNXT9001`-`CNXT9005`).
+  - added formatter unit coverage in `cnxt/tools/tests/test_cnxt_format.py`.
+  - added formatter profile spec `cnxt/specs/cnxt-formatter-profile.md` and linked it from `cnxt/README.md`.
+- What is now unblocked:
+  - M5-07 lint rules can align messaging and policy checks against a stable formatter baseline.
+  - M5-09 CI integration can validate formatting alongside clangd behavior and package-manager workflows.
+- Direction check:
+  - roadmap remains directionally correct; cNxt tooling now has a deterministic formatter baseline with test-backed behavior.
