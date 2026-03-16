@@ -4,17 +4,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M4-02 Implement manifest parser with structured diagnostics.
-2. M4-03 Implement dependency graph construction and cycle diagnostics.
-3. M4-04 Implement version constraint solving.
+1. M4-03 Implement dependency graph construction and cycle diagnostics.
+2. M4-04 Implement version constraint solving.
+3. M4-05 Implement lockfile format and deterministic lockfile generation.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
-- [x] M4-01
-- [ ] M4-02 through M4-14
+- [x] M4-01 through M4-02
+- [ ] M4-03 through M4-14
 - [ ] M5-01 through M5-09
 
 ## Completion Log
@@ -285,3 +285,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M4-03 and M4-04 can build on standardized dependency/source/path semantics and error taxonomy.
 - Direction check:
   - roadmap remains directionally correct; milestone 4 now has a concrete manifest contract suitable for incremental parser and resolver implementation.
+
+### 2026-03-15 - M4-02
+
+- Completed item: implement manifest parser with structured diagnostics.
+- What changed:
+  - added `cnxt/tools/manifest_parser.py` with schema-aware `Cnxt.toml` parsing and validation, including structured diagnostics (`CNXT1001` to `CNXT1008`).
+  - implemented a Python 3.11 `tomllib` path and a Python 3.8-compatible minimal TOML parser fallback so parser behavior is stable in this repository environment.
+  - added unit coverage in `cnxt/tools/tests/test_manifest_parser.py` for valid manifests, missing/unknown keys, manifest-version checks, dependency source constraints, path escape checks, and structured parse errors.
+- What is now unblocked:
+  - M4-03 can consume validated manifest objects with normalized schema assumptions and deterministic diagnostic IDs.
+  - M4-04 can build constraint solving directly on validated dependency specs (`version`, `path`, `git`) without re-implementing schema checks.
+- Direction check:
+  - roadmap remains directionally correct; milestone 4 now has executable schema enforcement with test-backed diagnostics as a base for graph and solver work.
