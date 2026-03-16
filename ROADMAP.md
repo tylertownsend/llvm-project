@@ -4,17 +4,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M4-07 Implement package fetcher (registry and git source support).
-2. M4-08 Implement `cnxt build` command.
-3. M4-09 Implement `cnxt run` command.
+1. M4-08 Implement `cnxt build` command.
+2. M4-09 Implement `cnxt run` command.
+3. M4-10 Implement `cnxt test` command.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
-- [x] M4-01 through M4-06
-- [ ] M4-07 through M4-14
+- [x] M4-01 through M4-07
+- [ ] M4-08 through M4-14
 - [ ] M5-01 through M5-09
 
 ## Completion Log
@@ -353,3 +353,19 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M4-08/M4-10 command work can initialize/cache-plan before invoking download/build steps.
 - Direction check:
   - roadmap remains directionally correct; package-manager pipeline now has deterministic manifests -> graph -> solver -> lockfile -> cache-layout staging.
+
+### 2026-03-15 - M4-07
+
+- Completed item: implement package fetcher (registry and git source support).
+- What changed:
+  - added `cnxt/specs/cnxt-fetcher-sources.md` defining baseline registry index format, version selection behavior, and git source handling.
+  - added `cnxt/tools/package_fetcher.py` to fetch lockfile dependencies into cache for both `version` and `git` sources.
+  - implemented registry index loading + highest-satisfying-version selection and git mirror/checkout flows.
+  - added fetch diagnostics (`CNXT6003`-`CNXT6005`) and structured fetch records for fetched/cached outcomes.
+  - added unit coverage in `cnxt/tools/tests/test_package_fetcher.py` for registry + git fetch success, missing registry index failure, and cache-hit behavior on repeated fetch.
+  - linked fetcher source spec from `cnxt/README.md`.
+- What is now unblocked:
+  - M4-08 build command can run lockfile+fetch pipeline with concrete cached inputs.
+  - M4-09/M4-10 command work can reuse the same fetch stage before compile/test orchestration.
+- Direction check:
+  - roadmap remains directionally correct; package-manager foundations now include parsing, solving, locking, cache layout, and source fetching.

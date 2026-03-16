@@ -160,6 +160,9 @@ Lockfile schema and determinism rules:
 Local cache layout conventions:
 `cnxt/specs/cnxt-cache-layout.md`.
 
+Fetcher source contracts (registry + git):
+`cnxt/specs/cnxt-fetcher-sources.md`.
+
 Package manager commands:
 
 - `cnxt new`
