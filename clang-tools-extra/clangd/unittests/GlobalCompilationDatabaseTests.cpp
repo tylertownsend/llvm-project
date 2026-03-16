@@ -46,6 +46,17 @@ TEST(GlobalCompilationDatabaseTest, FallbackCommand) {
   EXPECT_THAT(Cmd.CommandLine, ElementsAre("clang", testPath("foo/bar.cc")));
   EXPECT_EQ(Cmd.Output, "");
 
+  // cNxt files should always use cNxt language mode in fallback commands.
+  Cmd = DB.getFallbackCommand(testPath("foo/bar.cn"));
+  EXPECT_THAT(Cmd.CommandLine,
+              ElementsAre("clang", "-x", "cnxt", testPath("foo/bar.cn")));
+  Cmd = DB.getFallbackCommand(testPath("foo/bar.cnxt"));
+  EXPECT_THAT(Cmd.CommandLine,
+              ElementsAre("clang", "-x", "cnxt", testPath("foo/bar.cnxt")));
+  Cmd = DB.getFallbackCommand(testPath("foo/bar.cni"));
+  EXPECT_THAT(Cmd.CommandLine,
+              ElementsAre("clang", "-x", "cnxt", testPath("foo/bar.cni")));
+
   // .h files have unknown language, so they are parsed liberally as obj-c++.
   Cmd = DB.getFallbackCommand(testPath("foo/bar.h"));
   EXPECT_THAT(Cmd.CommandLine, ElementsAre("clang", "-xobjective-c++-header",

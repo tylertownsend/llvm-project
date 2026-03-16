@@ -61,7 +61,11 @@ GlobalCompilationDatabase::getFallbackCommand(PathRef File) const {
   // input, resulting in unhelpful diagnostics.
   // Parsing as Objective C++ is friendly to more cases.
   auto FileExtension = llvm::sys::path::extension(File);
-  if (FileExtension.empty() || FileExtension == ".h")
+  if (FileExtension == ".cn" || FileExtension == ".cnxt" ||
+      FileExtension == ".cni") {
+    Argv.push_back("-x");
+    Argv.push_back("cnxt");
+  } else if (FileExtension.empty() || FileExtension == ".h")
     Argv.push_back("-xobjective-c++-header");
   Argv.push_back(std::string(File));
   tooling::CompileCommand Cmd(FallbackWorkingDirectory

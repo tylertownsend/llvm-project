@@ -4,9 +4,9 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M5-01 Ensure clangd fallback compile commands select cNxt mode.
-2. M5-02 Improve completion ranking for cNxt-first constructs and restrictions.
-3. M5-03 Add semantic token classification coverage for cNxt files.
+1. M5-02 Improve completion ranking for cNxt-first constructs and restrictions.
+2. M5-03 Add semantic token classification coverage for cNxt files.
+3. M5-04 Add go-to-definition/reference regression tests for cNxt sources.
 
 ## Deliverable Status
 
@@ -14,7 +14,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
 - [x] M4-01 through M4-14
-- [ ] M5-01 through M5-09
+- [x] M5-01
+- [ ] M5-02 through M5-09
 
 ## Completion Log
 
@@ -472,3 +473,15 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - milestone 4 is complete; milestone 5 IDE-quality deliverables can proceed on top of a test-backed package-manager command pipeline.
 - Direction check:
   - roadmap remains directionally correct; package-manager foundation now includes deterministic lockfile replay guarantees suitable for CI reproducibility checks.
+
+### 2026-03-15 - M5-01
+
+- Completed item: ensure clangd fallback compile commands select cNxt mode.
+- What changed:
+  - updated `clang-tools-extra/clangd/GlobalCompilationDatabase.cpp` fallback command generation so `.cn`, `.cnxt`, and `.cni` files get `-x cnxt`.
+  - extended `clang-tools-extra/clangd/unittests/GlobalCompilationDatabaseTests.cpp` fallback command assertions to cover cNxt file extensions.
+- What is now unblocked:
+  - M5-02 completion-quality work can assume cNxt files opened without a compile database start in the right language mode.
+  - M5-03 and M5-04 IDE behavior tests can rely on consistent fallback parsing mode for cNxt extensions.
+- Direction check:
+  - roadmap remains directionally correct; fallback compile command language selection now aligns with cNxt file extensions.

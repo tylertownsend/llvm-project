@@ -88,7 +88,7 @@ Decision for this milestone:
 
 ## Milestone 5 Deliverables (IDE Quality)
 
-- [ ] M5-01 Ensure clangd fallback compile commands select cNxt mode.
+- [x] M5-01 Ensure clangd fallback compile commands select cNxt mode.
 - [ ] M5-02 Improve completion ranking for cNxt-first constructs and restrictions.
 - [ ] M5-03 Add semantic token classification coverage for cNxt files.
 - [ ] M5-04 Add go-to-definition/reference regression tests for cNxt sources.
