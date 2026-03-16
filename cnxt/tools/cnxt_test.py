@@ -92,6 +92,7 @@ def run_tests(
     filter_text: str | None = None,
     skip_build: bool = False,
     skip_fetch: bool = False,
+    locked: bool = False,
     registry: str | None = None,
     cache_root: Path | str | None = None,
     compiler: str = "clang",
@@ -116,6 +117,7 @@ def run_tests(
             profile=profile,
             dry_run=False,
             skip_fetch=skip_fetch,
+            locked=locked,
             registry=registry,
             cache_root=cache_root,
             compiler=compiler,
@@ -220,6 +222,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--filter", dest="filter_text", default=None, help="Only run tests matching text")
     parser.add_argument("--skip-build", action="store_true", help="Run existing test artifacts only")
     parser.add_argument("--skip-fetch", action="store_true", help="Skip dependency fetch in build step")
+    parser.add_argument("--locked", action="store_true", help="Replay existing lockfile without regenerating")
     parser.add_argument("--registry", type=str, default=None, help="Registry root path/URL")
     parser.add_argument("--cache-root", type=Path, default=None, help="Override cache root")
     parser.add_argument("--compiler", type=str, default="clang", help="Compiler executable")
@@ -231,6 +234,7 @@ def main(argv: list[str] | None = None) -> int:
         filter_text=args.filter_text,
         skip_build=args.skip_build,
         skip_fetch=args.skip_fetch,
+        locked=args.locked,
         registry=args.registry,
         cache_root=args.cache_root,
         compiler=args.compiler,

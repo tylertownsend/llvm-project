@@ -11,6 +11,11 @@ Status: Milestone 4 build-command baseline.
 5. emit `compile_commands.json`
 6. compile/link targets (or dry-run plan)
 
+Locked replay mode:
+
+- `--locked` skips lockfile regeneration and requires an existing `Cnxt.lock`
+- dependency fetch uses pinned lockfile versions when present
+
 ## Profiles
 
 - `debug`: `-O0 -g`
@@ -35,3 +40,4 @@ When `[targets]` is specified:
 - `CNXT7002`: no build targets discovered
 - `CNXT7003`: compiler command failed
 - `CNXT7004`: compiler executable not found
+- `CNXT7005`: `--locked` requested but lockfile is missing

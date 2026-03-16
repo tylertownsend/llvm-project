@@ -10,6 +10,7 @@ This document defines the source formats consumed by
 The fetcher reads dependencies from `Cnxt.lock` package dependency entries:
 
 - `source = "version"` with `name` and `requirement`
+- optional `resolved-version` for locked replay
 - `source = "git"` with `name`, `git`, and optional `rev`/`tag`/`branch`
 
 `source = "path"` entries are local and not fetched.
@@ -35,8 +36,8 @@ Index file shape:
 
 Resolution behavior:
 
-- parse lockfile requirement (`^`, `~`, comparators, exact)
-- select highest version satisfying the requirement
+- when `resolved-version` is present, select that exact version
+- otherwise parse requirement (`^`, `~`, comparators, exact) and select highest satisfying version
 - fetch/copy the selected `source` into cache
 
 `source` may be:

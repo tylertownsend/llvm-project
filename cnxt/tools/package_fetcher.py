@@ -61,15 +61,22 @@ class FetchRecord:
     detail: str
     path: str
     status: str
+    requirement: str | None = None
+    resolved_version: str | None = None
 
     def to_dict(self) -> dict[str, str]:
-        return {
+        payload = {
             "package": self.package,
             "source": self.source,
             "detail": self.detail,
             "path": self.path,
             "status": self.status,
         }
+        if self.requirement is not None:
+            payload["requirement"] = self.requirement
+        if self.resolved_version is not None:
+            payload["resolved_version"] = self.resolved_version
+        return payload
 
 
 @dataclass(frozen=True)
@@ -161,7 +168,7 @@ def _load_registry_package_versions(
 
 
 def _select_registry_version(
-    versions: list[dict[str, Any]], requirement: str
+    versions: list[dict[str, Any]], requirement: str, resolved_version: str | None = None
 ) -> tuple[dict[str, Any] | None, list[FetchDiagnostic]]:
     req_range = parse_requirement_to_range(requirement)
     if req_range is None:
@@ -172,6 +179,46 @@ def _select_registry_version(
                     code="CNXT6004",
                     path=f"requirement.{requirement}",
                     message=f"unsupported version requirement '{requirement}'",
+                )
+            ],
+        )
+
+    if resolved_version is not None:
+        for version_entry in versions:
+            if not isinstance(version_entry, dict):
+                continue
+            version = version_entry.get("version")
+            source = version_entry.get("source")
+            if not isinstance(version, str) or not isinstance(source, str):
+                continue
+            if version != resolved_version:
+                continue
+            parsed = Version.parse(version)
+            if parsed is None or not req_range.contains(parsed):
+                return (
+                    None,
+                    [
+                        FetchDiagnostic(
+                            code="CNXT6004",
+                            path=f"requirement.{requirement}",
+                            message=(
+                                f"locked version '{resolved_version}' for requirement "
+                                f"'{requirement}' is invalid"
+                            ),
+                        )
+                    ],
+                )
+            return version_entry, []
+        return (
+            None,
+            [
+                FetchDiagnostic(
+                    code="CNXT6004",
+                    path=f"requirement.{requirement}",
+                    message=(
+                        f"locked version '{resolved_version}' not found in registry "
+                        f"for requirement '{requirement}'"
+                    ),
                 )
             ],
         )
@@ -287,13 +334,17 @@ def _iter_unique_lockfile_dependencies(lock_payload: dict[str, Any]) -> list[dic
                 requirement = dependency.get("requirement")
                 if not isinstance(requirement, str):
                     continue
-                key = (dep_source, dep_name, requirement)
+                resolved_version = dependency.get("resolved-version")
+                if resolved_version is not None and not isinstance(resolved_version, str):
+                    resolved_version = None
+                key = (dep_source, dep_name, f"{requirement}|{resolved_version or ''}")
                 if key in seen:
                     continue
                 seen.add(key)
-                collected.append(
-                    {"source": dep_source, "name": dep_name, "requirement": requirement}
-                )
+                item = {"source": dep_source, "name": dep_name, "requirement": requirement}
+                if isinstance(resolved_version, str):
+                    item["resolved_version"] = resolved_version
+                collected.append(item)
             elif dep_source == "git":
                 git_url = dependency.get("git")
                 if not isinstance(git_url, str):
@@ -322,6 +373,7 @@ def _iter_unique_lockfile_dependencies(lock_payload: dict[str, Any]) -> list[dic
             item.get("source", ""),
             item.get("name", ""),
             item.get("requirement", item.get("reference", "")),
+            item.get("resolved_version", ""),
         )
     )
     return collected
@@ -353,11 +405,14 @@ def fetch_packages(
         if dependency["source"] == "version":
             package_name = dependency["name"]
             requirement = dependency["requirement"]
+            resolved_version = dependency.get("resolved_version")
             versions, version_diags = _load_registry_package_versions(registry_root, package_name)
             diagnostics.extend(version_diags)
             if versions is None:
                 continue
-            selected, select_diags = _select_registry_version(versions, requirement)
+            selected, select_diags = _select_registry_version(
+                versions, requirement, resolved_version=resolved_version
+            )
             diagnostics.extend(select_diags)
             if selected is None:
                 continue
@@ -407,6 +462,8 @@ def fetch_packages(
                     detail=f"{requirement} -> {version}",
                     path=str(destination),
                     status=status,
+                    requirement=requirement,
+                    resolved_version=version,
                 )
             )
             continue

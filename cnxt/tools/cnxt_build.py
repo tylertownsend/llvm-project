@@ -205,11 +205,58 @@ def _run_commands(commands: list[list[str]]) -> list[BuildDiagnostic]:
     return diagnostics
 
 
+def _apply_resolved_versions_to_lockfile(lockfile_path: Path, fetch_result: Any) -> None:
+    updates: dict[tuple[str, str], str] = {}
+    for record in fetch_result.records:
+        source = getattr(record, "source", None)
+        package = getattr(record, "package", None)
+        requirement = getattr(record, "requirement", None)
+        resolved_version = getattr(record, "resolved_version", None)
+        if (
+            source == "version"
+            and isinstance(package, str)
+            and isinstance(requirement, str)
+            and isinstance(resolved_version, str)
+        ):
+            updates[(package, requirement)] = resolved_version
+    if not updates:
+        return
+
+    payload = json.loads(lockfile_path.read_text(encoding="utf-8"))
+    packages = payload.get("packages")
+    if not isinstance(packages, list):
+        return
+    for package in packages:
+        if not isinstance(package, dict):
+            continue
+        dependencies = package.get("dependencies")
+        if not isinstance(dependencies, list):
+            continue
+        for dependency in dependencies:
+            if not isinstance(dependency, dict):
+                continue
+            if dependency.get("source") != "version":
+                continue
+            dep_name = dependency.get("name")
+            requirement = dependency.get("requirement")
+            if not isinstance(dep_name, str) or not isinstance(requirement, str):
+                continue
+            resolved = updates.get((dep_name, requirement))
+            if resolved is not None:
+                dependency["resolved-version"] = resolved
+
+    lockfile_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
 def run_build(
     root_manifest: Path | str | None,
     profile: str = "debug",
     dry_run: bool = False,
     skip_fetch: bool = False,
+    locked: bool = False,
     registry: Path | str | None = None,
     cache_root: Path | str | None = None,
     compiler: str = "clang",
@@ -236,21 +283,43 @@ def run_build(
     if diagnostics:
         return BuildResult(artifacts=[], diagnostics=diagnostics, compile_commands_path=None, lockfile_path=None)
 
-    lockfile_result = write_lockfile(manifest_path)
-    diagnostics.extend(_manifest_diag_to_build(diag) for diag in lockfile_result.diagnostics)
-    if not lockfile_result.ok:
-        diagnostics.append(
-            BuildDiagnostic(
-                code="CNXT7001",
-                path=str(manifest_path.parent / "Cnxt.lock"),
-                message="failed to generate lockfile for build",
+    lockfile_path = manifest_path.parent / "Cnxt.lock"
+    if locked:
+        if not lockfile_path.exists():
+            diagnostics.append(
+                BuildDiagnostic(
+                    code="CNXT7005",
+                    path=str(lockfile_path),
+                    message="locked build requested but Cnxt.lock does not exist",
+                )
             )
-        )
-        return BuildResult(artifacts=[], diagnostics=diagnostics, compile_commands_path=None, lockfile_path=None)
+            return BuildResult(
+                artifacts=[],
+                diagnostics=diagnostics,
+                compile_commands_path=None,
+                lockfile_path=str(lockfile_path),
+            )
+    else:
+        lockfile_result = write_lockfile(manifest_path)
+        diagnostics.extend(_manifest_diag_to_build(diag) for diag in lockfile_result.diagnostics)
+        if not lockfile_result.ok:
+            diagnostics.append(
+                BuildDiagnostic(
+                    code="CNXT7001",
+                    path=str(lockfile_path),
+                    message="failed to generate lockfile for build",
+                )
+            )
+            return BuildResult(
+                artifacts=[],
+                diagnostics=diagnostics,
+                compile_commands_path=None,
+                lockfile_path=str(lockfile_path),
+            )
 
     if not skip_fetch:
         fetch_result = fetch_packages(
-            manifest_path, lockfile_path=manifest_path.parent / "Cnxt.lock", registry=registry, cache_root=cache_root
+            manifest_path, lockfile_path=lockfile_path, registry=registry, cache_root=cache_root
         )
         diagnostics.extend(_manifest_diag_to_build(diag) for diag in fetch_result.diagnostics)
         if fetch_result.diagnostics:
@@ -258,8 +327,10 @@ def run_build(
                 artifacts=[],
                 diagnostics=diagnostics,
                 compile_commands_path=None,
-                lockfile_path=str(manifest_path.parent / "Cnxt.lock"),
+                lockfile_path=str(lockfile_path),
             )
+        if not locked:
+            _apply_resolved_versions_to_lockfile(lockfile_path, fetch_result)
 
     assert parse_result.manifest is not None
     targets = _derive_targets(parse_result.manifest, manifest_path)
@@ -275,7 +346,7 @@ def run_build(
             artifacts=[],
             diagnostics=diagnostics,
             compile_commands_path=None,
-            lockfile_path=str(manifest_path.parent / "Cnxt.lock"),
+            lockfile_path=str(lockfile_path),
         )
 
     profile_dir = manifest_path.parent / "target" / profile
@@ -306,7 +377,7 @@ def run_build(
         artifacts=artifacts,
         diagnostics=diagnostics,
         compile_commands_path=str(compile_commands_path),
-        lockfile_path=str(manifest_path.parent / "Cnxt.lock"),
+        lockfile_path=str(lockfile_path),
     )
 
 
@@ -327,6 +398,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--dry-run", action="store_true", help="Plan build without invoking compiler")
     parser.add_argument("--skip-fetch", action="store_true", help="Skip dependency fetch stage")
+    parser.add_argument("--locked", action="store_true", help="Replay existing lockfile without regenerating")
     parser.add_argument("--registry", type=str, default=None, help="Registry root path/URL")
     parser.add_argument("--cache-root", type=Path, default=None, help="Override cache root")
     parser.add_argument("--compiler", type=str, default="clang", help="Compiler executable")
@@ -337,6 +409,7 @@ def main(argv: list[str] | None = None) -> int:
         profile=args.profile,
         dry_run=args.dry_run,
         skip_fetch=args.skip_fetch,
+        locked=args.locked,
         registry=args.registry,
         cache_root=args.cache_root,
         compiler=args.compiler,

@@ -4,17 +4,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M4-14 Add reproducibility tests for lockfile replay in CI.
-2. M5-01 Ensure clangd fallback compile commands select cNxt mode.
-3. M5-02 Improve completion ranking for cNxt-first constructs and restrictions.
+1. M5-01 Ensure clangd fallback compile commands select cNxt mode.
+2. M5-02 Improve completion ranking for cNxt-first constructs and restrictions.
+3. M5-03 Add semantic token classification coverage for cNxt files.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
-- [x] M4-01 through M4-13
-- [ ] M4-14
+- [x] M4-01 through M4-14
 - [ ] M5-01 through M5-09
 
 ## Completion Log
@@ -459,3 +458,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - milestone 4 closure work can focus on deterministic replay guarantees rather than missing source-mode coverage.
 - Direction check:
   - roadmap remains directionally correct; milestone 4 now has end-to-end coverage for both local path and registry dependency modes.
+
+### 2026-03-15 - M4-14
+
+- Completed item: add reproducibility tests for lockfile replay in CI.
+- What changed:
+  - added lock replay E2E coverage in `cnxt/tools/tests/test_e2e_lockfile_replay.py` validating deterministic locked rebuilds.
+  - build pipeline now supports `--locked`/locked mode to replay existing lockfiles without regeneration.
+  - fetch pipeline now honors lockfile `resolved-version` pins for version-source dependencies.
+  - build pipeline persists fetched resolved versions back into lockfile dependency entries to enable deterministic replay.
+  - updated lockfile/build/fetch specs to document pinned-version replay behavior and locked build diagnostics.
+- What is now unblocked:
+  - milestone 4 is complete; milestone 5 IDE-quality deliverables can proceed on top of a test-backed package-manager command pipeline.
+- Direction check:
+  - roadmap remains directionally correct; package-manager foundation now includes deterministic lockfile replay guarantees suitable for CI reproducibility checks.

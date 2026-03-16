@@ -36,6 +36,7 @@ Dependency entry keys:
 - `name` (string, required): target package name (after alias/package override resolution)
 - `source` (string, required): one of `version`, `path`, `git`, `unknown`
 - `requirement` (string, optional): semantic version requirement for version source
+- `resolved-version` (string, optional): pinned concrete version selected during fetch
 - `path` (string, optional): relative path for path source
 - `git` (string, optional): git URL for git source
 - `rev` / `tag` / `branch` (string, optional): git selector metadata
@@ -57,3 +58,9 @@ Lockfile generation must be deterministic for identical inputs:
 - each `constraints` value sorted lexicographically
 - JSON rendered with stable key ordering and indentation
 - no timestamp, host, or environment-specific metadata
+
+## Replay Rules
+
+- when `resolved-version` is present for a version-source dependency, locked/replay
+  builds must fetch that exact version rather than re-selecting newest matching
+  versions.
