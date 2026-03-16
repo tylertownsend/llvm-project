@@ -4,17 +4,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M4-03 Implement dependency graph construction and cycle diagnostics.
-2. M4-04 Implement version constraint solving.
-3. M4-05 Implement lockfile format and deterministic lockfile generation.
+1. M4-04 Implement version constraint solving.
+2. M4-05 Implement lockfile format and deterministic lockfile generation.
+3. M4-06 Implement local cache layout for downloaded packages.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
-- [x] M4-01 through M4-02
-- [ ] M4-03 through M4-14
+- [x] M4-01 through M4-03
+- [ ] M4-04 through M4-14
 - [ ] M5-01 through M5-09
 
 ## Completion Log
@@ -298,3 +298,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M4-04 can build constraint solving directly on validated dependency specs (`version`, `path`, `git`) without re-implementing schema checks.
 - Direction check:
   - roadmap remains directionally correct; milestone 4 now has executable schema enforcement with test-backed diagnostics as a base for graph and solver work.
+
+### 2026-03-15 - M4-03
+
+- Completed item: implement dependency graph construction and cycle diagnostics.
+- What changed:
+  - added `cnxt/tools/dependency_graph.py` to build local path-dependency graphs from validated manifests.
+  - implemented graph diagnostics for manifest-parse failures, missing path-dependency manifests, duplicate package names, and dependency cycles (`CNXT2001`-`CNXT2004`).
+  - added unit coverage in `cnxt/tools/tests/test_dependency_graph.py` for acyclic graphs, missing-path diagnostics, duplicate-name diagnostics, and cycle detection.
+- What is now unblocked:
+  - M4-04 can perform version-constraint solving on top of a resolved graph shape and package identity map.
+  - M4-05 lockfile work can target deterministic graph outputs with explicit cycle/missing-node failure behavior.
+- Direction check:
+  - roadmap remains directionally correct; milestone 4 now has parser + graph foundations with structured diagnostics for topology errors.

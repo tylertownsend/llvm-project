@@ -73,7 +73,7 @@ Decision for this milestone:
 
 - [x] M4-01 Define `Cnxt.toml` manifest schema and validation rules.
 - [x] M4-02 Implement manifest parser with structured diagnostics.
-- [ ] M4-03 Implement dependency graph construction and cycle diagnostics.
+- [x] M4-03 Implement dependency graph construction and cycle diagnostics.
 - [ ] M4-04 Implement version constraint solving.
 - [ ] M4-05 Implement lockfile format and deterministic lockfile generation.
 - [ ] M4-06 Implement local cache layout for downloaded packages.
