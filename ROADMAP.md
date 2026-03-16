@@ -4,17 +4,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M4-05 Implement lockfile format and deterministic lockfile generation.
-2. M4-06 Implement local cache layout for downloaded packages.
-3. M4-07 Implement package fetcher (registry and git source support).
+1. M4-06 Implement local cache layout for downloaded packages.
+2. M4-07 Implement package fetcher (registry and git source support).
+3. M4-08 Implement `cnxt build` command.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
-- [x] M4-01 through M4-04
-- [ ] M4-05 through M4-14
+- [x] M4-01 through M4-05
+- [ ] M4-06 through M4-14
 - [ ] M5-01 through M5-09
 
 ## Completion Log
@@ -324,3 +324,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M4-07 package fetching can rely on already-detected version conflicts/invalid constraints before network resolution.
 - Direction check:
   - roadmap remains directionally correct; package-manager flow now has parser, graph, and solver layers with test-backed diagnostics.
+
+### 2026-03-15 - M4-05
+
+- Completed item: implement lockfile format and deterministic lockfile generation.
+- What changed:
+  - added `cnxt/specs/cnxt-lockfile-schema.md` defining `Cnxt.lock` v1 shape and determinism rules.
+  - added `cnxt/tools/lockfile_generator.py` with deterministic lockfile generation, rendering, and file writing (`Cnxt.lock` default output).
+  - added unit coverage in `cnxt/tools/tests/test_lockfile_generator.py` for deterministic generation, conflict-failure handling, and default output path writing.
+  - linked lockfile spec from `cnxt/README.md`.
+- What is now unblocked:
+  - M4-06 can lay out cache paths using deterministic lockfile package entries.
+  - M4-08/M4-09/M4-10 command work can consume lockfile outputs instead of ad hoc resolution state.
+- Direction check:
+  - roadmap remains directionally correct; package-manager flow now includes a stable lock artifact between solving and fetch/build steps.

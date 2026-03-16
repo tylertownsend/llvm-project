@@ -154,6 +154,9 @@ tests/
 Manifest schema and validation rules:
 `cnxt/specs/cnxt-manifest-schema.md`.
 
+Lockfile schema and determinism rules:
+`cnxt/specs/cnxt-lockfile-schema.md`.
+
 Package manager commands:
 
 - `cnxt new`
