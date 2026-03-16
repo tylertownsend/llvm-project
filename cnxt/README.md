@@ -157,6 +157,9 @@ Manifest schema and validation rules:
 Lockfile schema and determinism rules:
 `cnxt/specs/cnxt-lockfile-schema.md`.
 
+Local cache layout conventions:
+`cnxt/specs/cnxt-cache-layout.md`.
+
 Package manager commands:
 
 - `cnxt new`

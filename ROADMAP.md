@@ -4,17 +4,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M4-06 Implement local cache layout for downloaded packages.
-2. M4-07 Implement package fetcher (registry and git source support).
-3. M4-08 Implement `cnxt build` command.
+1. M4-07 Implement package fetcher (registry and git source support).
+2. M4-08 Implement `cnxt build` command.
+3. M4-09 Implement `cnxt run` command.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
-- [x] M4-01 through M4-05
-- [ ] M4-06 through M4-14
+- [x] M4-01 through M4-06
+- [ ] M4-07 through M4-14
 - [ ] M5-01 through M5-09
 
 ## Completion Log
@@ -338,3 +338,18 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M4-08/M4-09/M4-10 command work can consume lockfile outputs instead of ad hoc resolution state.
 - Direction check:
   - roadmap remains directionally correct; package-manager flow now includes a stable lock artifact between solving and fetch/build steps.
+
+### 2026-03-15 - M4-06
+
+- Completed item: implement local cache layout for downloaded packages.
+- What changed:
+  - added `cnxt/specs/cnxt-cache-layout.md` defining cache root, directory structure, keying rules, and planning behavior.
+  - added `cnxt/tools/cache_layout.py` with deterministic cache root/layout computation, directory initialization, and lockfile-driven cache-entry planning for registry and git dependencies.
+  - added structured cache diagnostics (`CNXT5001`-`CNXT5003`) for lockfile loading/validation failures.
+  - added unit coverage in `cnxt/tools/tests/test_cache_layout.py` for layout initialization, deterministic keying, lockfile entry planning, and invalid lockfile diagnostics.
+  - linked cache layout spec from `cnxt/README.md`.
+- What is now unblocked:
+  - M4-07 fetcher implementation can use stable cache paths/keys instead of inventing storage conventions.
+  - M4-08/M4-10 command work can initialize/cache-plan before invoking download/build steps.
+- Direction check:
+  - roadmap remains directionally correct; package-manager pipeline now has deterministic manifests -> graph -> solver -> lockfile -> cache-layout staging.

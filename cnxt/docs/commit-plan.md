@@ -76,7 +76,7 @@ Decision for this milestone:
 - [x] M4-03 Implement dependency graph construction and cycle diagnostics.
 - [x] M4-04 Implement version constraint solving.
 - [x] M4-05 Implement lockfile format and deterministic lockfile generation.
-- [ ] M4-06 Implement local cache layout for downloaded packages.
+- [x] M4-06 Implement local cache layout for downloaded packages.
 - [ ] M4-07 Implement package fetcher (registry and git source support).
 - [ ] M4-08 Implement `cnxt build` command.
 - [ ] M4-09 Implement `cnxt run` command.
