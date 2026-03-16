@@ -79,7 +79,7 @@ Decision for this milestone:
 - [x] M4-06 Implement local cache layout for downloaded packages.
 - [x] M4-07 Implement package fetcher (registry and git source support).
 - [x] M4-08 Implement `cnxt build` command.
-- [ ] M4-09 Implement `cnxt run` command.
+- [x] M4-09 Implement `cnxt run` command.
 - [ ] M4-10 Implement `cnxt test` command.
 - [ ] M4-11 Implement workspace/project-root discovery behavior.
 - [ ] M4-12 Add end-to-end tests for local path dependencies.

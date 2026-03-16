@@ -4,17 +4,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M4-09 Implement `cnxt run` command.
-2. M4-10 Implement `cnxt test` command.
-3. M4-11 Implement workspace/project-root discovery behavior.
+1. M4-10 Implement `cnxt test` command.
+2. M4-11 Implement workspace/project-root discovery behavior.
+3. M4-12 Add end-to-end tests for local path dependencies.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
-- [x] M4-01 through M4-08
-- [ ] M4-09 through M4-14
+- [x] M4-01 through M4-09
+- [ ] M4-10 through M4-14
 - [ ] M5-01 through M5-09
 
 ## Completion Log
@@ -386,3 +386,19 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M4-10 can reuse build orchestration for test target execution.
 - Direction check:
   - roadmap remains directionally correct; package-manager implementation now has a concrete build entry point on top of lock+fetch primitives.
+
+### 2026-03-15 - M4-09
+
+- Completed item: implement `cnxt run` command.
+- What changed:
+  - added `cnxt/tools/cnxt_run.py` to build-or-reuse artifacts, select binary targets, execute binaries, and return structured run outputs.
+  - implemented `--skip-build`, `--bin`, profile selection, and argument forwarding support.
+  - added run diagnostics (`CNXT7101`-`CNXT7104`) for binary selection and runtime-failure paths.
+  - added `cnxt/specs/cnxt-run-command.md` documenting baseline run workflow and diagnostics.
+  - added unit coverage in `cnxt/tools/tests/test_cnxt_run.py` for build+run integration, missing binary handling, and named-binary selection behavior.
+  - linked run-command spec from `cnxt/README.md`.
+- What is now unblocked:
+  - M4-10 can reuse build and runtime execution paths to implement test command behavior.
+  - M4-11 workspace discovery can be integrated once run/test command entry points are stable.
+- Direction check:
+  - roadmap remains directionally correct; command surface now includes build and run baselines backed by lock/fetch/cache plumbing.

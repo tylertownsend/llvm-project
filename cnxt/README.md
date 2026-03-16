@@ -166,6 +166,9 @@ Fetcher source contracts (registry + git):
 Build command workflow baseline:
 `cnxt/specs/cnxt-build-command.md`.
 
+Run command workflow baseline:
+`cnxt/specs/cnxt-run-command.md`.
+
 Package manager commands:
 
 - `cnxt new`
