@@ -91,7 +91,7 @@ Decision for this milestone:
 - [x] M5-01 Ensure clangd fallback compile commands select cNxt mode.
 - [x] M5-02 Improve completion ranking for cNxt-first constructs and restrictions.
 - [x] M5-03 Add semantic token classification coverage for cNxt files.
-- [ ] M5-04 Add go-to-definition/reference regression tests for cNxt sources.
+- [x] M5-04 Add go-to-definition/reference regression tests for cNxt sources.
 - [ ] M5-05 Add refactor safety checks for restricted constructs.
 - [ ] M5-06 Implement cNxt formatter baseline profile.
 - [ ] M5-07 Add lints enforcing one-obvious-way language policies.

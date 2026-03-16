@@ -4,9 +4,9 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M5-04 Add go-to-definition/reference regression tests for cNxt sources.
-2. M5-05 Add refactor safety checks for restricted constructs.
-3. M5-06 Implement cNxt formatter baseline profile.
+1. M5-05 Add refactor safety checks for restricted constructs.
+2. M5-06 Implement cNxt formatter baseline profile.
+3. M5-07 Add lints enforcing one-obvious-way language policies.
 
 ## Deliverable Status
 
@@ -14,8 +14,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
 - [x] M4-01 through M4-14
-- [x] M5-01 through M5-03
-- [ ] M5-04 through M5-09
+- [x] M5-01 through M5-04
+- [ ] M5-05 through M5-09
 
 ## Completion Log
 
@@ -511,3 +511,15 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M5-05 refactor-safety checks can assume cNxt semantic-highlighting pipeline remains exercised in tests.
 - Direction check:
   - roadmap remains directionally correct; cNxt IDE tokenization now has dedicated regression coverage for cNxt file extensions.
+
+### 2026-03-15 - M5-04
+
+- Completed item: add go-to-definition/reference regression tests for cNxt sources.
+- What changed:
+  - extended `clang-tools-extra/clangd/unittests/XRefsTests.cpp` with `LocateSymbol.CNxtFile`.
+  - added `FindReferences.CNxtWithinAST` coverage plus a cNxt-specific reference harness that builds `.cn` files with `-x cnxt -std=cnxt1`.
+- What is now unblocked:
+  - M5-05 refactor-safety checks can build on explicit cNxt xrefs regression coverage.
+  - M5-09 IDE integration CI can include cNxt xrefs expectations as part of representative project validation.
+- Direction check:
+  - roadmap remains directionally correct; cNxt navigation behavior now has dedicated locate/reference regression tests.

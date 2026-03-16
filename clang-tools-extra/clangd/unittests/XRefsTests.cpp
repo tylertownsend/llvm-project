@@ -530,6 +530,26 @@ TEST(LocateSymbol, WithIndexPreferredLocation) {
   }
 }
 
+TEST(LocateSymbol, CNxtFile) {
+  Annotations T(R"cnxt(
+    struct $box[[Box]] {};
+    Box $mk[[make]](Box in) { return in; }
+    int main() {
+      B$p1^ox value;
+      m$p2^ake(value);
+    }
+  )cnxt");
+  auto TU = TestTU::withCode(T.code().str());
+  TU.Filename = "TestTU.cn";
+  TU.ExtraArgs = {"-x", "cnxt", "-std=cnxt1"};
+  auto AST = TU.build();
+
+  EXPECT_THAT(locateSymbolAt(AST, T.point("p1")),
+              ElementsAre(sym("Box", T.range("box"), T.range("box"))));
+  EXPECT_THAT(locateSymbolAt(AST, T.point("p2")),
+              ElementsAre(sym("make", T.range("mk"), T.range("mk"))));
+}
+
 TEST(LocateSymbol, All) {
   // Ranges in tests:
   //   $decl is the declaration location (if absent, no symbol is located)
@@ -2163,6 +2183,43 @@ void checkFindRefs(llvm::StringRef Test, bool UseIndex = false) {
   }
 }
 
+void checkFindRefsCNxt(llvm::StringRef Test, bool UseIndex = false) {
+  Annotations T(Test);
+  auto TU = TestTU::withCode(T.code());
+  TU.Filename = "TestTU.cn";
+  TU.ExtraArgs = {"-std=cnxt1", "-x", "cnxt"};
+
+  auto AST = TU.build();
+  std::vector<Matcher<ReferencesResult::Reference>> ExpectedLocations;
+  for (const auto &[R, Context] : T.rangesWithPayload())
+    ExpectedLocations.push_back(
+        AllOf(rangeIs(R), containerIs(Context), attrsAre(0u)));
+  for (const auto &[R, Context] : T.rangesWithPayload("def"))
+    ExpectedLocations.push_back(AllOf(rangeIs(R), containerIs(Context),
+                                      attrsAre(ReferencesResult::Definition |
+                                               ReferencesResult::Declaration)));
+  for (const auto &[R, Context] : T.rangesWithPayload("decl"))
+    ExpectedLocations.push_back(AllOf(rangeIs(R), containerIs(Context),
+                                      attrsAre(ReferencesResult::Declaration)));
+  for (const auto &[R, Context] : T.rangesWithPayload("overridedecl"))
+    ExpectedLocations.push_back(AllOf(
+        rangeIs(R), containerIs(Context),
+        attrsAre(ReferencesResult::Declaration | ReferencesResult::Override)));
+  for (const auto &[R, Context] : T.rangesWithPayload("overridedef"))
+    ExpectedLocations.push_back(AllOf(rangeIs(R), containerIs(Context),
+                                      attrsAre(ReferencesResult::Declaration |
+                                               ReferencesResult::Definition |
+                                               ReferencesResult::Override)));
+  for (const auto &P : T.points()) {
+    EXPECT_THAT(findReferences(AST, P, 0, UseIndex ? TU.index().get() : nullptr,
+                               /*AddContext*/ true)
+                    .References,
+                UnorderedElementsAreArray(ExpectedLocations))
+        << "Failed for cNxt Refs at " << P << "\n"
+        << Test;
+  }
+}
+
 TEST(FindReferences, WithinAST) {
   const char *Tests[] = {
       R"cpp(// Local variable
@@ -2383,6 +2440,18 @@ TEST(FindReferences, WithinAST) {
       )cpp"};
   for (const char *Test : Tests)
     checkFindRefs(Test);
+}
+
+TEST(FindReferences, CNxtWithinAST) {
+  checkFindRefsCNxt(R"cnxt(
+    struct Box {};
+    Box $def(main)[[maker]](Box in) { return in; }
+    int main() {
+      Box v;
+      $(main)[[^maker]](v);
+      $(main)[[maker]](v);
+    }
+  )cnxt");
 }
 
 TEST(FindReferences, ConceptsWithinAST) {
