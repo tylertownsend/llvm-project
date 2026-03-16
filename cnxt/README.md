@@ -181,6 +181,9 @@ Formatter baseline profile:
 Lint policy baseline:
 `cnxt/specs/cnxt-lint-policy.md`.
 
+Safe fix-it baseline:
+`cnxt/specs/cnxt-fixits.md`.
+
 Package manager commands:
 
 - `cnxt new`

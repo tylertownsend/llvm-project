@@ -23,3 +23,10 @@ This document defines the baseline "one obvious way" lint checks implemented by
 ## Tool Diagnostics
 
 - `CNXT9100`: input path error (missing file or no discovered input files).
+
+## Fix-It Integration
+
+- Diagnostics may include an optional safe `fix` payload.
+- `cnxt/tools/cnxt_lint.py --apply-fixes` applies only safe fix-its, then
+  re-lints files to report remaining diagnostics.
+- Safe fix-it catalog is documented in `cnxt/specs/cnxt-fixits.md`.

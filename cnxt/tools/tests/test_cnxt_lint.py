@@ -37,6 +37,10 @@ template <typename T> struct Box {};
             {"CNXT9101", "CNXT9102", "CNXT9103", "CNXT9104", "CNXT9105"},
             diag_codes(result),
         )
+        include_diag = next(diag for diag in result.diagnostics if diag.code == "CNXT9101")
+        self.assertIsNotNone(include_diag.fix)
+        assert include_diag.fix is not None
+        self.assertEqual('import "dep.cn";', include_diag.fix.replacement)
 
     def test_lint_ignores_comments_and_strings(self) -> None:
         code = """
@@ -84,6 +88,35 @@ fn main() {
         result = cnxt_lint.lint_file("/tmp/does-not-exist-cnxt-lint.cn")
         self.assertFalse(result.ok)
         self.assertEqual({"CNXT9100"}, diag_codes(result))
+
+    def test_apply_fixes_rewrites_safe_include(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_str:
+            tmp = Path(tmp_str)
+            source = tmp / "main.cn"
+            source.write_text(
+                '#include "dep.cn"\n'
+                "fn main() { throw 1; }\n",
+                encoding="utf-8",
+            )
+
+            result = cnxt_lint.lint_file(source, apply_fixes=True)
+            self.assertFalse(result.ok)
+            self.assertEqual(1, result.applied_fixes)
+            self.assertEqual({"CNXT9104"}, diag_codes(result))
+            self.assertEqual('import "dep.cn";\nfn main() { throw 1; }\n', source.read_text(encoding="utf-8"))
+
+    def test_apply_fixes_over_paths_counts_rewrites(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_str:
+            tmp = Path(tmp_str)
+            src = tmp / "src"
+            src.mkdir(parents=True, exist_ok=True)
+            (src / "a.cn").write_text('#include "a.cn"\n', encoding="utf-8")
+            (src / "b.cn").write_text('#include "b.cn"\n', encoding="utf-8")
+
+            result = cnxt_lint.lint_paths([str(src)], apply_fixes=True)
+            self.assertTrue(result.ok)
+            self.assertEqual(2, result.applied_fixes)
+            self.assertEqual(set(), diag_codes(result))
 
 
 if __name__ == "__main__":

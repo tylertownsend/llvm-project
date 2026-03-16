@@ -4,8 +4,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M5-08 Add fix-its for common restriction diagnostics (where safe).
-2. M5-09 Add IDE integration tests to CI with representative cNxt projects.
+1. M5-09 Add IDE integration tests to CI with representative cNxt projects.
 
 ## Deliverable Status
 
@@ -13,8 +12,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
 - [x] M4-01 through M4-14
-- [x] M5-01 through M5-07
-- [ ] M5-08 through M5-09
+- [x] M5-01 through M5-08
+- [ ] M5-09
 
 ## Completion Log
 
@@ -561,3 +560,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M5-09 CI integration can run formatter+linter baselines as part of IDE-quality checks.
 - Direction check:
   - roadmap remains directionally correct; cNxt guardrail tooling now includes explicit lint policies with test-backed diagnostics.
+
+### 2026-03-15 - M5-08
+
+- Completed item: add safe fix-its for common cNxt restriction diagnostics.
+- What changed:
+  - extended `cnxt/tools/cnxt_lint.py` diagnostics with optional `fix` payloads and added `--apply-fixes` mode.
+  - implemented safe v1 fix-it for quoted textual includes (`#include "x"` -> `import "x";`) and post-fix re-linting.
+  - added fix-it regression coverage in `cnxt/tools/tests/test_cnxt_lint.py`.
+  - added fix-it spec `cnxt/specs/cnxt-fixits.md` and linked fix-it guidance from `cnxt/specs/cnxt-lint-policy.md` and `cnxt/README.md`.
+- What is now unblocked:
+  - M5-09 CI integration can now validate formatter, lints, and safe fix-it behavior for representative cNxt projects.
+- Direction check:
+  - roadmap remains directionally correct; IDE guardrails now include both diagnostics and safe automated remediation for common cases.

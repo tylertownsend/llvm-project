@@ -12,6 +12,26 @@ import sys
 
 
 @dataclass(frozen=True)
+class FixIt:
+    message: str
+    replacement: str
+    start_line: int
+    start_column: int
+    end_line: int
+    end_column: int
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "message": self.message,
+            "replacement": self.replacement,
+            "start_line": self.start_line,
+            "start_column": self.start_column,
+            "end_line": self.end_line,
+            "end_column": self.end_column,
+        }
+
+
+@dataclass(frozen=True)
 class LintDiagnostic:
     code: str
     message: str
@@ -19,9 +39,10 @@ class LintDiagnostic:
     line: int
     column: int
     severity: str = "warning"
+    fix: FixIt | None = None
 
     def to_dict(self) -> dict[str, object]:
-        return {
+        payload: dict[str, object] = {
             "code": self.code,
             "message": self.message,
             "path": self.path,
@@ -29,11 +50,15 @@ class LintDiagnostic:
             "column": self.column,
             "severity": self.severity,
         }
+        if self.fix is not None:
+            payload["fix"] = self.fix.to_dict()
+        return payload
 
 
 @dataclass(frozen=True)
 class LintResult:
     diagnostics: list[LintDiagnostic]
+    applied_fixes: int = 0
 
     @property
     def ok(self) -> bool:
@@ -74,6 +99,8 @@ LINT_RULES: tuple[LintRule, ...] = (
         message="template declarations are not part of cnxt1",
     ),
 )
+
+_SAFE_INCLUDE_FIX_RE = re.compile(r'^(\s*)#\s*include\s*"([^"]+)"\s*$')
 
 
 def _mask_comments_and_strings(text: str) -> str:
@@ -146,12 +173,76 @@ def _mask_comments_and_strings(text: str) -> str:
     return "".join(chars)
 
 
+def _safe_fix_for_match(code: str, line_text: str, line_no: int) -> FixIt | None:
+    if code != "CNXT9101":
+        return None
+
+    match = _SAFE_INCLUDE_FIX_RE.match(line_text)
+    if match is None:
+        return None
+
+    indent, module_path = match.groups()
+    return FixIt(
+        message='replace textual include with cNxt import',
+        replacement=f'{indent}import "{module_path}";',
+        start_line=line_no,
+        start_column=1,
+        end_line=line_no,
+        end_column=len(line_text) + 1,
+    )
+
+
+def _line_start_offsets(text: str) -> list[int]:
+    offsets = [0]
+    for idx, char in enumerate(text):
+        if char == "\n":
+            offsets.append(idx + 1)
+    return offsets
+
+
+def _offset_for_line_col(line_offsets: list[int], line: int, column: int) -> int:
+    if line <= 0 or line > len(line_offsets):
+        raise ValueError(f"invalid line: {line}")
+    if column <= 0:
+        raise ValueError(f"invalid column: {column}")
+    return line_offsets[line - 1] + column - 1
+
+
+def apply_safe_fixes(text: str, diagnostics: list[LintDiagnostic]) -> tuple[str, int]:
+    fixes = [diag.fix for diag in diagnostics if diag.fix is not None]
+    if not fixes:
+        return text, 0
+
+    line_offsets = _line_start_offsets(text)
+    fix_ranges: list[tuple[int, int, FixIt]] = []
+    for fix in fixes:
+        assert fix is not None
+        try:
+            start = _offset_for_line_col(line_offsets, fix.start_line, fix.start_column)
+            end = _offset_for_line_col(line_offsets, fix.end_line, fix.end_column)
+        except ValueError:
+            continue
+        if end < start:
+            continue
+        fix_ranges.append((start, end, fix))
+
+    applied = 0
+    rewritten = text
+    for start, end, fix in sorted(fix_ranges, key=lambda item: (item[0], item[1]), reverse=True):
+        rewritten = rewritten[:start] + fix.replacement + rewritten[end:]
+        applied += 1
+
+    return rewritten, applied
+
+
 def lint_text(text: str, path: str = "<input>") -> LintResult:
     masked = _mask_comments_and_strings(text)
+    source_lines = text.splitlines()
     masked_lines = masked.splitlines()
     diagnostics: list[LintDiagnostic] = []
 
     for line_no, line in enumerate(masked_lines, start=1):
+        source_line = source_lines[line_no - 1] if line_no - 1 < len(source_lines) else ""
         for rule in LINT_RULES:
             for match in rule.pattern.finditer(line):
                 diagnostics.append(
@@ -161,13 +252,14 @@ def lint_text(text: str, path: str = "<input>") -> LintResult:
                         path=path,
                         line=line_no,
                         column=match.start() + 1,
+                        fix=_safe_fix_for_match(rule.code, source_line, line_no),
                     )
                 )
 
     return LintResult(diagnostics=diagnostics)
 
 
-def lint_file(path: Path | str) -> LintResult:
+def lint_file(path: Path | str, apply_fixes: bool = False) -> LintResult:
     source_path = Path(path)
     if not source_path.exists():
         return LintResult(
@@ -180,9 +272,21 @@ def lint_file(path: Path | str) -> LintResult:
                     column=0,
                     severity="error",
                 )
-            ]
+            ],
+            applied_fixes=0,
         )
-    return lint_text(source_path.read_text(encoding="utf-8"), path=str(source_path))
+
+    original = source_path.read_text(encoding="utf-8")
+    initial = lint_text(original, path=str(source_path))
+    if not apply_fixes:
+        return initial
+
+    rewritten, applied = apply_safe_fixes(original, initial.diagnostics)
+    if applied > 0 and rewritten != original:
+        source_path.write_text(rewritten, encoding="utf-8")
+
+    post = lint_text(rewritten, path=str(source_path))
+    return LintResult(diagnostics=post.diagnostics, applied_fixes=applied)
 
 
 def _expand_input_paths(raw_paths: list[str]) -> list[Path]:
@@ -198,7 +302,7 @@ def _expand_input_paths(raw_paths: list[str]) -> list[Path]:
     return files
 
 
-def lint_paths(raw_paths: list[str]) -> LintResult:
+def lint_paths(raw_paths: list[str], apply_fixes: bool = False) -> LintResult:
     paths = _expand_input_paths(raw_paths)
     if not paths:
         return LintResult(
@@ -211,26 +315,36 @@ def lint_paths(raw_paths: list[str]) -> LintResult:
                     column=0,
                     severity="error",
                 )
-            ]
+            ],
+            applied_fixes=0,
         )
 
     diagnostics: list[LintDiagnostic] = []
+    applied_fixes = 0
     for path in paths:
-        diagnostics.extend(lint_file(path).diagnostics)
-    return LintResult(diagnostics=diagnostics)
+        result = lint_file(path, apply_fixes=apply_fixes)
+        diagnostics.extend(result.diagnostics)
+        applied_fixes += result.applied_fixes
+    return LintResult(diagnostics=diagnostics, applied_fixes=applied_fixes)
 
 
 def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Lint cNxt source files.")
     parser.add_argument("paths", nargs="+", help="source files or directories")
+    parser.add_argument(
+        "--apply-fixes",
+        action="store_true",
+        help="apply safe fix-its in place before reporting diagnostics",
+    )
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     ns = _parse_args(argv if argv is not None else sys.argv[1:])
-    result = lint_paths(ns.paths)
+    result = lint_paths(ns.paths, apply_fixes=ns.apply_fixes)
     payload = {
         "ok": result.ok,
+        "applied-fixes": result.applied_fixes,
         "diagnostics": [diag.to_dict() for diag in result.diagnostics],
     }
     print(json.dumps(payload, indent=2, sort_keys=True))
