@@ -4,7 +4,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M5-09 Add IDE integration tests to CI with representative cNxt projects.
+All listed deliverables are complete.
 
 ## Deliverable Status
 
@@ -12,8 +12,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
 - [x] M4-01 through M4-14
-- [x] M5-01 through M5-08
-- [ ] M5-09
+- [x] M5-01 through M5-09
 
 ## Completion Log
 
@@ -573,3 +572,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M5-09 CI integration can now validate formatter, lints, and safe fix-it behavior for representative cNxt projects.
 - Direction check:
   - roadmap remains directionally correct; IDE guardrails now include both diagnostics and safe automated remediation for common cases.
+
+### 2026-03-15 - M5-09
+
+- Completed item: add IDE integration tests to CI with representative cNxt projects.
+- What changed:
+  - added CI workflow `.github/workflows/cnxt-ide-integration.yml` running IDE-focused cNxt tool tests on Python 3.8 and 3.11.
+  - added representative IDE E2E coverage in `cnxt/tools/tests/test_e2e_ide_workflows.py` for format + lint fix-it + compile database flow and workspace-member build entrypoints.
+  - added CI integration spec `cnxt/specs/cnxt-ide-ci.md` and linked it from `cnxt/README.md`.
+- What is now unblocked:
+  - milestone 5 is complete.
+  - roadmap can transition to post-M5 hardening and expansion tasks.
+- Direction check:
+  - roadmap remains directionally correct; cNxt IDE-quality work now includes regression-tested local tooling and CI enforcement for representative project flows.

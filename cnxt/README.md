@@ -184,6 +184,9 @@ Lint policy baseline:
 Safe fix-it baseline:
 `cnxt/specs/cnxt-fixits.md`.
 
+IDE CI integration baseline:
+`cnxt/specs/cnxt-ide-ci.md`.
+
 Package manager commands:
 
 - `cnxt new`
