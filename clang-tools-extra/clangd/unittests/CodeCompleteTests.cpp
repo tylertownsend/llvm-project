@@ -798,6 +798,30 @@ TEST(CompletionTest, ReferencesAffectRanking) {
               HasSubsequence(named("absB"), named("absA")));
 }
 
+TEST(CompletionTest, CNxtRankingAdjustments) {
+  auto Results = completions(
+      R"cpp(
+          int main() { ^ }
+      )cpp",
+      {func("unique"), func("template"), func("unsafe"), func("throw")},
+      /*Opts=*/{},
+      /*FilePath=*/"foo.cn");
+
+  auto Rank = [&](llvm::StringRef Name) {
+    for (size_t I = 0; I < Results.Completions.size(); ++I)
+      if (Results.Completions[I].Name == Name)
+        return I;
+    return std::numeric_limits<size_t>::max();
+  };
+
+  ASSERT_NE(Rank("unique"), std::numeric_limits<size_t>::max());
+  ASSERT_NE(Rank("template"), std::numeric_limits<size_t>::max());
+  ASSERT_NE(Rank("unsafe"), std::numeric_limits<size_t>::max());
+  ASSERT_NE(Rank("throw"), std::numeric_limits<size_t>::max());
+  EXPECT_LT(Rank("unique"), Rank("template"));
+  EXPECT_LT(Rank("unsafe"), Rank("throw"));
+}
+
 TEST(CompletionTest, ContextWords) {
   auto Results = completions(R"cpp(
   enum class Color { RED, YELLOW, BLUE };

@@ -67,6 +67,7 @@
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/Error.h"
 #include "llvm/Support/FormatVariadic.h"
+#include "llvm/Support/Path.h"
 #include "llvm/Support/ScopedPrinter.h"
 #include <algorithm>
 #include <iterator>
@@ -90,6 +91,23 @@ const CodeCompleteOptions::CodeCompletionRankingModel
 #endif
 
 namespace {
+
+bool isCNxtPath(PathRef FileName) {
+  llvm::StringRef Ext = llvm::sys::path::extension(FileName);
+  return Ext == ".cn" || Ext == ".cnxt" || Ext == ".cni";
+}
+
+bool isCNxtPreferredCompletionName(llvm::StringRef Name) {
+  static constexpr llvm::StringLiteral Preferred[] = {
+      "fn", "let", "var", "import", "unsafe", "unique", "shared", "weak"};
+  return llvm::is_contained(Preferred, Name);
+}
+
+bool isCNxtRestrictedCompletionName(llvm::StringRef Name) {
+  static constexpr llvm::StringLiteral Restricted[] = {
+      "template", "try", "catch", "throw", "goto", "new", "delete"};
+  return llvm::is_contained(Restricted, Name);
+}
 
 // Note: changes to this function should also be reflected in the
 // CodeCompletionResult overload where appropriate.
@@ -1598,6 +1616,7 @@ findTokenAfterCompletionPoint(SourceLocation CompletionPoint,
 //   - TopN determines the results with the best score.
 class CodeCompleteFlow {
   PathRef FileName;
+  bool IsCNxtFile;
   IncludeStructure Includes;           // Complete once the compiler runs.
   SpeculativeFuzzyFind *SpecFuzzyFind; // Can be nullptr.
   const CodeCompleteOptions &Opts;
@@ -1639,8 +1658,8 @@ public:
   CodeCompleteFlow(PathRef FileName, const IncludeStructure &Includes,
                    SpeculativeFuzzyFind *SpecFuzzyFind,
                    const CodeCompleteOptions &Opts)
-      : FileName(FileName), Includes(Includes), SpecFuzzyFind(SpecFuzzyFind),
-        Opts(Opts) {}
+      : FileName(FileName), IsCNxtFile(isCNxtPath(FileName)),
+        Includes(Includes), SpecFuzzyFind(SpecFuzzyFind), Opts(Opts) {}
 
   CodeCompleteResult run(const SemaCompleteInput &SemaCCInput) && {
     trace::Span Tracer("CodeCompleteFlow");
@@ -2152,6 +2171,15 @@ private:
     }
 
     CodeCompletion::Scores Scores = evaluateCompletion(Quality, Relevance);
+    if (IsCNxtFile) {
+      if (isCNxtPreferredCompletionName(First.Name)) {
+        Scores.Total *= 1.15f;
+        Scores.ExcludingName *= 1.15f;
+      } else if (isCNxtRestrictedCompletionName(First.Name)) {
+        Scores.Total *= 0.5f;
+        Scores.ExcludingName *= 0.5f;
+      }
+    }
     if (Opts.RecordCCResult)
       Opts.RecordCCResult(toCodeCompletion(Bundle), Quality, Relevance,
                           Scores.Total);

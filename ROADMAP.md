@@ -4,9 +4,9 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M5-02 Improve completion ranking for cNxt-first constructs and restrictions.
-2. M5-03 Add semantic token classification coverage for cNxt files.
-3. M5-04 Add go-to-definition/reference regression tests for cNxt sources.
+1. M5-03 Add semantic token classification coverage for cNxt files.
+2. M5-04 Add go-to-definition/reference regression tests for cNxt sources.
+3. M5-05 Add refactor safety checks for restricted constructs.
 
 ## Deliverable Status
 
@@ -14,8 +14,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
 - [x] M4-01 through M4-14
-- [x] M5-01
-- [ ] M5-02 through M5-09
+- [x] M5-01 through M5-02
+- [ ] M5-03 through M5-09
 
 ## Completion Log
 
@@ -485,3 +485,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M5-03 and M5-04 IDE behavior tests can rely on consistent fallback parsing mode for cNxt extensions.
 - Direction check:
   - roadmap remains directionally correct; fallback compile command language selection now aligns with cNxt file extensions.
+
+### 2026-03-15 - M5-02
+
+- Completed item: improve completion ranking for cNxt-first constructs and restrictions.
+- What changed:
+  - updated `clang-tools-extra/clangd/CodeComplete.cpp` scoring flow to detect cNxt files by extension.
+  - added cNxt completion score boosts for cNxt-first constructs (`fn`, `let`, `var`, `import`, `unsafe`, `unique`, `shared`, `weak`).
+  - added cNxt completion score penalties for restricted C++ constructs (`template`, `try`, `catch`, `throw`, `goto`, `new`, `delete`).
+  - added `clang-tools-extra/clangd/unittests/CodeCompleteTests.cpp` regression coverage (`CNxtRankingAdjustments`) asserting preferred cNxt completions rank above restricted constructs.
+- What is now unblocked:
+  - M5-03 semantic token coverage can build on improved cNxt completion behavior.
+  - M5-04 and M5-05 IDE regression work can assume cNxt restriction-aware completion ordering.
+- Direction check:
+  - roadmap remains directionally correct; cNxt IDE defaults now bias toward language-first constructs and away from restricted C++ surfaces.
