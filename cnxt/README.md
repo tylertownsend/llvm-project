@@ -178,6 +178,9 @@ Workspace/project-root discovery rules:
 Formatter baseline profile:
 `cnxt/specs/cnxt-formatter-profile.md`.
 
+Lint policy baseline:
+`cnxt/specs/cnxt-lint-policy.md`.
+
 Package manager commands:
 
 - `cnxt new`

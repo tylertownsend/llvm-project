@@ -4,9 +4,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M5-07 Add lints enforcing one-obvious-way language policies.
-2. M5-08 Add fix-its for common restriction diagnostics (where safe).
-3. M5-09 Add IDE integration tests to CI with representative cNxt projects.
+1. M5-08 Add fix-its for common restriction diagnostics (where safe).
+2. M5-09 Add IDE integration tests to CI with representative cNxt projects.
 
 ## Deliverable Status
 
@@ -14,8 +13,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
 - [x] M4-01 through M4-14
-- [x] M5-01 through M5-06
-- [ ] M5-07 through M5-09
+- [x] M5-01 through M5-07
+- [ ] M5-08 through M5-09
 
 ## Completion Log
 
@@ -548,3 +547,17 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M5-09 CI integration can validate formatting alongside clangd behavior and package-manager workflows.
 - Direction check:
   - roadmap remains directionally correct; cNxt tooling now has a deterministic formatter baseline with test-backed behavior.
+
+### 2026-03-15 - M5-07
+
+- Completed item: add one-obvious-way policy lints for cNxt source.
+- What changed:
+  - added `cnxt/tools/cnxt_lint.py` with deterministic line/column diagnostics and comment/string masking.
+  - added baseline lint rules for textual include, C-style `for(...)`, manual heap operators, exception constructs, and template declarations (`CNXT9101`-`CNXT9105`), plus input-path diagnostics (`CNXT9100`).
+  - added unit coverage in `cnxt/tools/tests/test_cnxt_lint.py`.
+  - added lint-policy spec `cnxt/specs/cnxt-lint-policy.md` and linked it from `cnxt/README.md`.
+- What is now unblocked:
+  - M5-08 fix-it support can attach safe transformations to existing stable lint/diagnostic surfaces.
+  - M5-09 CI integration can run formatter+linter baselines as part of IDE-quality checks.
+- Direction check:
+  - roadmap remains directionally correct; cNxt guardrail tooling now includes explicit lint policies with test-backed diagnostics.
