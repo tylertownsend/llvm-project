@@ -4,16 +4,16 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-1. M3-12 Add parser/sema/codegen tests for ownership baseline behavior.
-2. M3-13 Add ABI/interoperability tests with mixed cNxt and C++ compilation.
-3. M4-01 Define `Cnxt.toml` manifest schema and validation rules.
+1. M3-13 Add ABI/interoperability tests with mixed cNxt and C++ compilation.
+2. M4-01 Define `Cnxt.toml` manifest schema and validation rules.
+3. M4-02 Implement manifest parser with structured diagnostics.
 
 ## Deliverable Status
 
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
-- [x] M3-00 through M3-11
-- [ ] M3-12 through M3-13
+- [x] M3-00 through M3-12
+- [ ] M3-13
 - [ ] M4-01 through M4-14
 - [ ] M5-01 through M5-09
 
@@ -248,3 +248,15 @@ Source plan: `cnxt/docs/commit-plan.md`.
   - M3-13 interoperability tests can assume explicit `extern "C"` pointer-boundary behavior in cNxt mode.
 - Direction check:
   - roadmap remains directionally correct; cNxt now enforces a concrete raw-pointer policy tied to explicit FFI boundaries.
+
+### 2026-03-15 - M3-12
+
+- Completed item: add parser/sema/codegen baseline ownership tests.
+- What changed:
+  - added parser baseline coverage in `clang/test/Parser/cnxt-ownership-baseline.cpp` for accepted ownership-handle surface operations.
+  - added sema baseline coverage in `clang/test/SemaCXX/cnxt-ownership-baseline.cpp` for illegal ownership conversion diagnostics and weak-lock flow typing.
+  - added codegen baseline coverage in `clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp` to verify std-backed ownership handle lowering and weak lock/expired call emission in LLVM IR.
+- What is now unblocked:
+  - M3-13 can focus on mixed cNxt/C++ ABI interoperability with baseline parser/sema/codegen ownership regressions already covered.
+- Direction check:
+  - roadmap remains directionally correct; ownership milestone confidence is now anchored by dedicated parser, sema, and codegen regression tests.
