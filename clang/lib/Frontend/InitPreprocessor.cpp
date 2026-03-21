@@ -101,6 +101,7 @@ static void AddImplicitCNxtPrelude(MacroBuilder &Builder) {
   Builder.append("    Other.Ptr = nullptr;");
   Builder.append("    return *this;");
   Builder.append("  }");
+  Builder.append("  ~unique() { reset(); }");
   Builder.append("  T *get() const { return Ptr; }");
   Builder.append("  T *release() {");
   Builder.append("    T *Tmp = Ptr;");

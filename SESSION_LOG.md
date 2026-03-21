@@ -33,3 +33,11 @@
 - Validation:
   `build/bin/llvm-lit -sv clang/test/Preprocessor/cnxt-prelude.c clang/test/Parser/cnxt-ownership.cpp clang/test/Parser/cnxt-unique-lowering.cpp clang/test/Parser/cnxt-shared-lowering.cpp clang/test/Parser/cnxt-weak-lowering.cpp clang/test/Parser/cnxt-unique-move-only.cpp clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp clang/test/CodeGenCXX/cnxt-ownership-interop.cpp`
 - Next target: `M6-05`.
+- Completed `M6-05`.
+- Added automatic `unique<T>` scope-exit cleanup by injecting a `unique`
+  destructor that routes through `reset()` and runtime-backed `unique_drop`.
+- Added `clang/test/CodeGenCXX/cnxt-unique-cleanup.cpp` to prove cleanup on
+  fallthrough, `return`, `break`, and `continue`.
+- Validation:
+  `build/bin/llvm-lit -sv clang/test/CodeGenCXX/cnxt-unique-cleanup.cpp clang/test/Preprocessor/cnxt-prelude.c clang/test/Parser/cnxt-ownership.cpp clang/test/Parser/cnxt-unique-lowering.cpp clang/test/Parser/cnxt-shared-lowering.cpp clang/test/Parser/cnxt-weak-lowering.cpp clang/test/Parser/cnxt-unique-move-only.cpp clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp clang/test/CodeGenCXX/cnxt-ownership-interop.cpp`
+- Next target: `M6-06`.

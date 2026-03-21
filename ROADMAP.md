@@ -8,7 +8,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-02 Replace std-header-dependent ownership prelude with compiler-owned handle declarations.
 - [x] M6-03 Add runtime library skeleton for `unique/shared/weak` lifetime operations.
 - [x] M6-04 Lower ownership operations to runtime calls in CodeGen.
-- [ ] M6-05 Emit deterministic `unique<T>` drop on all control-flow exits.
+- [x] M6-05 Emit deterministic `unique<T>` drop on all control-flow exits.
 - [ ] M6-09 Remove implicit `<memory>` dependency from cNxt prelude path.
 - [ ] M7-01 Specify user-facing construction API (no raw-pointer syntax).
 - [ ] M7-02 Parse/type-check construction expressions that return `unique<T>`.
@@ -18,7 +18,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-01
 - [x] M6-02
 - [x] M6-03
-- [ ] M6-05 through M6-12
+- [ ] M6-06 through M6-12
 - [ ] M7-01 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
@@ -50,7 +50,7 @@ Deliverables:
   ABI functions required by `unique/shared/weak`.
 - [x] M6-04 Lower ownership handle operations in CodeGen to runtime calls
   instead of direct dependence on host STL type internals.
-- [ ] M6-05 Emit deterministic `unique<T>` destruction on all exits
+- [x] M6-05 Emit deterministic `unique<T>` destruction on all exits
   (fallthrough, `return`, `break`, `continue`) for local ownership bindings.
 - [ ] M6-06 Emit reference-count operations for `shared<T>` copy/move/assign
   sites according to cNxt assignment rules.
@@ -163,6 +163,24 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M6-05
+
+- Completed item: emit deterministic `unique<T>` destruction on all control-flow exits.
+- What changed:
+  - added a real destructor to injected `unique<T>` in `clang/lib/Frontend/InitPreprocessor.cpp`, routing scope-exit cleanup through `reset()` and therefore `__cnxt_rt_own_v1_unique_drop`.
+  - added focused CodeGen coverage in `clang/test/CodeGenCXX/cnxt-unique-cleanup.cpp` proving cleanup runs for local `unique<T>` bindings on:
+    - fallthrough
+    - `return`
+    - `break`
+    - `continue`
+  - verified the runtime-backed destructor path lowers through `unique` destructor/reset entrypoints before reaching the runtime ABI.
+- What is now unblocked:
+  - M6-06 can tighten and verify `shared<T>` copy/move/assign retain-release behavior with deterministic `unique<T>` cleanup now in place.
+  - M6-10 can expand ownership regression coverage from a working unique-cleanup baseline.
+  - M6-12 end-to-end ownership examples can now rely on automatic scope-exit destruction for `unique<T>`.
+- Direction check:
+  - roadmap remains directionally correct; `unique<T>` now has actual automatic lifetime behavior instead of requiring explicit `reset()`.
 
 ### 2026-03-21 - M6-04
 
