@@ -101,3 +101,19 @@
   - `cmake --build /tmp/cnxt-ownership-default --parallel`
   - `ctest --test-dir /tmp/cnxt-ownership-default --output-on-failure`
 - Next target: `M6-12`.
+- Completed `M6-12`.
+- Exposed `__cnxt_rt_own_v1_alloc` in the injected cNxt prelude and added a
+  compiler-owned `make_unique(value)` helper so the example path needs no
+  user-written `extern "C"` ownership declarations.
+- Added `cnxt/examples/ownership/unique-heap.cn` plus README build/run commands
+  showing the current end-to-end ownership flow on this branch.
+- Added `clang/test/Driver/cnxt-ownership-example.c` to build the standalone
+  ownership runtime, compile the sample in cNxt mode, and execute it on native
+  Linux.
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/Driver/cnxt-ownership-example.c clang/test/Preprocessor/cnxt-prelude.c`
+  - `build/bin/clang++ -shared -fPIC -std=c++17 -Icnxt/runtime/ownership/include cnxt/runtime/ownership/src/ownership_runtime.cpp -o /tmp/libcnxt_ownership_rt.so`
+  - `build/bin/clang++ -x cnxt -std=cnxt1 cnxt/examples/ownership/unique-heap.cn -fcnxt-ownership-runtime=/tmp/libcnxt_ownership_rt.so -o /tmp/cnxt-unique-heap`
+  - `env LD_LIBRARY_PATH=/tmp /tmp/cnxt-unique-heap`
+- Next target: `M7-01`.

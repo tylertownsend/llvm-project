@@ -74,6 +74,8 @@ static void AddImplicitInclude(MacroBuilder &Builder, StringRef File) {
 static void AddImplicitCNxtPrelude(MacroBuilder &Builder) {
   Builder.append("# 1 \"<cnxt-prelude>\" 3");
   Builder.append("extern \"C\" {");
+  Builder.append("void *__cnxt_rt_own_v1_alloc(unsigned long long size,");
+  Builder.append("                              unsigned long long align);");
   Builder.append("void __cnxt_rt_own_v1_unique_drop(void *object, void (*dtor)(void *),");
   Builder.append("                                  unsigned long long size,");
   Builder.append("                                  unsigned long long align);");
@@ -116,6 +118,15 @@ static void AddImplicitCNxtPrelude(MacroBuilder &Builder) {
   Builder.append("    Ptr = P;");
   Builder.append("  }");
   Builder.append("};");
+  Builder.append("template <typename T> unique<T> make_unique(T Value) {");
+  Builder.append("  unique<T> Result;");
+  Builder.append("  T *Storage = static_cast<T *>(");
+  Builder.append("      __cnxt_rt_own_v1_alloc(static_cast<unsigned long long>(sizeof(T)),");
+  Builder.append("                             static_cast<unsigned long long>(alignof(T))));");
+  Builder.append("  *Storage = Value;");
+  Builder.append("  Result.reset(Storage);");
+  Builder.append("  return Result;");
+  Builder.append("}");
   Builder.append("template <typename T> struct weak;");
   Builder.append("template <typename T> struct shared {");
   Builder.append("private:");

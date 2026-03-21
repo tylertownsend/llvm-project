@@ -190,6 +190,30 @@ Ownership runtime ABI baseline:
 Ownership runtime skeleton sources:
 `cnxt/runtime/ownership/`.
 
+Current end-to-end ownership example:
+`cnxt/examples/ownership/unique-heap.cn`.
+
+Build and run the ownership example on this branch:
+
+```bash
+build/bin/clang++ -shared -fPIC -std=c++17 \
+  -Icnxt/runtime/ownership/include \
+  cnxt/runtime/ownership/src/ownership_runtime.cpp \
+  -o /tmp/libcnxt_ownership_rt.so
+
+build/bin/clang++ -x cnxt -std=cnxt1 \
+  cnxt/examples/ownership/unique-heap.cn \
+  -fcnxt-ownership-runtime=/tmp/libcnxt_ownership_rt.so \
+  -o /tmp/cnxt-unique-heap
+
+LD_LIBRARY_PATH=/tmp /tmp/cnxt-unique-heap
+```
+
+This sample is intentionally transitional: it uses the compiler-owned
+`make_unique(value)` helper injected by the cNxt prelude so the program needs
+no user-written `extern "C"` declarations, while richer construction syntax is
+still tracked in Milestone 7.
+
 IDE CI integration baseline:
 `cnxt/specs/cnxt-ide-ci.md`.
 

@@ -15,6 +15,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-09 Remove implicit `<memory>` dependency from cNxt prelude path.
 - [x] M6-10 Add parser/sema/codegen regression tests for runtime-backed ownership behavior.
 - [x] M6-11 Add runtime leak/double-free smoke tests (ASan/LSan-enabled CI job).
+- [x] M6-12 Add an end-to-end cNxt example that allocates and drops a heap object with `unique<T>` and no `extern "C"` declarations.
 - [ ] M7-01 Specify user-facing construction API (no raw-pointer syntax).
 - [ ] M7-02 Parse/type-check construction expressions that return `unique<T>`.
 
@@ -25,7 +26,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-03
 - [x] M6-08 through M6-10
 - [x] M6-11
-- [ ] M6-12
+- [x] M6-12
 - [ ] M7-01 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
@@ -70,7 +71,7 @@ Deliverables:
 - [x] M6-10 Add parser/sema/codegen regression tests for runtime-backed
   ownership behavior in `clang/test/{Parser,SemaCXX,CodeGenCXX}`.
 - [x] M6-11 Add runtime leak/double-free smoke tests (ASan/LSan-enabled CI job).
-- [ ] M6-12 Add an end-to-end cNxt example that allocates and drops a heap
+- [x] M6-12 Add an end-to-end cNxt example that allocates and drops a heap
   object with `unique<T>` and no `extern "C"` declarations.
 
 ### Milestone 7 - Construction Surface Without Raw Pointers
@@ -170,6 +171,41 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M6-12
+
+- Completed item: add an end-to-end cNxt ownership example that allocates heap
+  storage, wraps it in `unique<T>`, and runs without user-written
+  `extern "C"` declarations.
+- What changed:
+  - exposed `__cnxt_rt_own_v1_alloc` through the injected cNxt prelude and
+    added a compiler-owned `make_unique(value)` helper so a cNxt program can
+    allocate an owned heap cell without declaring runtime ABI symbols in user
+    code.
+  - added `cnxt/examples/ownership/unique-heap.cn` as the milestone-6 sample:
+    allocate `unique<int>`, read it back, and rely on automatic scope-exit
+    cleanup.
+  - updated `cnxt/README.md` with exact commands to build the ownership runtime,
+    compile the example with `-x cnxt`, and run it with `LD_LIBRARY_PATH`
+    pointing at the runtime library.
+  - added `clang/test/Driver/cnxt-ownership-example.c` to build the runtime,
+    compile the sample, and execute the resulting binary in a native Linux
+    lit test.
+- Follow-up notes:
+  - `make_unique(value)` is a transitional milestone-6 helper, not the final
+    construction surface. Milestone 7 still owns the user-facing construction
+    API and broader constructor/lifetime semantics.
+- What is now unblocked:
+  - M7-01 can write the construction API spec from a working no-`extern "C"`
+    example rather than a purely hypothetical surface.
+  - M9 quickstarts and starter templates can point at a repo-owned ownership
+    sample while the broader no-glue standard library work is still pending.
+  - M10 acceptance work now has a concrete end-to-end ownership sample to keep
+    alive in CI as the construction surface evolves.
+- Direction check:
+  - roadmap remains directionally correct; `M7-01` is next because the branch
+    now has a runnable no-`extern "C"` ownership sample, but its construction
+    API is intentionally temporary and needs formalization.
 
 ### 2026-03-21 - M6-11
 
