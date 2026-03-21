@@ -1,0 +1,47 @@
+name: cNxt Ownership Runtime Sanitizers
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+      - cnxt/main
+    paths:
+      - "cnxt/runtime/ownership/**"
+      - ".github/workflows/cnxt-ownership-runtime-sanitizers.yml"
+  pull_request:
+    paths:
+      - "cnxt/runtime/ownership/**"
+      - ".github/workflows/cnxt-ownership-runtime-sanitizers.yml"
+
+jobs:
+  ownership-runtime-sanitizers:
+    name: ownership runtime sanitizers
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Fetch LLVM sources
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Show toolchain
+        run: |
+          c++ --version
+          cmake --version
+          ninja --version
+
+      - name: Configure ownership runtime sanitizer build
+        run: >
+          cmake -S cnxt/runtime/ownership
+          -B build-cnxt-ownership-sanitizers
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          -DCMAKE_CXX_COMPILER=c++
+          -DBUILD_TESTING=ON
+          -DCNXT_OWNERSHIP_RT_ENABLE_SANITIZERS=ON
+
+      - name: Build ownership runtime sanitizer tests
+        run: cmake --build build-cnxt-ownership-sanitizers --parallel
+
+      - name: Run ownership runtime sanitizer tests
+        run: ctest --test-dir build-cnxt-ownership-sanitizers --output-on-failure

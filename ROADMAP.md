@@ -14,7 +14,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-08 Add diagnostics when ownership runtime linkage is missing or ABI is incompatible.
 - [x] M6-09 Remove implicit `<memory>` dependency from cNxt prelude path.
 - [x] M6-10 Add parser/sema/codegen regression tests for runtime-backed ownership behavior.
-- [ ] M6-11 Add runtime leak/double-free smoke tests (ASan/LSan-enabled CI job).
+- [x] M6-11 Add runtime leak/double-free smoke tests (ASan/LSan-enabled CI job).
 - [ ] M7-01 Specify user-facing construction API (no raw-pointer syntax).
 - [ ] M7-02 Parse/type-check construction expressions that return `unique<T>`.
 
@@ -24,7 +24,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-02
 - [x] M6-03
 - [x] M6-08 through M6-10
-- [ ] M6-11 through M6-12
+- [x] M6-11
+- [ ] M6-12
 - [ ] M7-01 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
@@ -68,7 +69,7 @@ Deliverables:
   dependence from cNxt prelude path.
 - [x] M6-10 Add parser/sema/codegen regression tests for runtime-backed
   ownership behavior in `clang/test/{Parser,SemaCXX,CodeGenCXX}`.
-- [ ] M6-11 Add runtime leak/double-free smoke tests (ASan/LSan-enabled CI job).
+- [x] M6-11 Add runtime leak/double-free smoke tests (ASan/LSan-enabled CI job).
 - [ ] M6-12 Add an end-to-end cNxt example that allocates and drops a heap
   object with `unique<T>` and no `extern "C"` declarations.
 
@@ -169,6 +170,37 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M6-11
+
+- Completed item: add ownership-runtime smoke tests for clean lifecycle, leak
+  detection, and double-free detection, and run them in a sanitizer-backed CI
+  job.
+- What changed:
+  - extended `cnxt/runtime/ownership/CMakeLists.txt` with `BUILD_TESTING`
+    support, a `CNXT_OWNERSHIP_RT_ENABLE_SANITIZERS` option, and runtime/test
+    instrumentation flags for AddressSanitizer plus LeakSanitizer.
+  - added `cnxt/runtime/ownership/tests/ownership_runtime_smoke.cpp`, a
+    standalone ABI-level smoke binary with `clean`, `leak`, and `double_free`
+    modes that exercise `unique`, `shared`, and `weak` runtime entry points.
+  - added `cnxt/runtime/ownership/cmake/expect_sanitizer_failure.cmake` so the
+    leak and double-free tests explicitly require sanitizer failures and match
+    the expected ASan/LSan diagnostics rather than relying on generic non-zero
+    exits.
+  - added `.github/workflows/cnxt-ownership-runtime-sanitizers.yml` to build
+    the ownership runtime in isolation and run the smoke suite in CI with
+    sanitizer instrumentation enabled.
+- What is now unblocked:
+  - M6-12 can add an end-to-end ownership example on top of a runtime layer
+    that now has direct leak and double-free smoke coverage.
+  - M10-01 ownership-runtime hardening can build on an existing sanitizer test
+    harness instead of starting from ad hoc process wrappers.
+  - M10-04 CI matrix expansion can reuse the dedicated ownership-runtime job as
+    the Linux baseline for runtime safety validation.
+- Direction check:
+  - roadmap remains directionally correct; `M6-12` is the right next item
+    because the ownership runtime now has both compiler-side regressions and
+    direct sanitizer-backed smoke coverage.
 
 ### 2026-03-21 - M6-10
 

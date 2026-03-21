@@ -82,3 +82,22 @@
 - Validation:
   `build/bin/llvm-lit -sv clang/test/Parser/cnxt-ownership.cpp clang/test/Parser/cnxt-ownership-baseline.cpp clang/test/Parser/cnxt-ownership-conversions.cpp clang/test/Parser/cnxt-unique-lowering.cpp clang/test/Parser/cnxt-shared-lowering.cpp clang/test/Parser/cnxt-weak-lowering.cpp clang/test/Parser/cnxt-unique-move-only.cpp clang/test/Parser/cnxt-shared-copy-rules.cpp clang/test/Parser/cnxt-weak-lock-required.cpp clang/test/Parser/cnxt-ownership-runtime-surface.cpp clang/test/SemaCXX/cnxt-ownership-baseline.cpp clang/test/SemaCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp clang/test/CodeGenCXX/cnxt-ownership-interop.cpp clang/test/CodeGenCXX/cnxt-unique-cleanup.cpp clang/test/CodeGenCXX/cnxt-shared-refcount.cpp clang/test/CodeGenCXX/cnxt-weak-nullability.cpp clang/test/CodeGenCXX/cnxt-ownership-runtime.cpp`
 - Next target: `M6-11`.
+- Completed `M6-11`.
+- Added standalone ownership runtime smoke coverage under
+  `cnxt/runtime/ownership/tests/ownership_runtime_smoke.cpp` for clean
+  lifecycle, leak, and double-free paths.
+- Extended `cnxt/runtime/ownership/CMakeLists.txt` with `BUILD_TESTING`,
+  sanitizer instrumentation support, and CTest wiring for clean and expected
+  sanitizer-failure paths.
+- Added `cnxt/runtime/ownership/cmake/expect_sanitizer_failure.cmake` so
+  leak/double-free tests require the expected ASan/LSan diagnostics.
+- Added `.github/workflows/cnxt-ownership-runtime-sanitizers.yml` to build and
+  run the standalone ownership runtime sanitizer suite in CI.
+- Validation:
+  - `cmake -S cnxt/runtime/ownership -B /tmp/cnxt-ownership-sanitizers -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_COMPILER=/usr/bin/c++ -DBUILD_TESTING=ON -DCNXT_OWNERSHIP_RT_ENABLE_SANITIZERS=ON`
+  - `cmake --build /tmp/cnxt-ownership-sanitizers --parallel`
+  - `ctest --test-dir /tmp/cnxt-ownership-sanitizers --output-on-failure`
+  - `cmake -S cnxt/runtime/ownership -B /tmp/cnxt-ownership-default -G Ninja -DCMAKE_CXX_COMPILER=/usr/bin/c++ -DBUILD_TESTING=ON`
+  - `cmake --build /tmp/cnxt-ownership-default --parallel`
+  - `ctest --test-dir /tmp/cnxt-ownership-default --output-on-failure`
+- Next target: `M6-12`.
