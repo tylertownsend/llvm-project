@@ -6,7 +6,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 - [x] M6-01 Define compiler-owned ownership runtime ABI and symbol contract.
 - [x] M6-02 Replace std-header-dependent ownership prelude with compiler-owned handle declarations.
-- [ ] M6-03 Add runtime library skeleton for `unique/shared/weak` lifetime operations.
+- [x] M6-03 Add runtime library skeleton for `unique/shared/weak` lifetime operations.
 - [ ] M6-04 Lower ownership operations to runtime calls in CodeGen.
 - [ ] M6-05 Emit deterministic `unique<T>` drop on all control-flow exits.
 - [ ] M6-09 Remove implicit `<memory>` dependency from cNxt prelude path.
@@ -17,7 +17,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 - [x] M6-01
 - [x] M6-02
-- [ ] M6-03 through M6-12
+- [x] M6-03
+- [ ] M6-04 through M6-12
 - [ ] M7-01 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
@@ -162,6 +163,25 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M6-03
+
+- Completed item: add runtime library skeleton for `unique/shared/weak` lifetime operations.
+- What changed:
+  - added `cnxt/runtime/ownership/` skeleton project with standalone CMake build (`cnxt_ownership_rt` shared library target).
+  - added public C ABI header:
+    - `cnxt/runtime/ownership/include/cnxt/runtime/ownership.h`
+  - added baseline runtime implementation exporting ABI v1 symbols:
+    - `cnxt/runtime/ownership/src/ownership_runtime.cpp`
+  - added runtime skeleton documentation:
+    - `cnxt/runtime/ownership/README.md`
+  - linked runtime skeleton path from `cnxt/README.md`.
+- What is now unblocked:
+  - M6-04 can lower ownership operations in CodeGen to concrete runtime symbols that now exist in source form.
+  - M6-08 can add runtime-link diagnostics against an actual runtime library artifact.
+  - M6-11 runtime safety/leak checks can evolve from this implementation baseline.
+- Direction check:
+  - roadmap remains directionally correct; ownership runtime work is now represented by buildable source artifacts rather than spec-only planning.
 
 ### 2026-03-21 - M6-02
 
