@@ -25,3 +25,11 @@
   - `cmake --build /tmp/cnxt-ownership-rt-build -j4`
   - `nm -D /tmp/cnxt-ownership-rt-build/libcnxt_ownership_rt.so.1 | rg "__cnxt_rt_own_v1_"`
 - Next target: `M6-04`.
+- Completed `M6-04`.
+- Updated cNxt injected prelude lowering so ownership operations call runtime ABI
+  symbols (`__cnxt_rt_own_v1_*`) instead of pointer-only shims.
+- Updated CodeGen checks to assert runtime-call lowering for
+  `weak<T>.lock()` / `weak<T>.expired()`.
+- Validation:
+  `build/bin/llvm-lit -sv clang/test/Preprocessor/cnxt-prelude.c clang/test/Parser/cnxt-ownership.cpp clang/test/Parser/cnxt-unique-lowering.cpp clang/test/Parser/cnxt-shared-lowering.cpp clang/test/Parser/cnxt-weak-lowering.cpp clang/test/Parser/cnxt-unique-move-only.cpp clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp clang/test/CodeGenCXX/cnxt-ownership-interop.cpp`
+- Next target: `M6-05`.

@@ -6,9 +6,13 @@
 // CNXT: %struct.weak = type { ptr }
 // CNXT-LABEL: define{{.*}} @cnxt_lock(
 // CNXT: call {{.*}} @_ZNK4weakIiE4lockEv
+// CNXT-LABEL: define linkonce_odr{{.*}} @_ZNK4weakIiE4lockEv(
+// CNXT: call ptr @__cnxt_rt_own_v1_weak_lock(ptr
 // CNXT-LABEL: define{{.*}} @cnxt_echo_ptr(
 // CNXT-LABEL: define{{.*}} @cnxt_expired(
 // CNXT: call {{.*}} @_ZNK4weakIiE7expiredEv
+// CNXT-LABEL: define linkonce_odr{{.*}} @_ZNK4weakIiE7expiredEv(
+// CNXT: call{{.*}} @__cnxt_rt_own_v1_weak_expired(ptr
 
 // CXX: %"struct.std::shared_ptr" = type { ptr }
 // CXX: %"struct.std::weak_ptr" = type { ptr }

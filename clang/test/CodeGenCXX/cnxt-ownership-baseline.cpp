@@ -20,6 +20,10 @@ extern "C" int weak_is_expired(weak<int> handle) { return handle.expired(); }
 
 // CHECK-LABEL: define{{.*}} @lock_weak(
 // CHECK: call {{.*}} @_ZNK4weakIiE4lockEv
+// CHECK-LABEL: define linkonce_odr{{.*}} @_ZNK4weakIiE4lockEv(
+// CHECK: call ptr @__cnxt_rt_own_v1_weak_lock(ptr
 
 // CHECK-LABEL: define{{.*}} @weak_is_expired(
 // CHECK: call {{.*}} @_ZNK4weakIiE7expiredEv
+// CHECK-LABEL: define linkonce_odr{{.*}} @_ZNK4weakIiE7expiredEv(
+// CHECK: call{{.*}} @__cnxt_rt_own_v1_weak_expired(ptr

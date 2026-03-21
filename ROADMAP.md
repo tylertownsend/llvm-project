@@ -7,7 +7,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-01 Define compiler-owned ownership runtime ABI and symbol contract.
 - [x] M6-02 Replace std-header-dependent ownership prelude with compiler-owned handle declarations.
 - [x] M6-03 Add runtime library skeleton for `unique/shared/weak` lifetime operations.
-- [ ] M6-04 Lower ownership operations to runtime calls in CodeGen.
+- [x] M6-04 Lower ownership operations to runtime calls in CodeGen.
 - [ ] M6-05 Emit deterministic `unique<T>` drop on all control-flow exits.
 - [ ] M6-09 Remove implicit `<memory>` dependency from cNxt prelude path.
 - [ ] M7-01 Specify user-facing construction API (no raw-pointer syntax).
@@ -18,7 +18,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-01
 - [x] M6-02
 - [x] M6-03
-- [ ] M6-04 through M6-12
+- [ ] M6-05 through M6-12
 - [ ] M7-01 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
@@ -42,13 +42,13 @@ host C++ `<memory>` headers in user compilation flows.
 
 Deliverables:
 
-- [ ] M6-01 Write `cnxt/specs/cnxt-ownership-runtime.md` defining runtime ABI:
+- [x] M6-01 Write `cnxt/specs/cnxt-ownership-runtime.md` defining runtime ABI:
   allocation, retain/release, weak-lock/expired, and symbol naming/versioning.
-- [ ] M6-02 Replace current prelude aliases with compiler-owned ownership handle
+- [x] M6-02 Replace current prelude aliases with compiler-owned ownership handle
   declarations that do not require parsing host `<memory>` in user mode.
-- [ ] M6-03 Add `cnxt/runtime/ownership/` runtime library skeleton exporting the
+- [x] M6-03 Add `cnxt/runtime/ownership/` runtime library skeleton exporting the
   ABI functions required by `unique/shared/weak`.
-- [ ] M6-04 Lower ownership handle operations in CodeGen to runtime calls
+- [x] M6-04 Lower ownership handle operations in CodeGen to runtime calls
   instead of direct dependence on host STL type internals.
 - [ ] M6-05 Emit deterministic `unique<T>` destruction on all exits
   (fallthrough, `return`, `break`, `continue`) for local ownership bindings.
@@ -163,6 +163,25 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M6-04
+
+- Completed item: lower ownership handle operations to runtime calls in CodeGen.
+- What changed:
+  - updated cNxt prelude injection in `clang/lib/Frontend/InitPreprocessor.cpp` so ownership handles declare and call ABI v1 runtime symbols (`__cnxt_rt_own_v1_*`) for weak/shared operations and `unique.reset`.
+  - switched injected `shared<T>` / `weak<T>` handle internals to runtime control-pointer semantics with retain/release copy/move/destructor behavior routed through runtime calls.
+  - expanded cNxt codegen regression checks to assert runtime call lowering for:
+    - `weak<T>.lock()` -> `__cnxt_rt_own_v1_weak_lock`
+    - `weak<T>.expired()` -> `__cnxt_rt_own_v1_weak_expired`
+  - updated tests:
+    - `clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp`
+    - `clang/test/CodeGenCXX/cnxt-ownership-interop.cpp`
+- What is now unblocked:
+  - M6-05 can focus on deterministic `unique<T>` drop coverage on all control-flow exits with runtime-backed drop entrypoints already in prelude.
+  - M6-06 can tighten `shared<T>` assignment/copy lowering details now that baseline retain/release runtime paths exist.
+  - M6-07 can extend runtime-backed weak semantics from baseline lowering to stricter nullability/behavior checks.
+- Direction check:
+  - roadmap remains directionally correct; ownership lowering now targets compiler-owned runtime ABI symbols instead of prelude-only pointer shims.
 
 ### 2026-03-21 - M6-03
 
