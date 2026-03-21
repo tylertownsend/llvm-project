@@ -10,7 +10,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-04 Lower ownership operations to runtime calls in CodeGen.
 - [x] M6-05 Emit deterministic `unique<T>` drop on all control-flow exits.
 - [x] M6-06 Emit reference-count operations for `shared<T>` copy/move/assign.
-- [ ] M6-09 Remove implicit `<memory>` dependency from cNxt prelude path.
+- [x] M6-09 Remove implicit `<memory>` dependency from cNxt prelude path.
 - [ ] M7-01 Specify user-facing construction API (no raw-pointer syntax).
 - [ ] M7-02 Parse/type-check construction expressions that return `unique<T>`.
 
@@ -59,7 +59,7 @@ Deliverables:
   explicit nullability semantics.
 - [ ] M6-08 Add diagnostics when ownership runtime linkage is missing or ABI is
   incompatible (`-x cnxt` should fail fast with cNxt-specific messaging).
-- [ ] M6-09 Remove implicit `<memory>` inclusion/`__has_include(<memory>)`
+- [x] M6-09 Remove implicit `<memory>` inclusion/`__has_include(<memory>)`
   dependence from cNxt prelude path.
 - [ ] M6-10 Add parser/sema/codegen regression tests for runtime-backed
   ownership behavior in `clang/test/{Parser,SemaCXX,CodeGenCXX}`.
@@ -164,6 +164,20 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M6-09
+
+- Completed item: remove implicit `<memory>` dependency from the cNxt prelude path.
+- What changed:
+  - strengthened `clang/test/Preprocessor/cnxt-prelude.c` to assert the injected cNxt prelude does not reference `<memory>` or std smart-pointer spellings.
+  - added a `-nostdinc++` syntax-only regression in the prelude test so compiler-owned ownership handles remain usable even when host C++ standard library headers are unavailable.
+  - verified the current prelude path remains compiler-owned and self-contained for `unique/shared/weak`.
+- What is now unblocked:
+  - M6-10 ownership regression coverage can rely on an explicit no-`<memory>` invariant.
+  - M6-12 end-to-end samples can assume ownership handles are available without host C++ library headers.
+  - M7 construction-surface work can build on a header-independent ownership baseline.
+- Direction check:
+  - roadmap remains directionally correct; the compiler-owned prelude is now guarded against accidental regression back to host `<memory>` coupling.
 
 ### 2026-03-21 - M6-06
 

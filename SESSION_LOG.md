@@ -47,3 +47,11 @@
 - Validation:
   `build/bin/llvm-lit -sv clang/test/CodeGenCXX/cnxt-shared-refcount.cpp clang/test/CodeGenCXX/cnxt-unique-cleanup.cpp clang/test/Preprocessor/cnxt-prelude.c clang/test/Parser/cnxt-ownership.cpp clang/test/Parser/cnxt-unique-lowering.cpp clang/test/Parser/cnxt-shared-lowering.cpp clang/test/Parser/cnxt-weak-lowering.cpp clang/test/Parser/cnxt-unique-move-only.cpp clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp clang/test/CodeGenCXX/cnxt-ownership-interop.cpp`
 - Next target: `M6-07` or `M6-09` pending direction check.
+- Completed `M6-09`.
+- Tightened `clang/test/Preprocessor/cnxt-prelude.c` to assert no `<memory>` or
+  `std::*ptr` spellings appear in the injected cNxt prelude.
+- Added a `-nostdinc++` syntax-only regression so `unique/shared/weak` remain
+  available without host C++ standard library headers.
+- Validation:
+  `build/bin/llvm-lit -sv clang/test/Preprocessor/cnxt-prelude.c clang/test/CodeGenCXX/cnxt-shared-refcount.cpp clang/test/CodeGenCXX/cnxt-unique-cleanup.cpp clang/test/Parser/cnxt-ownership.cpp clang/test/Parser/cnxt-unique-lowering.cpp clang/test/Parser/cnxt-shared-lowering.cpp clang/test/Parser/cnxt-weak-lowering.cpp clang/test/Parser/cnxt-unique-move-only.cpp clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp clang/test/CodeGenCXX/cnxt-ownership-interop.cpp`
+- Next target: `M6-07`.
