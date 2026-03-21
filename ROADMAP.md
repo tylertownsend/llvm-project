@@ -5,7 +5,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 ## Priority Queue
 
 - [x] M6-01 Define compiler-owned ownership runtime ABI and symbol contract.
-- [ ] M6-02 Replace std-header-dependent ownership prelude with compiler-owned handle declarations.
+- [x] M6-02 Replace std-header-dependent ownership prelude with compiler-owned handle declarations.
 - [ ] M6-03 Add runtime library skeleton for `unique/shared/weak` lifetime operations.
 - [ ] M6-04 Lower ownership operations to runtime calls in CodeGen.
 - [ ] M6-05 Emit deterministic `unique<T>` drop on all control-flow exits.
@@ -16,7 +16,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 ## Deliverable Status
 
 - [x] M6-01
-- [ ] M6-02 through M6-12
+- [x] M6-02
+- [ ] M6-03 through M6-12
 - [ ] M7-01 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
@@ -161,6 +162,25 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M6-02
+
+- Completed item: replace std-header-dependent ownership prelude with compiler-owned handle declarations.
+- What changed:
+  - updated `clang/lib/Frontend/InitPreprocessor.cpp` to inject compiler-owned `unique<T>`, `shared<T>`, and `weak<T>` template struct declarations directly in `<cnxt-prelude>`.
+  - removed implicit `#include <memory>` and std-alias prelude dependency from the cNxt prelude path.
+  - updated ownership-kind classification in `clang/lib/Sema/SemaExpr.cpp` to recognize both legacy (`*_ptr`) and compiler-owned (`unique/shared/weak`) handle names during assignment conversion checks.
+  - refreshed cNxt prelude/codegen/parser expectations in:
+    - `clang/test/Preprocessor/cnxt-prelude.c`
+    - `clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp`
+    - `clang/test/CodeGenCXX/cnxt-ownership-interop.cpp`
+    - `clang/test/Parser/cnxt-unique-move-only.cpp`
+- What is now unblocked:
+  - M6-03 runtime library skeleton can target compiler-owned handle declarations without std-header coupling.
+  - M6-04 CodeGen runtime-call lowering can transition away from std::weak_ptr-specific call expectations.
+  - M6-09 prelude cleanup scope is reduced because the core `<memory>` dependency is already removed from injected declarations.
+- Direction check:
+  - roadmap remains directionally correct; ownership surface is now compiler-owned in user mode, which is required before runtime ABI lowering work.
 
 ### 2026-03-21 - M6-01
 

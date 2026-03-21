@@ -2,13 +2,13 @@
 // RUN: %clang_cc1 -x cnxt -std=cnxt1 -Wno-return-type-c-linkage -emit-llvm -o - %t/cnxt-api.cn | FileCheck %s --check-prefix=CNXT
 // RUN: %clang_cc1 -x c++ -std=c++17 -Wno-return-type-c-linkage -emit-llvm -o - %t/cxx-consumer.cpp | FileCheck %s --check-prefix=CXX
 
-// CNXT: %"struct.std::shared_ptr" = type { ptr }
-// CNXT: %"struct.std::weak_ptr" = type { ptr }
+// CNXT: %struct.shared = type { ptr }
+// CNXT: %struct.weak = type { ptr }
 // CNXT-LABEL: define{{.*}} @cnxt_lock(
-// CNXT: call ptr @_ZNKSt8weak_ptrIiE4lockEv
+// CNXT: call {{.*}} @_ZNK4weakIiE4lockEv
 // CNXT-LABEL: define{{.*}} @cnxt_echo_ptr(
 // CNXT-LABEL: define{{.*}} @cnxt_expired(
-// CNXT: call noundef zeroext i1 @_ZNKSt8weak_ptrIiE7expiredEv
+// CNXT: call {{.*}} @_ZNK4weakIiE7expiredEv
 
 // CXX: %"struct.std::shared_ptr" = type { ptr }
 // CXX: %"struct.std::weak_ptr" = type { ptr }

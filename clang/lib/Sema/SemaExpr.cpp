@@ -9583,11 +9583,11 @@ enum class CNxtOwnershipKind { None, Unique, Shared, Weak };
 static CNxtOwnershipKind classifyCNxtOwnershipHandle(QualType QT) {
   QT = QT.getCanonicalType().getUnqualifiedType();
   auto classifyByName = [](StringRef Name) {
-    if (Name == "unique_ptr")
+    if (Name == "unique_ptr" || Name == "unique")
       return CNxtOwnershipKind::Unique;
-    if (Name == "shared_ptr")
+    if (Name == "shared_ptr" || Name == "shared")
       return CNxtOwnershipKind::Shared;
-    if (Name == "weak_ptr")
+    if (Name == "weak_ptr" || Name == "weak")
       return CNxtOwnershipKind::Weak;
     return CNxtOwnershipKind::None;
   };
