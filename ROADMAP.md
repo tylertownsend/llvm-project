@@ -9,6 +9,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-03 Add runtime library skeleton for `unique/shared/weak` lifetime operations.
 - [x] M6-04 Lower ownership operations to runtime calls in CodeGen.
 - [x] M6-05 Emit deterministic `unique<T>` drop on all control-flow exits.
+- [x] M6-06 Emit reference-count operations for `shared<T>` copy/move/assign.
 - [ ] M6-09 Remove implicit `<memory>` dependency from cNxt prelude path.
 - [ ] M7-01 Specify user-facing construction API (no raw-pointer syntax).
 - [ ] M7-02 Parse/type-check construction expressions that return `unique<T>`.
@@ -18,7 +19,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-01
 - [x] M6-02
 - [x] M6-03
-- [ ] M6-06 through M6-12
+- [ ] M6-07 through M6-12
 - [ ] M7-01 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
@@ -52,7 +53,7 @@ Deliverables:
   instead of direct dependence on host STL type internals.
 - [x] M6-05 Emit deterministic `unique<T>` destruction on all exits
   (fallthrough, `return`, `break`, `continue`) for local ownership bindings.
-- [ ] M6-06 Emit reference-count operations for `shared<T>` copy/move/assign
+- [x] M6-06 Emit reference-count operations for `shared<T>` copy/move/assign
   sites according to cNxt assignment rules.
 - [ ] M6-07 Emit runtime-backed `weak<T>.lock()` / `.expired()` behavior with
   explicit nullability semantics.
@@ -163,6 +164,26 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M6-06
+
+- Completed item: emit reference-count operations for `shared<T>` copy/move/assign sites.
+- What changed:
+  - added `clang/test/CodeGenCXX/cnxt-shared-refcount.cpp` covering runtime-backed refcount lowering for:
+    - copy construction
+    - move construction
+    - copy assignment
+    - move assignment
+    - destruction of local shared handles
+  - verified copy construction lowers to `__cnxt_rt_own_v1_shared_retain`.
+  - verified destruction and move assignment lower to `__cnxt_rt_own_v1_shared_release`.
+  - verified move construction does not emit retain/release traffic and copy assignment emits retain before release.
+- What is now unblocked:
+  - M6-07 can build on an explicitly tested shared/weak control-block baseline.
+  - M6-10 runtime-backed ownership regression coverage now includes both unique and shared handle paths.
+  - M6-12 end-to-end ownership examples can rely on tested shared copy/move semantics.
+- Direction check:
+  - roadmap remains directionally correct; shared-handle refcount semantics are now exercised directly at the CodeGen/runtime boundary instead of being implicit in prelude code alone.
 
 ### 2026-03-21 - M6-05
 
