@@ -187,6 +187,9 @@ Safe fix-it baseline:
 Ownership runtime ABI baseline:
 `cnxt/specs/cnxt-ownership-runtime.md`.
 
+Construction API baseline:
+`cnxt/specs/cnxt-construction-api.md`.
+
 Ownership runtime skeleton sources:
 `cnxt/runtime/ownership/`.
 

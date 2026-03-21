@@ -16,7 +16,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-10 Add parser/sema/codegen regression tests for runtime-backed ownership behavior.
 - [x] M6-11 Add runtime leak/double-free smoke tests (ASan/LSan-enabled CI job).
 - [x] M6-12 Add an end-to-end cNxt example that allocates and drops a heap object with `unique<T>` and no `extern "C"` declarations.
-- [ ] M7-01 Specify user-facing construction API (no raw-pointer syntax).
+- [x] M7-01 Specify user-facing construction API (no raw-pointer syntax).
 - [ ] M7-02 Parse/type-check construction expressions that return `unique<T>`.
 
 ## Deliverable Status
@@ -27,7 +27,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-08 through M6-10
 - [x] M6-11
 - [x] M6-12
-- [ ] M7-01 through M7-10
+- [x] M7-01
+- [ ] M7-02 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
 - [ ] M10-01 through M10-06
@@ -81,7 +82,7 @@ automatic lifetime semantics and no raw-pointer escape hatches in safe code.
 
 Deliverables:
 
-- [ ] M7-01 Define construction syntax/API in spec (for example `make<T>(...)`)
+- [x] M7-01 Define construction syntax/API in spec (for example `make<T>(...)`)
   and its ownership/lifetime contract.
 - [ ] M7-02 Implement parser support for cNxt construction expressions.
 - [ ] M7-03 Implement Sema rules so construction expressions type-check to
@@ -171,6 +172,38 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M7-01
+
+- Completed item: define the user-facing raw-pointer-free construction API in a
+  milestone-specific spec.
+- What changed:
+  - added `cnxt/specs/cnxt-construction-api.md` defining the intended
+    `make<T>(...) -> unique<T>` surface, type rules, safety constraints,
+    initialization semantics, ownership semantics, and runtime/lowering
+    contract.
+  - documented that direct heap construction in safe code should not require
+    raw pointers or runtime ABI spellings, and that direct `shared<T>` /
+    `weak<T>` construction is out of scope for this baseline.
+  - captured the transition plan from the temporary Milestone 6
+    `make_unique(value)` helper to the long-term `make<T>(...)` language
+    surface.
+  - linked the new spec from `cnxt/README.md`.
+- Follow-up notes:
+  - the spec intentionally defines the long-term API, not the temporary helper
+    that exists today for the milestone-6 sample.
+  - constructor resolution, diagnostics, and lowering are now implementation
+    tasks for M7-02 through M7-04 rather than open API questions.
+- What is now unblocked:
+  - M7-02 can implement parser support against a fixed spelling and result
+    model instead of exploring multiple construction syntaxes in code.
+  - M7-03 can derive its type-checking rules directly from the spec’s payload,
+    ownership-handle, and raw-pointer restrictions.
+  - M7-08 fix-it work now has an explicit target surface for rewriting
+    pointer-centric heap allocation into `make<T>(...)`.
+- Direction check:
+  - roadmap remains directionally correct; `M7-02` is next because the
+    construction API contract is now pinned well enough to start parser work.
 
 ### 2026-03-21 - M6-12
 

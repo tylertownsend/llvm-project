@@ -117,3 +117,13 @@
   - `build/bin/clang++ -x cnxt -std=cnxt1 cnxt/examples/ownership/unique-heap.cn -fcnxt-ownership-runtime=/tmp/libcnxt_ownership_rt.so -o /tmp/cnxt-unique-heap`
   - `env LD_LIBRARY_PATH=/tmp /tmp/cnxt-unique-heap`
 - Next target: `M7-01`.
+- Completed `M7-01`.
+- Added `cnxt/specs/cnxt-construction-api.md` as the source of truth for the
+  intended `make<T>(...) -> unique<T>` construction surface.
+- Linked the new construction spec from `cnxt/README.md`.
+- Recorded that the Milestone 6 `make_unique(value)` helper is transitional and
+  that Milestone 7 implementation work should converge on `make<T>(...)`.
+- Validation:
+  - `git diff --check`
+  - `rg -n "cnxt-construction-api.md|M7-01|M7-02" ROADMAP.md SESSION_LOG.md cnxt/README.md`
+- Next target: `M7-02`.
