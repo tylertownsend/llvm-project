@@ -74,3 +74,11 @@
   - `ninja -C build clang`
   - `build/bin/llvm-lit -sv clang/test/Driver/cnxt-driver.c clang/test/Driver/cnxt-ownership-runtime.c`
 - Next target: `M6-10`.
+- Completed `M6-10`.
+- Added parser, `SemaCXX`, and `CodeGenCXX` ownership-runtime regression tests:
+  - `clang/test/Parser/cnxt-ownership-runtime-surface.cpp`
+  - `clang/test/SemaCXX/cnxt-ownership-runtime.cpp`
+  - `clang/test/CodeGenCXX/cnxt-ownership-runtime.cpp`
+- Validation:
+  `build/bin/llvm-lit -sv clang/test/Parser/cnxt-ownership.cpp clang/test/Parser/cnxt-ownership-baseline.cpp clang/test/Parser/cnxt-ownership-conversions.cpp clang/test/Parser/cnxt-unique-lowering.cpp clang/test/Parser/cnxt-shared-lowering.cpp clang/test/Parser/cnxt-weak-lowering.cpp clang/test/Parser/cnxt-unique-move-only.cpp clang/test/Parser/cnxt-shared-copy-rules.cpp clang/test/Parser/cnxt-weak-lock-required.cpp clang/test/Parser/cnxt-ownership-runtime-surface.cpp clang/test/SemaCXX/cnxt-ownership-baseline.cpp clang/test/SemaCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp clang/test/CodeGenCXX/cnxt-ownership-interop.cpp clang/test/CodeGenCXX/cnxt-unique-cleanup.cpp clang/test/CodeGenCXX/cnxt-shared-refcount.cpp clang/test/CodeGenCXX/cnxt-weak-nullability.cpp clang/test/CodeGenCXX/cnxt-ownership-runtime.cpp`
+- Next target: `M6-11`.

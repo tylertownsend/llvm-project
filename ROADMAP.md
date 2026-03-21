@@ -13,7 +13,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-07 Emit runtime-backed `weak<T>.lock()` / `.expired()` behavior.
 - [x] M6-08 Add diagnostics when ownership runtime linkage is missing or ABI is incompatible.
 - [x] M6-09 Remove implicit `<memory>` dependency from cNxt prelude path.
-- [ ] M6-10 Add parser/sema/codegen regression tests for runtime-backed ownership behavior.
+- [x] M6-10 Add parser/sema/codegen regression tests for runtime-backed ownership behavior.
+- [ ] M6-11 Add runtime leak/double-free smoke tests (ASan/LSan-enabled CI job).
 - [ ] M7-01 Specify user-facing construction API (no raw-pointer syntax).
 - [ ] M7-02 Parse/type-check construction expressions that return `unique<T>`.
 
@@ -22,8 +23,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-01
 - [x] M6-02
 - [x] M6-03
-- [x] M6-08 through M6-09
-- [ ] M6-10 through M6-12
+- [x] M6-08 through M6-10
+- [ ] M6-11 through M6-12
 - [ ] M7-01 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
@@ -65,7 +66,7 @@ Deliverables:
   incompatible (`-x cnxt` should fail fast with cNxt-specific messaging).
 - [x] M6-09 Remove implicit `<memory>` inclusion/`__has_include(<memory>)`
   dependence from cNxt prelude path.
-- [ ] M6-10 Add parser/sema/codegen regression tests for runtime-backed
+- [x] M6-10 Add parser/sema/codegen regression tests for runtime-backed
   ownership behavior in `clang/test/{Parser,SemaCXX,CodeGenCXX}`.
 - [ ] M6-11 Add runtime leak/double-free smoke tests (ASan/LSan-enabled CI job).
 - [ ] M6-12 Add an end-to-end cNxt example that allocates and drops a heap
@@ -168,6 +169,36 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M6-10
+
+- Completed item: add parser/sema/codegen regression tests for runtime-backed
+  ownership behavior.
+- What changed:
+  - added `clang/test/Parser/cnxt-ownership-runtime-surface.cpp` as a
+    syntax-only smoke test for the runtime-backed `unique/shared/weak` surface:
+    move-only `unique`, `shared` copy, `weak(shared)` construction,
+    `weak.lock()`, `weak.expired()`, and handle methods such as `get()` and
+    `reset()`.
+  - added `clang/test/SemaCXX/cnxt-ownership-runtime.cpp` to pin sema behavior
+    for runtime-backed handles: deleted `unique` copy construction, valid
+    `shared`/`weak` flows, invalid ownership assignments, and rejection of
+    direct `weak.get()` access.
+  - added `clang/test/CodeGenCXX/cnxt-ownership-runtime.cpp` to exercise the
+    combined runtime-backed surface in one lowering path and check that the
+    emitted IR still routes through the ownership runtime ABI for retain,
+    release, lock, expired, and shared payload access.
+- What is now unblocked:
+  - M6-11 can add leak/double-free smoke tests on top of a broader regression
+    net covering parser, sema, and codegen ownership behavior.
+  - M6-12 end-to-end examples can rely on a fuller ownership regression suite
+    rather than isolated per-method tests only.
+  - M7 construction work can expand the ownership surface with better baseline
+    protection across all major frontend stages.
+- Direction check:
+  - roadmap remains directionally correct; M6-11 is the next item because
+    runtime safety validation now provides more leverage than adding examples
+    before leak/double-free behavior is smoke-tested.
 
 ### 2026-03-21 - M6-08
 
