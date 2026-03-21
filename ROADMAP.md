@@ -4,17 +4,178 @@ Source plan: `cnxt/docs/commit-plan.md`.
 
 ## Priority Queue
 
-All listed deliverables are complete.
+- [x] M6-01 Define compiler-owned ownership runtime ABI and symbol contract.
+- [ ] M6-02 Replace std-header-dependent ownership prelude with compiler-owned handle declarations.
+- [ ] M6-03 Add runtime library skeleton for `unique/shared/weak` lifetime operations.
+- [ ] M6-04 Lower ownership operations to runtime calls in CodeGen.
+- [ ] M6-05 Emit deterministic `unique<T>` drop on all control-flow exits.
+- [ ] M6-09 Remove implicit `<memory>` dependency from cNxt prelude path.
+- [ ] M7-01 Specify user-facing construction API (no raw-pointer syntax).
+- [ ] M7-02 Parse/type-check construction expressions that return `unique<T>`.
 
 ## Deliverable Status
 
+- [x] M6-01
+- [ ] M6-02 through M6-12
+- [ ] M7-01 through M7-10
+- [ ] M8-01 through M8-11
+- [ ] M9-01 through M9-08
+- [ ] M10-01 through M10-06
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
 - [x] M4-01 through M4-14
 - [x] M5-01 through M5-09
 
+## Post-M5 Plan (Glue-Free cNxt Compiler)
+
+This section is the proposed path from the current "restricted C++ host mode"
+to a user-facing cNxt experience where normal programs do not require
+`extern "C"` glue or raw-pointer syntax.
+
+### Milestone 6 - Compiler-Owned Ownership Runtime
+
+Goal: make `unique/shared/weak` semantics runtime-backed and independent of
+host C++ `<memory>` headers in user compilation flows.
+
+Deliverables:
+
+- [ ] M6-01 Write `cnxt/specs/cnxt-ownership-runtime.md` defining runtime ABI:
+  allocation, retain/release, weak-lock/expired, and symbol naming/versioning.
+- [ ] M6-02 Replace current prelude aliases with compiler-owned ownership handle
+  declarations that do not require parsing host `<memory>` in user mode.
+- [ ] M6-03 Add `cnxt/runtime/ownership/` runtime library skeleton exporting the
+  ABI functions required by `unique/shared/weak`.
+- [ ] M6-04 Lower ownership handle operations in CodeGen to runtime calls
+  instead of direct dependence on host STL type internals.
+- [ ] M6-05 Emit deterministic `unique<T>` destruction on all exits
+  (fallthrough, `return`, `break`, `continue`) for local ownership bindings.
+- [ ] M6-06 Emit reference-count operations for `shared<T>` copy/move/assign
+  sites according to cNxt assignment rules.
+- [ ] M6-07 Emit runtime-backed `weak<T>.lock()` / `.expired()` behavior with
+  explicit nullability semantics.
+- [ ] M6-08 Add diagnostics when ownership runtime linkage is missing or ABI is
+  incompatible (`-x cnxt` should fail fast with cNxt-specific messaging).
+- [ ] M6-09 Remove implicit `<memory>` inclusion/`__has_include(<memory>)`
+  dependence from cNxt prelude path.
+- [ ] M6-10 Add parser/sema/codegen regression tests for runtime-backed
+  ownership behavior in `clang/test/{Parser,SemaCXX,CodeGenCXX}`.
+- [ ] M6-11 Add runtime leak/double-free smoke tests (ASan/LSan-enabled CI job).
+- [ ] M6-12 Add an end-to-end cNxt example that allocates and drops a heap
+  object with `unique<T>` and no `extern "C"` declarations.
+
+### Milestone 7 - Construction Surface Without Raw Pointers
+
+Goal: allow user code to allocate owned objects directly in cNxt syntax, with
+automatic lifetime semantics and no raw-pointer escape hatches in safe code.
+
+Deliverables:
+
+- [ ] M7-01 Define construction syntax/API in spec (for example `make<T>(...)`)
+  and its ownership/lifetime contract.
+- [ ] M7-02 Implement parser support for cNxt construction expressions.
+- [ ] M7-03 Implement Sema rules so construction expressions type-check to
+  `unique<T>` and reject pointer-returning construction in safe code.
+- [ ] M7-04 Lower construction expressions to runtime allocation plus
+  constructor/init calls in CodeGen.
+- [ ] M7-05 Add builtin conversion API for widening ownership
+  (`share(unique<T>) -> shared<T>`) without raw pointer intermediates.
+- [ ] M7-06 Restrict ownership-handle raw pointer escape operations (such as
+  unrestricted `.get()`) to explicit unsafe/FFI contexts.
+- [ ] M7-07 Tighten pointer policy from "extern C carveout" to explicit
+  `unsafe extern` boundary model for pointer-bearing signatures.
+- [ ] M7-08 Add cNxt diagnostics + fix-its that rewrite pointer-centric usage
+  into ownership-centric forms where safe/possible.
+- [ ] M7-09 Add control-flow cleanup tests (early return/branch paths) proving
+  deterministic deallocation semantics.
+- [ ] M7-10 Add end-to-end example: class instance construction, method call,
+  and scope-exit cleanup with no raw-pointer syntax and no glue file.
+
+### Milestone 8 - Interface/Class Model (No C++ Inheritance Syntax)
+
+Goal: support interface-style programming and implementation binding in cNxt
+without requiring C++ base clauses or manual ABI glue.
+
+Deliverables:
+
+- [ ] M8-01 Write `cnxt/specs/cnxt-interface-class.md` with interface/class
+  syntax, conformance rules, and dispatch semantics.
+- [ ] M8-02 Add parser support for `interface` declarations in cNxt mode.
+- [ ] M8-03 Add parser support for class-to-interface implementation syntax
+  (cNxt-native spelling, not C++ `: Base` inheritance syntax).
+- [ ] M8-04 Add Sema conformance checks: required methods, signature matching,
+  visibility, and implementation completeness diagnostics.
+- [ ] M8-05 Implement dispatch representation (vtable/witness-table style) with
+  stable ABI for cNxt-only programs.
+- [ ] M8-06 Implement CodeGen lowering for dynamic interface dispatch calls.
+- [ ] M8-07 Integrate ownership handles with interface values
+  (`unique<Interface>`, `shared<Interface>` behavior rules).
+- [ ] M8-08 Add focused diagnostics for missing implementations, invalid
+  overrides, and ambiguous interface bindings.
+- [ ] M8-09 Update clangd/IDE support for interface/class syntax and symbols.
+- [ ] M8-10 Add parser/sema/codegen regression coverage for interface/class
+  declarations, conformance, and dispatch.
+- [ ] M8-11 Add end-to-end cNxt interface+class sample with unique ownership
+  and zero `extern "C"` declarations.
+
+### Milestone 9 - FFI Containment and No-Glue Standard Library Surface
+
+Goal: keep interop available but contained, while ordinary app code uses cNxt
+stdlib APIs and avoids manual ABI glue.
+
+Deliverables:
+
+- [ ] M9-01 Specify `unsafe extern` boundary model in
+  `cnxt/specs/cnxt-ffi-boundary.md` (where pointers are legal and why).
+- [ ] M9-02 Add safe stdlib modules for basic app entrypoints (for example
+  output/logging) so hello-world style programs need no manual extern imports.
+- [ ] M9-03 Add compiler-generated ABI thunk support for exporting/importing
+  cNxt functions through C ABI without user-written glue wrappers.
+- [ ] M9-04 Add ownership-handle marshalling rules across ABI thunks.
+- [ ] M9-05 Enforce raw-pointer ban in safe modules with lint + compiler
+  diagnostics aligned to `unsafe extern` policy.
+- [ ] M9-06 Add mixed-language interoperability tests validating generated thunk
+  paths for cNxt <-> C/C++ calls.
+- [ ] M9-07 Add migration guide from legacy manual `extern "C"` patterns to
+  compiler-managed interop boundaries.
+- [ ] M9-08 Update `cnxt new`/starter template so generated apps compile/run
+  without glue files or raw-pointer syntax.
+
+### Milestone 10 - Hardening and Release Gate
+
+Goal: make the no-glue ownership/interface path stable enough for default use.
+
+Deliverables:
+
+- [ ] M10-01 Add stress tests for ownership runtime correctness (leak, UAF,
+  double-free, weak-lock races where applicable).
+- [ ] M10-02 Add parser/sema fuzz inputs around ownership, construction,
+  interface, and `unsafe extern` boundaries.
+- [ ] M10-03 Add performance baselines for ownership operations and dispatch
+  overhead versus current branch behavior.
+- [ ] M10-04 Add CI matrix coverage (Linux/macOS) building and testing runtime +
+  compiler features introduced in M6-M9.
+- [ ] M10-05 Publish quickstart docs proving normal app development requires no
+  manual `extern "C"` glue.
+- [ ] M10-06 Add final acceptance checklist and gate milestone completion on an
+  end-to-end no-glue sample app test in CI.
+
 ## Completion Log
+
+### 2026-03-21 - M6-01
+
+- Completed item: define compiler-owned ownership runtime ABI and symbol contract.
+- What changed:
+  - added `cnxt/specs/cnxt-ownership-runtime.md` defining ownership runtime ABI v1 for allocation, unique drop, shared retain/release, and weak lock/expired operations.
+  - defined ABI version negotiation and symbol policy using `__cnxt_rt_own_v1_*` naming.
+  - documented runtime/CodeGen lowering contract and thread-safety/error model expectations.
+  - linked ownership runtime ABI spec from `cnxt/README.md`.
+- What is now unblocked:
+  - M6-02 can replace std-header-dependent prelude aliases with compiler-owned handle declarations tied to this ABI.
+  - M6-03 runtime library skeleton can implement the symbol set defined in this spec without interface ambiguity.
+  - M6-04 CodeGen lowering work can target stable symbol names and function signatures.
+- Direction check:
+  - roadmap remains directionally correct; this establishes a concrete runtime contract needed to remove user-visible ownership glue.
 
 ### 2026-03-15 - M2-09
 
