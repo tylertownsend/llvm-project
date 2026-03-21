@@ -62,3 +62,15 @@
 - Validation:
   `build/bin/llvm-lit -sv clang/test/CodeGenCXX/cnxt-weak-nullability.cpp clang/test/Preprocessor/cnxt-prelude.c clang/test/CodeGenCXX/cnxt-shared-refcount.cpp clang/test/CodeGenCXX/cnxt-unique-cleanup.cpp clang/test/Parser/cnxt-ownership.cpp clang/test/Parser/cnxt-unique-lowering.cpp clang/test/Parser/cnxt-shared-lowering.cpp clang/test/Parser/cnxt-weak-lowering.cpp clang/test/Parser/cnxt-unique-move-only.cpp clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp clang/test/CodeGenCXX/cnxt-ownership-interop.cpp`
 - Next target: `M6-08`.
+- Completed `M6-08`.
+- Added driver-side cNxt ownership-runtime validation with
+  `-fcnxt-ownership-runtime=<path>`.
+- Added cNxt-specific diagnostics for missing runtime configuration, load
+  failures, missing ABI symbol, and unsupported ABI version, and appended the
+  validated runtime path to cNxt link inputs.
+- Added Linux driver coverage in `clang/test/Driver/cnxt-ownership-runtime.c`
+  plus tiny shared-library fixtures under `clang/test/Driver/Inputs/`.
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/Driver/cnxt-driver.c clang/test/Driver/cnxt-ownership-runtime.c`
+- Next target: `M6-10`.

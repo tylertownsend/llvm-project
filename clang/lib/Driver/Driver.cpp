@@ -85,6 +85,7 @@
 #include "llvm/Option/OptTable.h"
 #include "llvm/Option/Option.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/DynamicLibrary.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/ExitCodes.h"
 #include "llvm/Support/FileSystem.h"
@@ -104,6 +105,7 @@
 #include "llvm/TargetParser/Host.h"
 #include "llvm/TargetParser/RISCVISAInfo.h"
 #include <cstdlib> // ::getenv
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <optional>
@@ -432,6 +434,75 @@ Arg *clang::driver::makeInputArg(DerivedArgList &Args, const OptTable &Opts,
     A->claim();
   return A;
 }
+
+namespace {
+
+constexpr llvm::StringLiteral CNxtOwnershipRuntimeABISymbol =
+    "__cnxt_rt_own_v1_abi_version";
+constexpr uint32_t CNxtOwnershipRuntimeABIVersion = 1;
+
+static bool isCNxtSourceInputType(types::ID InputType) {
+  return InputType == types::TY_CNxt || InputType == types::TY_PP_CNxt;
+}
+
+static bool requiresCNxtOwnershipRuntime(const Driver &D,
+                                         const DerivedArgList &Args,
+                                         const InputList &Inputs) {
+  if (D.getFinalPhase(Args) != phases::Link)
+    return false;
+
+  return llvm::any_of(Inputs, [](const auto &Input) {
+    return isCNxtSourceInputType(Input.first);
+  });
+}
+
+static bool diagnoseAndAppendCNxtOwnershipRuntime(Driver &D,
+                                                  DerivedArgList &Args,
+                                                  InputList &Inputs) {
+  if (!requiresCNxtOwnershipRuntime(D, Args, Inputs))
+    return true;
+
+  Arg *RuntimeArg = Args.getLastArg(options::OPT_fcnxt_ownership_runtime_EQ);
+  if (!RuntimeArg) {
+    D.Diag(diag::err_drv_cnxt_missing_ownership_runtime);
+    return false;
+  }
+
+  RuntimeArg->claim();
+  StringRef RuntimePath = RuntimeArg->getValue();
+
+  std::string ErrorMessage;
+  llvm::sys::DynamicLibrary RuntimeLib =
+      llvm::sys::DynamicLibrary::getPermanentLibrary(RuntimePath.data(),
+                                                     &ErrorMessage);
+  if (!RuntimeLib.isValid()) {
+    D.Diag(diag::err_drv_cnxt_ownership_runtime_load_failure)
+        << RuntimePath << ErrorMessage;
+    return false;
+  }
+
+  auto *GetABIVersion = reinterpret_cast<uint32_t (*)()>(
+      RuntimeLib.getAddressOfSymbol(CNxtOwnershipRuntimeABISymbol.data()));
+  if (!GetABIVersion) {
+    D.Diag(diag::err_drv_cnxt_ownership_runtime_missing_abi)
+        << RuntimePath << CNxtOwnershipRuntimeABISymbol;
+    return false;
+  }
+
+  uint32_t ABIVersion = GetABIVersion();
+  if (ABIVersion != CNxtOwnershipRuntimeABIVersion) {
+    D.Diag(diag::err_drv_cnxt_ownership_runtime_abi_mismatch)
+        << RuntimePath << ABIVersion << CNxtOwnershipRuntimeABIVersion;
+    return false;
+  }
+
+  Inputs.emplace_back(
+      types::TY_Object,
+      makeInputArg(Args, D.getOpts(), RuntimePath, /*Claim=*/true));
+  return true;
+}
+
+} // namespace
 
 DerivedArgList *Driver::TranslateInputArgs(const InputArgList &Args) const {
   const llvm::opt::OptTable &Opts = getOpts();
@@ -1823,6 +1894,9 @@ Compilation *Driver::BuildCompilation(ArrayRef<const char *> ArgList) {
       BuildInputs(C->getDefaultToolChain(), TranslatedLinkerIns, Inputs);
     }
   }
+
+  if (!diagnoseAndAppendCNxtOwnershipRuntime(*this, *TranslatedArgs, Inputs))
+    return C;
 
   // Populate the tool chains for the offloading devices, if any.
   CreateOffloadingDeviceToolChains(*C, Inputs);

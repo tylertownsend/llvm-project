@@ -2093,6 +2093,10 @@ def fcf_runtime_abi_EQ : Joined<["-"], "fcf-runtime-abi=">, Group<f_Group>,
     NormalizedValuesScope<"LangOptions::CoreFoundationABI">,
     NormalizedValues<["ObjectiveC", "ObjectiveC", "ObjectiveC", "Swift5_0", "Swift5_0", "Swift4_2", "Swift4_1"]>,
     MarshallingInfoEnum<LangOpts<"CFRuntime">, "ObjectiveC">;
+def fcnxt_ownership_runtime_EQ
+    : Joined<["-"], "fcnxt-ownership-runtime=">, Group<f_Group>,
+      Flags<[HelpHidden, LinkOption, NoArgumentUnused]>,
+      HelpText<"Specify the cNxt ownership runtime shared library path">;
 defm constant_cfstrings : BoolFOption<"constant-cfstrings",
   LangOpts<"NoConstantCFStrings">, DefaultFalse,
   NegFlag<SetTrue, [], [ClangOption, CC1Option],

@@ -98,6 +98,16 @@ def err_drv_no_spv_tools : Error<"cannot find SPIR-V Tools binary '%0', which "
                                  "It can be obtained from your system package "
                                  "manager or from KhronosGroup/SPIRV-Tools "
                                  "on GitHub">;
+def err_drv_cnxt_missing_ownership_runtime : Error<
+  "cNxt link requires the ownership runtime; pass "
+  "'-fcnxt-ownership-runtime=<path>'">;
+def err_drv_cnxt_ownership_runtime_load_failure : Error<
+  "cannot load cNxt ownership runtime '%0': %1">;
+def err_drv_cnxt_ownership_runtime_missing_abi : Error<
+  "cNxt ownership runtime '%0' is missing required ABI symbol '%1'">;
+def err_drv_cnxt_ownership_runtime_abi_mismatch : Error<
+  "cNxt ownership runtime '%0' reported unsupported ABI version %1 "
+  "(expected %2)">;
 
 def err_drv_undetermined_gpu_arch : Error<
   "cannot determine %0 architecture: %1; consider passing it via '%2'; "

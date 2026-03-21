@@ -11,7 +11,9 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-05 Emit deterministic `unique<T>` drop on all control-flow exits.
 - [x] M6-06 Emit reference-count operations for `shared<T>` copy/move/assign.
 - [x] M6-07 Emit runtime-backed `weak<T>.lock()` / `.expired()` behavior.
+- [x] M6-08 Add diagnostics when ownership runtime linkage is missing or ABI is incompatible.
 - [x] M6-09 Remove implicit `<memory>` dependency from cNxt prelude path.
+- [ ] M6-10 Add parser/sema/codegen regression tests for runtime-backed ownership behavior.
 - [ ] M7-01 Specify user-facing construction API (no raw-pointer syntax).
 - [ ] M7-02 Parse/type-check construction expressions that return `unique<T>`.
 
@@ -20,7 +22,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-01
 - [x] M6-02
 - [x] M6-03
-- [ ] M6-08 through M6-12
+- [x] M6-08 through M6-09
+- [ ] M6-10 through M6-12
 - [ ] M7-01 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
@@ -58,7 +61,7 @@ Deliverables:
   sites according to cNxt assignment rules.
 - [x] M6-07 Emit runtime-backed `weak<T>.lock()` / `.expired()` behavior with
   explicit nullability semantics.
-- [ ] M6-08 Add diagnostics when ownership runtime linkage is missing or ABI is
+- [x] M6-08 Add diagnostics when ownership runtime linkage is missing or ABI is
   incompatible (`-x cnxt` should fail fast with cNxt-specific messaging).
 - [x] M6-09 Remove implicit `<memory>` inclusion/`__has_include(<memory>)`
   dependence from cNxt prelude path.
@@ -165,6 +168,36 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M6-08
+
+- Completed item: add cNxt-specific diagnostics when ownership runtime linkage
+  is missing or ABI is incompatible.
+- What changed:
+  - added driver option `-fcnxt-ownership-runtime=<path>` so cNxt link jobs can
+    point at the ownership runtime explicitly while milestone 6 is still using
+    repo-local runtime artifacts.
+  - taught the driver to fail fast for `-x cnxt` link jobs when the ownership
+    runtime is missing, cannot be loaded, is missing the ABI probe symbol, or
+    reports an unsupported ABI version.
+  - validated the ABI eagerly with `__cnxt_rt_own_v1_abi_version()` and, on
+    success, appended the runtime shared library path to the link inputs so the
+    user does not need a separate manual linker argument.
+  - added Linux driver coverage in
+    `clang/test/Driver/cnxt-ownership-runtime.c` with tiny shared-library
+    fixtures for missing-runtime, load-failure, missing-ABI, bad-ABI, and
+    successful-link configuration paths.
+- What is now unblocked:
+  - M6-10 can extend runtime-backed ownership regression coverage knowing the
+    driver now has an explicit runtime-link contract.
+  - M6-11 leak and double-free smoke testing can run against a driver flow that
+    validates runtime ABI before executing tests.
+  - M6-12 end-to-end examples can document a concrete runtime configuration
+    path instead of relying on unresolved-symbol linker failures.
+- Direction check:
+  - roadmap remains directionally correct; M6-10 should stay ahead of M7
+    because runtime-backed ownership behavior still needs broader parser/sema/
+    codegen regression coverage before construction-surface work expands it.
 
 ### 2026-03-21 - M6-07
 
