@@ -127,6 +127,8 @@ static void AddImplicitCNxtPrelude(MacroBuilder &Builder) {
   Builder.append("  Result.reset(Storage);");
   Builder.append("  return Result;");
   Builder.append("}");
+  Builder.append("template <typename T, typename... Args>");
+  Builder.append("unique<T> make(Args...);");
   Builder.append("template <typename T> struct weak;");
   Builder.append("template <typename T> struct shared {");
   Builder.append("private:");

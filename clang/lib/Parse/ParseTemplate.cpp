@@ -22,8 +22,8 @@
 #include "clang/Sema/Scope.h"
 using namespace clang;
 
-static bool isCNxtOwnershipHandleTemplateId(const UnqualifiedId &TemplateName,
-                                            const CXXScopeSpec &SS) {
+static bool isCNxtAllowedTemplateId(const UnqualifiedId &TemplateName,
+                                    const CXXScopeSpec &SS) {
   if (SS.isNotEmpty() ||
       TemplateName.getKind() != UnqualifiedIdKind::IK_Identifier ||
       !TemplateName.Identifier)
@@ -31,7 +31,8 @@ static bool isCNxtOwnershipHandleTemplateId(const UnqualifiedId &TemplateName,
 
   return TemplateName.Identifier->isStr("unique") ||
          TemplateName.Identifier->isStr("shared") ||
-         TemplateName.Identifier->isStr("weak");
+         TemplateName.Identifier->isStr("weak") ||
+         TemplateName.Identifier->isStr("make");
 }
 
 unsigned Parser::ReenterTemplateScopes(MultiParseScope &S, Decl *D) {
@@ -1139,7 +1140,7 @@ bool Parser::AnnotateTemplateIdToken(TemplateTy Template, TemplateNameKind TNK,
   bool RejectTemplateIdsInCNxt =
       getLangOpts().CNxtNoTemplates &&
       !PP.getSourceManager().isInSystemHeader(TemplateNameLoc) &&
-      !isCNxtOwnershipHandleTemplateId(TemplateName, SS);
+      !isCNxtAllowedTemplateId(TemplateName, SS);
   if (RejectTemplateIdsInCNxt) {
     Diag(TemplateNameLoc, diag::err_cnxt_unsupported_feature)
         << "template argument lists";

@@ -127,3 +127,14 @@
   - `git diff --check`
   - `rg -n "cnxt-construction-api.md|M7-01|M7-02" ROADMAP.md SESSION_LOG.md cnxt/README.md`
 - Next target: `M7-02`.
+- Completed `M7-02`.
+- Extended the cNxt template-id allowlist so `make<T>(...)` parses while
+  unrelated template argument lists remain rejected.
+- Added a prelude declaration for `make<T>(Args...)` and parser/`SemaCXX`
+  coverage in:
+  - `clang/test/Parser/cnxt-construction.cpp`
+  - `clang/test/SemaCXX/cnxt-construction.cpp`
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/Parser/cnxt-construction.cpp clang/test/SemaCXX/cnxt-construction.cpp clang/test/Parser/cnxt-ownership.cpp clang/test/Preprocessor/cnxt-prelude.c`
+- Next target: `M7-03`.

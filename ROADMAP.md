@@ -17,7 +17,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-11 Add runtime leak/double-free smoke tests (ASan/LSan-enabled CI job).
 - [x] M6-12 Add an end-to-end cNxt example that allocates and drops a heap object with `unique<T>` and no `extern "C"` declarations.
 - [x] M7-01 Specify user-facing construction API (no raw-pointer syntax).
-- [ ] M7-02 Parse/type-check construction expressions that return `unique<T>`.
+- [x] M7-02 Parse/type-check construction expressions that return `unique<T>`.
 
 ## Deliverable Status
 
@@ -28,7 +28,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-11
 - [x] M6-12
 - [x] M7-01
-- [ ] M7-02 through M7-10
+- [x] M7-02
+- [ ] M7-03 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
 - [ ] M10-01 through M10-06
@@ -84,7 +85,7 @@ Deliverables:
 
 - [x] M7-01 Define construction syntax/API in spec (for example `make<T>(...)`)
   and its ownership/lifetime contract.
-- [ ] M7-02 Implement parser support for cNxt construction expressions.
+- [x] M7-02 Implement parser support for cNxt construction expressions.
 - [ ] M7-03 Implement Sema rules so construction expressions type-check to
   `unique<T>` and reject pointer-returning construction in safe code.
 - [ ] M7-04 Lower construction expressions to runtime allocation plus
@@ -172,6 +173,40 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M7-02
+
+- Completed item: admit `make<T>(...)` construction syntax in cNxt parsing and
+  pin its basic `unique<T>` type shape.
+- What changed:
+  - extended the cNxt template-id allowlist in `ParseTemplate.cpp` so
+    `make<T>(...)` parses without opening the door to unrelated template-id
+    usage.
+  - injected a prelude declaration for `template <typename T, typename... Args>
+    unique<T> make(Args...);` so syntax-only and sema tests have a concrete
+    construction surface to bind against.
+  - added `clang/test/Parser/cnxt-construction.cpp` to prove `make<T>()`,
+    `make<T>(arg)`, and `make<T>(arg0, arg1)` parse in cNxt mode while
+    unrelated template-ids such as `vector<int>` remain rejected.
+  - added `clang/test/SemaCXX/cnxt-construction.cpp` to pin that
+    `make<T>(...)` type-checks as `unique<T>` rather than an unowned value.
+- Follow-up notes:
+  - `make<T>(...)` is parser-visible and has a declared type shape, but it is
+    not yet a runnable construction path. M7-03 and M7-04 still need to add the
+    ownership-specific semantic checks and real lowering/implementation.
+  - the temporary Milestone 6 `make_unique(value)` helper remains the only
+    working end-to-end construction bridge until the remaining construction
+    milestones land.
+- What is now unblocked:
+  - M7-03 can focus on construction-specific semantic restrictions instead of
+    first opening the parser to the intended syntax.
+  - M7-04 can lower a fixed parsed surface rather than a speculative syntax.
+  - M7-08 diagnostics/fix-its now have an accepted construction spelling to
+    target in parser-aware rewrites.
+- Direction check:
+  - roadmap remains directionally correct; `M7-03` is next because construction
+    syntax is now admitted, but the safe-code semantic restrictions are not yet
+    enforced.
 
 ### 2026-03-21 - M7-01
 
