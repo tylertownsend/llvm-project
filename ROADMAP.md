@@ -10,6 +10,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-04 Lower ownership operations to runtime calls in CodeGen.
 - [x] M6-05 Emit deterministic `unique<T>` drop on all control-flow exits.
 - [x] M6-06 Emit reference-count operations for `shared<T>` copy/move/assign.
+- [x] M6-07 Emit runtime-backed `weak<T>.lock()` / `.expired()` behavior.
 - [x] M6-09 Remove implicit `<memory>` dependency from cNxt prelude path.
 - [ ] M7-01 Specify user-facing construction API (no raw-pointer syntax).
 - [ ] M7-02 Parse/type-check construction expressions that return `unique<T>`.
@@ -19,7 +20,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-01
 - [x] M6-02
 - [x] M6-03
-- [ ] M6-07 through M6-12
+- [ ] M6-08 through M6-12
 - [ ] M7-01 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
@@ -55,7 +56,7 @@ Deliverables:
   (fallthrough, `return`, `break`, `continue`) for local ownership bindings.
 - [x] M6-06 Emit reference-count operations for `shared<T>` copy/move/assign
   sites according to cNxt assignment rules.
-- [ ] M6-07 Emit runtime-backed `weak<T>.lock()` / `.expired()` behavior with
+- [x] M6-07 Emit runtime-backed `weak<T>.lock()` / `.expired()` behavior with
   explicit nullability semantics.
 - [ ] M6-08 Add diagnostics when ownership runtime linkage is missing or ABI is
   incompatible (`-x cnxt` should fail fast with cNxt-specific messaging).
@@ -164,6 +165,21 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M6-07
+
+- Completed item: emit runtime-backed `weak<T>.lock()` / `.expired()` behavior with explicit nullability semantics.
+- What changed:
+  - added `clang/test/CodeGenCXX/cnxt-weak-nullability.cpp` covering default/null `weak<T>` behavior.
+  - verified default `weak<T>` construction materializes a null control pointer.
+  - verified `weak<T>.lock()` lowers through `__cnxt_rt_own_v1_weak_lock`, and that reading the resulting `shared<T>` goes through `__cnxt_rt_own_v1_shared_get`.
+  - verified `weak<T>.expired()` lowers through `__cnxt_rt_own_v1_weak_expired` and converts the runtime byte result to boolean semantics in IR.
+- What is now unblocked:
+  - M6-10 runtime-backed ownership regression coverage now includes explicit weak nullability semantics.
+  - M6-12 end-to-end examples can rely on tested empty-weak behavior when demonstrating ownership state transitions.
+  - M8-07 interface ownership integration work can assume baseline weak/shared nullability behavior is covered.
+- Direction check:
+  - roadmap remains directionally correct; weak-handle behavior is now pinned at the CodeGen/runtime boundary rather than inferred from helper method shape alone.
 
 ### 2026-03-21 - M6-09
 
