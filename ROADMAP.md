@@ -24,6 +24,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-06 Restrict ownership-handle raw pointer escape operations in safe code.
 - [x] M7-07 Tighten pointer policy from "extern C carveout" to explicit unsafe/FFI boundaries.
 - [x] M7-08 Add cNxt diagnostics + fix-its that rewrite pointer-centric usage into ownership-centric forms where safe/possible.
+- [x] M7-09 Add control-flow cleanup tests proving deterministic deallocation semantics.
 
 ## Deliverable Status
 
@@ -41,7 +42,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-06
 - [x] M7-07
 - [x] M7-08
-- [ ] M7-09 through M7-10
+- [x] M7-09
+- [ ] M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
 - [ ] M10-01 through M10-06
@@ -110,7 +112,7 @@ Deliverables:
   `unsafe extern` boundary model for pointer-bearing signatures.
 - [x] M7-08 Add cNxt diagnostics + fix-its that rewrite pointer-centric usage
   into ownership-centric forms where safe/possible.
-- [ ] M7-09 Add control-flow cleanup tests (early return/branch paths) proving
+- [x] M7-09 Add control-flow cleanup tests (early return/branch paths) proving
   deterministic deallocation semantics.
 - [ ] M7-10 Add end-to-end example: class instance construction, method call,
   and scope-exit cleanup with no raw-pointer syntax and no glue file.
@@ -185,6 +187,32 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M7-09
+
+- Completed item: add targeted control-flow cleanup tests proving
+  deterministic deallocation for constructed and widened ownership values.
+- What changed:
+  - added `clang/test/CodeGenCXX/cnxt-ownership-cleanup-paths.cpp` with a
+    `make<T>(...)` early-return case that proves both branches flow through a
+    shared cleanup block which destroys the local `unique<T>`.
+  - added a branch-local `share(make<T>(...))` case that proves the temporary
+    `unique<T>` cleanup and the widened `shared<T>` release both execute before
+    control rejoins the outer block.
+  - kept the checks FileCheck-visible at the IR control-flow level so the test
+    locks in cleanup-block shape instead of only looking for destructor calls
+    somewhere in the function.
+- Follow-up notes:
+  - Milestone 7 now has the required cleanup-path proof for the compiler-owned
+    construction and widening surfaces; the remaining gap is the end-to-end
+    no-glue sample in M7-10.
+- What is now unblocked:
+  - M7-10 can present the final sample knowing the underlying ownership
+    surfaces have explicit cleanup-path coverage for both construction and
+    post-construction widening.
+- Direction check:
+  - roadmap remains directionally correct; M7-10 is next because Milestone 7's
+    remaining work is integration/demo polish rather than core semantics.
 
 ### 2026-03-21 - M7-08
 

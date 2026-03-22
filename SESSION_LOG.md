@@ -229,3 +229,15 @@
   - `build/bin/llvm-lit -sv clang/test/SemaCXX/cnxt-pointer-guidance-fixits.cpp clang/test/Parser/cnxt-ffi-raw-pointers.cpp clang/test/SemaCXX/cnxt-ownership-escapes.cpp clang/test/Parser/cnxt-restrictions.cpp clang/test/CodeGenCXX/cnxt-ownership-interop.cpp clang/test/Parser/cnxt-unique-lowering.cpp clang/test/Parser/cnxt-shared-lowering.cpp clang/test/Parser/cnxt-weak-lock-required.cpp clang/test/Parser/cnxt-ownership-runtime-surface.cpp clang/test/SemaCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-weak-nullability.cpp clang/test/CodeGenCXX/cnxt-share-widening.cpp clang/test/Preprocessor/cnxt-prelude.c clang/test/Parser/cnxt-construction.cpp clang/test/SemaCXX/cnxt-construction.cpp clang/test/Driver/cnxt-ownership-example.c`
   - `git diff --check`
 - Next target: `M7-09`.
+- Completed `M7-09`.
+- Added `clang/test/CodeGenCXX/cnxt-ownership-cleanup-paths.cpp` to prove that
+  `make<T>(...)` results clean up through a shared early-return cleanup block
+  and that branch-local `share(make<T>(...))` values release both the temporary
+  `unique<T>` and the widened `shared<T>` before control rejoins.
+- Kept the checks at the IR control-flow level so the test pins the cleanup
+  block shape instead of only spotting destructor calls somewhere in the
+  function body.
+- Validation:
+  - `build/bin/llvm-lit -sv clang/test/CodeGenCXX/cnxt-ownership-cleanup-paths.cpp clang/test/CodeGenCXX/cnxt-unique-cleanup.cpp clang/test/CodeGenCXX/cnxt-construction.cpp clang/test/CodeGenCXX/cnxt-share-widening.cpp clang/test/CodeGenCXX/cnxt-shared-refcount.cpp`
+  - `git diff --check`
+- Next target: `M7-10`.
