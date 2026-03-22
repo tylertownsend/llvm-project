@@ -9722,6 +9722,8 @@ static bool diagnoseCNxtInvalidConstructionTarget(Sema &SemaRef,
 
 static constexpr llvm::StringLiteral CNxtUnsafeExternAnnotation =
     "cnxt_unsafe_extern";
+static constexpr llvm::StringLiteral CNxtExternLinkageAnnotation =
+    "cnxt_extern_linkage";
 
 static bool isCNxtUnsafeExternFunction(const FunctionDecl *FD) {
   if (!FD || !FD->isExternC())
@@ -9733,6 +9735,34 @@ static bool isCNxtUnsafeExternFunction(const FunctionDecl *FD) {
   }
 
   return false;
+}
+
+static SourceLocation getCNxtExternLoc(const FunctionDecl *FD) {
+  if (!FD || !FD->isExternC())
+    return SourceLocation();
+
+  for (const auto *AA : FD->specific_attrs<AnnotateAttr>()) {
+    if (AA->getAnnotation() == CNxtExternLinkageAnnotation)
+      return AA->getRange().getBegin();
+  }
+
+  return SourceLocation();
+}
+
+static void emitCNxtUnsafeExternGuidance(Sema &SemaRef, SourceLocation Loc) {
+  SemaRef.Diag(Loc, diag::note_cnxt_use_unsafe_extern);
+}
+
+static void maybeAddCNxtUnsafeExternFixIt(SemaBase::SemaDiagnosticBuilder &DB,
+                                          const FunctionDecl *FD) {
+  if (!FD || !FD->isExternC() || isCNxtUnsafeExternFunction(FD))
+    return;
+
+  SourceLocation FixItLoc = getCNxtExternLoc(FD);
+  if (FixItLoc.isInvalid())
+    return;
+
+  DB << FixItHint::CreateInsertion(FixItLoc, "unsafe ");
 }
 
 static bool isCNxtOwnershipEscapeContextAllowed(const Sema &SemaRef,
@@ -9772,8 +9802,13 @@ static bool diagnoseCNxtOwnershipRawEscape(Sema &SemaRef,
        (BaseKind == CNxtOwnershipKind::Unique ||
         BaseKind == CNxtOwnershipKind::Shared)) ||
       (MemberName == "release" && BaseKind == CNxtOwnershipKind::Unique)) {
-    SemaRef.Diag(ME->getMemberLoc(), diag::err_cnxt_ownership_raw_escape)
+    const FunctionDecl *FD = SemaRef.getCurFunctionDecl(/*AllowLambda=*/true);
+    auto DB =
+        SemaRef.Diag(ME->getMemberLoc(), diag::err_cnxt_ownership_raw_escape)
         << MemberName;
+    maybeAddCNxtUnsafeExternFixIt(DB, FD);
+    SemaRef.Diag(ME->getMemberLoc(), diag::note_cnxt_prefer_handle_flow);
+    emitCNxtUnsafeExternGuidance(SemaRef, ME->getMemberLoc());
     return true;
   }
 

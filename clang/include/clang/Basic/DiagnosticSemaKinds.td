@@ -231,6 +231,12 @@ def note_vla_unsupported : Note<
   "variable length arrays are not supported for the current target">;
 
 def err_cnxt_unsupported_declaration : Error<"cNxt does not support %0">;
+def note_cnxt_prefer_ownership_surfaces : Note<
+  "for cNxt-owned heap values, prefer 'unique<T>' with 'make<T>(...)'; use 'share(...)' when shared ownership is required">;
+def note_cnxt_use_unsafe_extern : Note<
+  "use 'unsafe extern \"C\"' when a raw-pointer FFI boundary is required">;
+def note_cnxt_prefer_handle_flow : Note<
+  "prefer passing or moving ownership handles directly; use 'share(...)' to widen instead of extracting raw pointers">;
 def err_cnxt_illegal_ownership_conversion : Error<
   "cNxt cannot convert ownership handle '%0' to '%1'; valid flow is unique -> shared -> weak">;
 def err_cnxt_invalid_construction_target : Error<

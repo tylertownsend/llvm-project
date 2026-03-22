@@ -214,3 +214,18 @@
   - `build/bin/llvm-lit -sv clang/test/Parser/cnxt-ffi-raw-pointers.cpp clang/test/SemaCXX/cnxt-ownership-escapes.cpp clang/test/Parser/cnxt-restrictions.cpp clang/test/CodeGenCXX/cnxt-ownership-interop.cpp clang/test/Parser/cnxt-unique-lowering.cpp clang/test/Parser/cnxt-shared-lowering.cpp clang/test/Parser/cnxt-weak-lock-required.cpp clang/test/Parser/cnxt-ownership-runtime-surface.cpp clang/test/SemaCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-weak-nullability.cpp clang/test/CodeGenCXX/cnxt-share-widening.cpp clang/test/Preprocessor/cnxt-prelude.c clang/test/Parser/cnxt-construction.cpp clang/test/SemaCXX/cnxt-construction.cpp clang/test/Driver/cnxt-ownership-example.c`
   - `git diff --check`
 - Next target: `M7-08`.
+- Completed `M7-08`.
+- Added ownership-guidance notes for raw-pointer declaration/signature/escape
+  diagnostics and taught plain `extern "C"` raw-pointer errors to offer an
+  `unsafe extern "C"` fix-it at the actual `extern` token.
+- Recorded cNxt extern-linkage source locations on `FunctionDecl` so later
+  ownership-handle raw-escape diagnostics can reuse the same fix-it inside
+  function bodies without inserting `unsafe` in the wrong spot.
+- Added `clang/test/SemaCXX/cnxt-pointer-guidance-fixits.cpp` and updated the
+  existing raw-pointer/escape `-verify` tests to ignore the new intentional
+  notes while the dedicated fix-it test locks in the exact guidance surface.
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/SemaCXX/cnxt-pointer-guidance-fixits.cpp clang/test/Parser/cnxt-ffi-raw-pointers.cpp clang/test/SemaCXX/cnxt-ownership-escapes.cpp clang/test/Parser/cnxt-restrictions.cpp clang/test/CodeGenCXX/cnxt-ownership-interop.cpp clang/test/Parser/cnxt-unique-lowering.cpp clang/test/Parser/cnxt-shared-lowering.cpp clang/test/Parser/cnxt-weak-lock-required.cpp clang/test/Parser/cnxt-ownership-runtime-surface.cpp clang/test/SemaCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-weak-nullability.cpp clang/test/CodeGenCXX/cnxt-share-widening.cpp clang/test/Preprocessor/cnxt-prelude.c clang/test/Parser/cnxt-construction.cpp clang/test/SemaCXX/cnxt-construction.cpp clang/test/Driver/cnxt-ownership-example.c`
+  - `git diff --check`
+- Next target: `M7-09`.

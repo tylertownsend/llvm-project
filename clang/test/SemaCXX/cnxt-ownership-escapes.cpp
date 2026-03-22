@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -x cnxt -std=cnxt1 -fsyntax-only -verify %s
+// RUN: %clang_cc1 -x cnxt -std=cnxt1 -fsyntax-only -verify -verify-ignore-unexpected=note %s
 
 void reject_safe_handle_escapes(unique<int> unique_owner,
                                 shared<int> shared_owner) {

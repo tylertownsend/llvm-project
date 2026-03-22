@@ -7749,6 +7749,11 @@ void Sema::CheckAsmLabel(Scope *S, Expr *E, StorageClass SC,
 }
 
 static bool containsCNxtRawPointerType(QualType QT);
+static void emitCNxtOwnershipGuidance(Sema &SemaRef, SourceLocation Loc);
+static void emitCNxtUnsafeExternGuidance(Sema &SemaRef, SourceLocation Loc);
+static void maybeAddCNxtUnsafeExternFixIt(SemaBase::SemaDiagnosticBuilder &DB,
+                                          const FunctionDecl *FD,
+                                          SourceLocation ExternLoc);
 
 NamedDecl *Sema::ActOnVariableDeclarator(
     Scope *S, Declarator &D, DeclContext *DC, TypeSourceInfo *TInfo,
@@ -8106,6 +8111,7 @@ NamedDecl *Sema::ActOnVariableDeclarator(
       containsCNxtRawPointerType(NewVD->getType())) {
     Diag(NewVD->getLocation(), diag::err_cnxt_unsupported_declaration)
         << "raw pointer declarations outside unsafe FFI boundaries";
+    emitCNxtOwnershipGuidance(*this, NewVD->getLocation());
     NewVD->setInvalidDecl();
   }
 
@@ -10112,6 +10118,8 @@ static bool containsCNxtRawPointerType(QualType QT) {
 
 static constexpr llvm::StringLiteral CNxtUnsafeExternAnnotation =
     "cnxt_unsafe_extern";
+static constexpr llvm::StringLiteral CNxtExternLinkageAnnotation =
+    "cnxt_extern_linkage";
 
 static bool isCNxtUnsafeExternFunction(const FunctionDecl *FD) {
   if (!FD || !FD->isExternC())
@@ -10123,6 +10131,24 @@ static bool isCNxtUnsafeExternFunction(const FunctionDecl *FD) {
   }
 
   return false;
+}
+
+static void emitCNxtOwnershipGuidance(Sema &SemaRef, SourceLocation Loc) {
+  SemaRef.Diag(Loc, diag::note_cnxt_prefer_ownership_surfaces);
+}
+
+static void emitCNxtUnsafeExternGuidance(Sema &SemaRef, SourceLocation Loc) {
+  SemaRef.Diag(Loc, diag::note_cnxt_use_unsafe_extern);
+}
+
+static void maybeAddCNxtUnsafeExternFixIt(SemaBase::SemaDiagnosticBuilder &DB,
+                                          const FunctionDecl *FD,
+                                          SourceLocation ExternLoc) {
+  if (!FD || !FD->isExternC() || isCNxtUnsafeExternFunction(FD) ||
+      ExternLoc.isInvalid())
+    return;
+
+  DB << FixItHint::CreateInsertion(ExternLoc, "unsafe ");
 }
 
 NamedDecl*
@@ -10209,12 +10235,22 @@ Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
         Context, CNxtUnsafeExternAnnotation, nullptr, 0,
         SourceRange(D.getDeclSpec().getUnsafeSpecLoc())));
 
+  if (getLangOpts().CNxt && NewFD->isExternC() &&
+      D.getDeclSpec().getStorageClassSpecLoc().isValid())
+    NewFD->addAttr(AnnotateAttr::CreateImplicit(
+        Context, CNxtExternLinkageAnnotation, nullptr, 0,
+        SourceRange(D.getDeclSpec().getStorageClassSpecLoc())));
+
   if (getLangOpts().CNxtNoRawOwningPointers &&
       !getSourceManager().isInSystemHeader(NewFD->getLocation()) &&
       !isCNxtUnsafeExternFunction(NewFD) &&
       containsCNxtRawPointerType(NewFD->getType())) {
-    Diag(NewFD->getLocation(), diag::err_cnxt_unsupported_declaration)
-        << "raw pointer function signatures outside unsafe FFI boundaries";
+    auto DB = Diag(NewFD->getLocation(), diag::err_cnxt_unsupported_declaration)
+              << "raw pointer function signatures outside unsafe FFI boundaries";
+    maybeAddCNxtUnsafeExternFixIt(
+        DB, NewFD, D.getDeclSpec().getStorageClassSpecLoc());
+    emitCNxtOwnershipGuidance(*this, NewFD->getLocation());
+    emitCNxtUnsafeExternGuidance(*this, NewFD->getLocation());
     D.setInvalidType();
     NewFD->setInvalidDecl();
   }
@@ -19435,6 +19471,7 @@ FieldDecl *Sema::CheckFieldDecl(DeclarationName Name, QualType T,
       containsCNxtRawPointerType(T)) {
     Diag(Loc, diag::err_cnxt_unsupported_declaration)
         << "raw pointer fields outside unsafe FFI boundaries";
+    emitCNxtOwnershipGuidance(*this, Loc);
     InvalidDecl = true;
   }
 

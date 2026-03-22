@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -x cnxt -std=cnxt1 -fsyntax-only -verify %s
+// RUN: %clang_cc1 -x cnxt -std=cnxt1 -fsyntax-only -verify -verify-ignore-unexpected=note %s
 
 int *global_ptr; // expected-error {{cNxt does not support raw pointer declarations outside unsafe FFI boundaries}}
 

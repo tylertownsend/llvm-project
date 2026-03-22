@@ -23,7 +23,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-05 Add builtin conversion API for widening ownership without raw-pointer intermediates.
 - [x] M7-06 Restrict ownership-handle raw pointer escape operations in safe code.
 - [x] M7-07 Tighten pointer policy from "extern C carveout" to explicit unsafe/FFI boundaries.
-- [ ] M7-08 Add cNxt diagnostics + fix-its that rewrite pointer-centric usage into ownership-centric forms where safe/possible.
+- [x] M7-08 Add cNxt diagnostics + fix-its that rewrite pointer-centric usage into ownership-centric forms where safe/possible.
 
 ## Deliverable Status
 
@@ -40,7 +40,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-05
 - [x] M7-06
 - [x] M7-07
-- [ ] M7-08 through M7-10
+- [x] M7-08
+- [ ] M7-09 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
 - [ ] M10-01 through M10-06
@@ -107,7 +108,7 @@ Deliverables:
   unrestricted `.get()`) to explicit unsafe/FFI contexts.
 - [x] M7-07 Tighten pointer policy from "extern C carveout" to explicit
   `unsafe extern` boundary model for pointer-bearing signatures.
-- [ ] M7-08 Add cNxt diagnostics + fix-its that rewrite pointer-centric usage
+- [x] M7-08 Add cNxt diagnostics + fix-its that rewrite pointer-centric usage
   into ownership-centric forms where safe/possible.
 - [ ] M7-09 Add control-flow cleanup tests (early return/branch paths) proving
   deterministic deallocation semantics.
@@ -184,6 +185,39 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M7-08
+
+- Completed item: add cNxt-specific ownership guidance notes plus targeted
+  fix-its for pointer-centric declarations and explicit FFI boundary upgrades.
+- What changed:
+  - added `note_cnxt_prefer_ownership_surfaces`,
+    `note_cnxt_prefer_handle_flow`, and `note_cnxt_use_unsafe_extern` so cNxt
+    raw-pointer declaration/signature/escape diagnostics now point users toward
+    `unique<T>`, `make<T>(...)`, direct handle flow, and `share(...)`.
+  - taught raw-pointer function-signature diagnostics to attach an `unsafe `
+    fix-it before plain `extern "C"` boundaries, while raw-pointer variable and
+    field rejections now emit ownership-surface guidance instead of a bare
+    policy error.
+  - recorded the actual `extern` source location on cNxt extern declarations
+    so later ownership-handle escape diagnostics can reuse the same precise
+    `unsafe extern "C"` fix-it inside function bodies.
+  - added `clang/test/SemaCXX/cnxt-pointer-guidance-fixits.cpp` to pin the new
+    parseable-fixit output and relaxed the existing `-verify` ownership/pointer
+    tests to ignore the newly intentional note diagnostics.
+- Follow-up notes:
+  - the diagnostics are now actionable, but cleanup behavior still needs more
+    path-sensitive proof beyond the existing happy-path drops; M7-09 should add
+    focused early-return and branch coverage around construction/widening flows.
+- What is now unblocked:
+  - M7-09 can extend cleanup-path coverage without first stabilizing the user
+    guidance surface for rejected pointer-centric code.
+  - M7-10 can lean on compiler-provided diagnostics when presenting the
+    no-glue ownership example.
+- Direction check:
+  - roadmap remains directionally correct; M7-09 is next because the remaining
+    gap in Milestone 7 is proof of deterministic cleanup behavior, not surface
+    syntax or diagnostics.
 
 ### 2026-03-21 - M7-07
 
