@@ -1206,6 +1206,57 @@ static bool isPointerToRecordType(QualType T) {
   return false;
 }
 
+enum class CNxtOwnershipKind { None, Unique, Shared, Weak };
+
+static CNxtOwnershipKind classifyCNxtOwnershipHandle(QualType Ty) {
+  Ty = Ty.getCanonicalType().getUnqualifiedType();
+
+  auto classifyByName = [](StringRef Name) {
+    if (Name == "unique_ptr" || Name == "unique")
+      return CNxtOwnershipKind::Unique;
+    if (Name == "shared_ptr" || Name == "shared")
+      return CNxtOwnershipKind::Shared;
+    if (Name == "weak_ptr" || Name == "weak")
+      return CNxtOwnershipKind::Weak;
+    return CNxtOwnershipKind::None;
+  };
+
+  if (const auto *TST = Ty->getAs<TemplateSpecializationType>()) {
+    const TemplateDecl *TD = TST->getTemplateName().getAsTemplateDecl();
+    if (TD && TD->getIdentifier())
+      return classifyByName(TD->getName());
+    return CNxtOwnershipKind::None;
+  }
+
+  if (const auto *RT = Ty->getAs<RecordType>()) {
+    const auto *Spec = dyn_cast<ClassTemplateSpecializationDecl>(RT->getDecl());
+    if (Spec) {
+      if (const IdentifierInfo *II =
+              Spec->getSpecializedTemplate()->getIdentifier())
+        return classifyByName(II->getName());
+    }
+  }
+
+  return CNxtOwnershipKind::None;
+}
+
+static QualType getCNxtOwnershipPayloadType(QualType Ty) {
+  Ty = Ty.getCanonicalType().getUnqualifiedType();
+
+  if (const auto *TST = Ty->getAs<TemplateSpecializationType>()) {
+    if (TST->template_arguments().size() >= 1)
+      return TST->template_arguments()[0].getAsType();
+  }
+
+  if (const auto *RT = Ty->getAs<RecordType>()) {
+    const auto *Spec = dyn_cast<ClassTemplateSpecializationDecl>(RT->getDecl());
+    if (Spec && Spec->getTemplateArgs().size() >= 1)
+      return Spec->getTemplateArgs()[0].getAsType();
+  }
+
+  return QualType();
+}
+
 static QualType getCNxtBorrowedInterfaceType(Sema &S, QualType Ty) {
   if (!S.getLangOpts().CNxt || Ty.isNull())
     return QualType();
@@ -1227,6 +1278,28 @@ static QualType getCNxtBorrowedInterfaceType(Sema &S, QualType Ty) {
   return Arg.getAsType();
 }
 
+static ExprResult buildCNxtInternalNoArgMemberCall(Sema &S, Expr *BaseExpr,
+                                                   QualType BaseType,
+                                                   StringRef Name,
+                                                   SourceLocation OpLoc) {
+  CXXScopeSpec EmptySS;
+  IdentifierInfo &II = S.Context.Idents.get(Name);
+  DeclarationNameInfo NameInfo(&II, OpLoc);
+  ExprResult MemberRef = S.BuildMemberReferenceExpr(
+      BaseExpr, BaseType, OpLoc, /*IsArrow=*/false, EmptySS,
+      /*TemplateKWLoc=*/SourceLocation(),
+      /*FirstQualifierInScope=*/nullptr, NameInfo,
+      /*TemplateArgs=*/nullptr, /*S=*/nullptr,
+      /*ExtraArgs=*/nullptr);
+  if (MemberRef.isInvalid())
+    return ExprError();
+
+  return S.BuildCallToMemberFunction(
+      /*S=*/nullptr, MemberRef.get(), OpLoc, MultiExprArg(),
+      /*RParenLoc=*/OpLoc, /*ExecConfig=*/nullptr, /*IsExecConfig=*/false,
+      /*AllowRecovery=*/false);
+}
+
 static ExprResult buildCNxtInterfaceDispatchBase(Sema &S, Expr *BaseExpr,
                                                  QualType BaseType,
                                                  SourceLocation OpLoc) {
@@ -1234,22 +1307,8 @@ static ExprResult buildCNxtInterfaceDispatchBase(Sema &S, Expr *BaseExpr,
   if (InterfaceTy.isNull())
     return ExprEmpty();
 
-  CXXScopeSpec EmptySS;
-  IdentifierInfo &ObjectII = S.Context.Idents.get("__object");
-  DeclarationNameInfo ObjectNameInfo(&ObjectII, OpLoc);
-  ExprResult ObjectRef = S.BuildMemberReferenceExpr(
-      BaseExpr, BaseType, OpLoc, /*IsArrow=*/false, EmptySS,
-      /*TemplateKWLoc=*/SourceLocation(),
-      /*FirstQualifierInScope=*/nullptr, ObjectNameInfo,
-      /*TemplateArgs=*/nullptr, /*S=*/nullptr,
-      /*ExtraArgs=*/nullptr);
-  if (ObjectRef.isInvalid())
-    return ExprError();
-
-  ExprResult ObjectCall = S.BuildCallToMemberFunction(
-      /*S=*/nullptr, ObjectRef.get(), OpLoc, MultiExprArg(),
-      /*RParenLoc=*/OpLoc, /*ExecConfig=*/nullptr, /*IsExecConfig=*/false,
-      /*AllowRecovery=*/false);
+  ExprResult ObjectCall =
+      buildCNxtInternalNoArgMemberCall(S, BaseExpr, BaseType, "__object", OpLoc);
   if (ObjectCall.isInvalid())
     return ExprError();
 
@@ -1257,6 +1316,27 @@ static ExprResult buildCNxtInterfaceDispatchBase(Sema &S, Expr *BaseExpr,
       S.Context.getQualifiedType(InterfaceTy.getUnqualifiedType(),
                                  BaseType.getQualifiers()));
   return S.ImpCastExprToType(ObjectCall.get(), InterfacePtrTy, CK_BitCast);
+}
+
+static ExprResult buildCNxtOwnedInterfaceDispatchBase(Sema &S, Expr *BaseExpr,
+                                                      QualType BaseType,
+                                                      SourceLocation OpLoc) {
+  if (!S.getLangOpts().CNxt ||
+      classifyCNxtOwnershipHandle(BaseType) == CNxtOwnershipKind::None)
+    return ExprEmpty();
+
+  QualType PayloadTy = getCNxtOwnershipPayloadType(BaseType);
+  const auto *RT = PayloadTy->getAs<RecordType>();
+  if (!RT || !RT->getDecl()->isInterface())
+    return ExprEmpty();
+
+  ExprResult BorrowedCall = buildCNxtInternalNoArgMemberCall(
+      S, BaseExpr, BaseType, "__borrowed", OpLoc);
+  if (BorrowedCall.isInvalid())
+    return ExprError();
+
+  return buildCNxtInterfaceDispatchBase(S, BorrowedCall.get(),
+                                        BorrowedCall.get()->getType(), OpLoc);
 }
 
 ExprResult
@@ -1351,6 +1431,17 @@ static ExprResult LookupMemberExpr(Sema &S, LookupResult &R,
       return ExprError();
 
     if (R.empty()) {
+      ExprResult HandleBase =
+          buildCNxtOwnedInterfaceDispatchBase(S, BaseExpr.get(), BaseType, OpLoc);
+      if (HandleBase.isInvalid())
+        return ExprError();
+      if (HandleBase.isUsable()) {
+        BaseExpr = HandleBase;
+        IsArrow = true;
+        return LookupMemberExpr(S, R, BaseExpr, IsArrow, OpLoc, SS,
+                                ObjCImpDecl, HasTemplateArgs, TemplateKWLoc);
+      }
+
       ExprResult InterfaceBase =
           buildCNxtInterfaceDispatchBase(S, BaseExpr.get(), BaseType, OpLoc);
       if (InterfaceBase.isInvalid())

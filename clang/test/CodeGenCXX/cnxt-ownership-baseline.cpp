@@ -10,9 +10,9 @@ extern "C" shared<int> lock_weak(weak<int> handle) { return handle.lock(); }
 
 extern "C" int weak_is_expired(weak<int> handle) { return handle.expired(); }
 
-// CHECK: %struct.unique = type { ptr }
-// CHECK: %struct.shared = type { ptr }
-// CHECK: %struct.weak = type { ptr }
+// CHECK: %struct.unique = type { ptr, ptr, ptr, i64, i64 }
+// CHECK: %struct.shared = type { ptr, ptr }
+// CHECK: %struct.weak = type { ptr, ptr }
 
 // CHECK-LABEL: define{{.*}} @pass_unique(
 // CHECK-LABEL: define{{.*}} @pass_shared(

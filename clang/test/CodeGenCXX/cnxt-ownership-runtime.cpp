@@ -21,10 +21,24 @@ unsafe extern "C" void runtime_surface(shared<int> owner, weak<int> observer) {
 // CHECK: call {{.*}} @_ZN6sharedIiE5resetEPi
 // CHECK: call {{.*}} @_ZNK6sharedIiE3getEv
 
-// CHECK-DAG: call void @__cnxt_rt_own_v1_shared_retain(ptr
-// CHECK-DAG: call void @__cnxt_rt_own_v1_weak_retain(ptr
-// CHECK-DAG: call ptr @__cnxt_rt_own_v1_weak_lock(ptr
-// CHECK-DAG: call{{.*}} @__cnxt_rt_own_v1_weak_expired(ptr
-// CHECK-DAG: call ptr @__cnxt_rt_own_v1_shared_get(ptr
-// CHECK-DAG: call void @__cnxt_rt_own_v1_shared_release(ptr
-// CHECK-DAG: call void @__cnxt_rt_own_v1_weak_release(ptr
+// CHECK-LABEL: define linkonce_odr void @_ZNK4weakIiE4lockEv(
+// CHECK: call ptr @__cnxt_rt_own_v1_weak_lock(ptr
+
+// CHECK-LABEL: define linkonce_odr noundef zeroext i1 @_ZNK4weakIiE7expiredEv(
+// CHECK: call zeroext i8 @__cnxt_rt_own_v1_weak_expired(ptr
+
+// CHECK-LABEL: define linkonce_odr void @_ZN6sharedIiE5resetEPi(
+// CHECK: call void @__cnxt_rt_own_v1_shared_release(ptr
+
+// CHECK-LABEL: define linkonce_odr noundef ptr @_ZNK6sharedIiE3getEv(
+// CHECK: %View = getelementptr inbounds nuw %struct.shared, ptr %{{.*}}, i32 0, i32 1
+// CHECK: %{{.*}} = load ptr, ptr %View, align 8
+
+// CHECK-LABEL: define linkonce_odr void @_ZN6sharedIiEC2ERKS0_(
+// CHECK: call void @__cnxt_rt_own_v1_shared_retain(ptr
+
+// CHECK-LABEL: define linkonce_odr void @_ZN4weakIiEC2ERK6sharedIiE(
+// CHECK: call void @__cnxt_rt_own_v1_weak_retain(ptr
+
+// CHECK-LABEL: define linkonce_odr void @_ZN4weakIiED2Ev(
+// CHECK: call void @__cnxt_rt_own_v1_weak_release(ptr

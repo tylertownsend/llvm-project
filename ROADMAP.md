@@ -139,7 +139,7 @@ Deliverables:
 - [x] M8-05b Allow interface-valued locals, params, returns, and concrete to
   interface bindings against the borrowed carrier representation.
 - [x] M8-06 Implement CodeGen lowering for dynamic interface dispatch calls.
-- [ ] M8-07 Integrate ownership handles with interface values
+- [x] M8-07 Integrate ownership handles with interface values
   (`unique<Interface>`, `shared<Interface>` behavior rules).
 - [ ] M8-08 Add focused diagnostics for missing implementations, invalid
   overrides, and ambiguous interface bindings.
@@ -192,6 +192,47 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M8-07
+
+- Completed item: integrate cNxt ownership handles with interface values so
+  `unique<Interface>`, `shared<Interface>`, and `weak<Interface>` can widen
+  concrete implementers and dispatch methods without raw-pointer glue.
+- What changed:
+  - updated `clang/lib/Frontend/InitPreprocessor.cpp` so compiler-owned
+    `unique/shared/weak` handles carry both ownership state and an interface
+    view pointer, and so `unique<T>` preserves destructor, size, and alignment
+    metadata across interface widening for later drop/share operations.
+  - added constrained converting constructors and assignments in the injected
+    ownership prelude so `unique<Concrete>` / `shared<Concrete>` /
+    `weak<Concrete>` can widen into interface-typed handles without depending
+    on host `<memory>` facilities.
+  - taught `clang/lib/Sema/SemaExprMember.cpp` to recover borrowed interface
+    views from ownership handles during member lookup, allowing
+    `owner.next()` and `observer.lock().next()` to type-check and lower as
+    interface dispatch instead of forcing `.get()` raw-pointer escapes.
+  - added dedicated interface-ownership regression coverage in
+    `clang/test/SemaCXX/cnxt-interface-ownership.cpp` and
+    `clang/test/CodeGenCXX/cnxt-interface-ownership.cpp`, and refreshed the
+    affected ownership codegen tests to the new compiler-owned handle ABI.
+- Follow-up notes:
+  - interface-owned dispatch still recovers the underlying C++ interface
+    pointer/vtable after handle-to-borrowed-view conversion; witness-only
+    dispatch remains later work.
+  - C ABI interop for the widened two-slot `shared/weak` layout and the
+    metadata-carrying `unique` layout is still a Milestone 9 containment/thunk
+    problem rather than a finalized stable ABI.
+- What is now unblocked:
+  - M8-08 can add targeted diagnostics on top of a working interface ownership
+    surface instead of diagnosing features that still fail to type-check.
+  - M8-10 can broaden parser/sema/codegen coverage around interface-owned
+    values now that widening and dispatch semantics are concrete.
+  - M8-11 can build an end-to-end interface + class sample around
+    `unique<Interface>` without manual raw-pointer method calls.
+- Direction check:
+  - roadmap remains directionally correct; focused diagnostics are the next
+    highest-priority risk reducer now that both borrowed and owned interface
+    paths execute end-to-end.
 
 ### 2026-03-21 - M8-06
 

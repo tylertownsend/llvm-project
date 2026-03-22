@@ -2,8 +2,8 @@
 // RUN: %clang_cc1 -x cnxt -std=cnxt1 -Wno-return-type-c-linkage -emit-llvm -o - %t/cnxt-api.cn | FileCheck %s --check-prefix=CNXT
 // RUN: %clang_cc1 -x c++ -std=c++17 -Wno-return-type-c-linkage -emit-llvm -o - %t/cxx-consumer.cpp | FileCheck %s --check-prefix=CXX
 
-// CNXT: %struct.shared = type { ptr }
-// CNXT: %struct.weak = type { ptr }
+// CNXT: %struct.shared = type { ptr, ptr }
+// CNXT: %struct.weak = type { ptr, ptr }
 // CNXT-LABEL: define{{.*}} @cnxt_lock(
 // CNXT: call {{.*}} @_ZNK4weakIiE4lockEv
 // CNXT-LABEL: define linkonce_odr{{.*}} @_ZNK4weakIiE4lockEv(

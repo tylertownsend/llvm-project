@@ -20,7 +20,8 @@ extern "C" int default_weak_is_expired() {
 // CHECK: call ptr @__cnxt_rt_own_v1_weak_lock(ptr noundef
 
 // CHECK-LABEL: define linkonce_odr{{.*}} @_ZNK6sharedIiE3getEv(
-// CHECK: call ptr @__cnxt_rt_own_v1_shared_get(ptr noundef
+// CHECK: %View = getelementptr inbounds nuw %struct.shared, ptr %{{.*}}, i32 0, i32 1
+// CHECK: %{{.*}} = load ptr, ptr %View, align 8
 
 // CHECK-LABEL: define{{.*}} @default_weak_is_expired(
 // CHECK: call void @_ZN4weakIiEC1Ev(

@@ -2,6 +2,26 @@
 
 ## 2026-03-21
 
+- Completed `M8-07`.
+- Extended the injected ownership prelude so `unique/shared/weak` preserve
+  interface views and concrete destruction metadata across handle widening.
+- Recovered borrowed interface views from ownership handles during member
+  lookup so `owner.next()` and `observer.lock().next()` compile without
+  `.get()` raw-pointer escapes.
+- Added regression coverage in:
+  - `clang/test/SemaCXX/cnxt-interface-ownership.cpp`
+  - `clang/test/CodeGenCXX/cnxt-interface-ownership.cpp`
+- Updated affected ownership ABI expectations in:
+  - `clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp`
+  - `clang/test/CodeGenCXX/cnxt-ownership-interop.cpp`
+  - `clang/test/CodeGenCXX/cnxt-ownership-runtime.cpp`
+  - `clang/test/CodeGenCXX/cnxt-share-widening.cpp`
+  - `clang/test/CodeGenCXX/cnxt-weak-nullability.cpp`
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp clang/test/CodeGenCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-ownership-cleanup-paths.cpp clang/test/CodeGenCXX/cnxt-ownership-interop.cpp clang/test/CodeGenCXX/cnxt-shared-refcount.cpp clang/test/CodeGenCXX/cnxt-weak-nullability.cpp clang/test/CodeGenCXX/cnxt-interface-ownership.cpp clang/test/CodeGenCXX/cnxt-interface-dispatch.cpp clang/test/CodeGenCXX/cnxt-share-widening.cpp clang/test/SemaCXX/cnxt-interface-ownership.cpp clang/test/SemaCXX/cnxt-interface-bindings.cpp clang/test/SemaCXX/cnxt-interface-conformance.cpp clang/test/SemaCXX/cnxt-ownership-runtime.cpp clang/test/Parser/cnxt-ownership-runtime-surface.cpp clang/test/Preprocessor/cnxt-prelude.c`
+  - `git diff --check`
+- Next target: `M8-08`.
 - Completed `M8-06`.
 - Recovered interface pointers from `__cnxt_iface_borrowed<T>` during member
   lookup so borrowed interface calls like `view.next()` lower through normal

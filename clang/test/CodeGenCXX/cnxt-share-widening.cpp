@@ -18,20 +18,22 @@ extern "C" shared<Box> widen_box(unique<Box> input) {
 // CHECK: call void @_Z5shareIiE6sharedIT_EO6uniqueIS1_E(
 
 // CHECK-LABEL: define linkonce_odr void @_Z5shareIiE6sharedIT_EO6uniqueIS1_E(
-// CHECK: call noundef ptr @_ZN6uniqueIiE7releaseEv(
-// CHECK: call noundef ptr @_Z19__cnxt_payload_dtorIiEPFvPvEv()
+// CHECK: call noundef ptr @_ZNK6uniqueIiE6__viewEv(
+// CHECK: call noundef ptr @_ZNK6uniqueIiE6__dtorEv(
+// CHECK: call noundef i64 @_ZNK6uniqueIiE6__sizeEv(
+// CHECK: call noundef i64 @_ZNK6uniqueIiE7__alignEv(
+// CHECK: call noundef ptr @_ZN6uniqueIiE17__release_storageEv(
 // CHECK: call ptr @__cnxt_rt_own_v1_shared_from_unique(
+// CHECK: call void @_ZN6sharedIiEC1EPvPii(
 
 // CHECK-LABEL: define{{.*}} @widen_box(
 // CHECK: call void @_Z5shareI3BoxE6sharedIT_EO6uniqueIS2_E(
 
 // CHECK-LABEL: define linkonce_odr void @_Z5shareI3BoxE6sharedIT_EO6uniqueIS2_E(
-// CHECK: call noundef ptr @_ZN6uniqueI3BoxE7releaseEv(
-// CHECK: call noundef ptr @_Z19__cnxt_payload_dtorI3BoxEPFvPvEv()
+// CHECK: call noundef ptr @_ZNK6uniqueI3BoxE6__viewEv(
+// CHECK: call noundef ptr @_ZNK6uniqueI3BoxE6__dtorEv(
+// CHECK: call noundef i64 @_ZNK6uniqueI3BoxE6__sizeEv(
+// CHECK: call noundef i64 @_ZNK6uniqueI3BoxE7__alignEv(
+// CHECK: call noundef ptr @_ZN6uniqueI3BoxE17__release_storageEv(
 // CHECK: call ptr @__cnxt_rt_own_v1_shared_from_unique(
-
-// CHECK-LABEL: define linkonce_odr noundef ptr @_Z19__cnxt_payload_dtorIiEPFvPvEv()
-// CHECK: ret ptr null
-
-// CHECK-LABEL: define linkonce_odr noundef ptr @_Z19__cnxt_payload_dtorI3BoxEPFvPvEv()
-// CHECK: ret ptr @_Z22__cnxt_destroy_payloadI3BoxEvPv
+// CHECK: call void @_ZN6sharedI3BoxEC1EPvPS0_i(
