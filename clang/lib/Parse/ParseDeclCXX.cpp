@@ -34,6 +34,12 @@
 
 using namespace clang;
 
+static bool isCNxtImplementsKeyword(const LangOptions &LangOpts,
+                                    const Token &Tok) {
+  return LangOpts.CNxt && Tok.is(tok::identifier) && Tok.getIdentifierInfo() &&
+         Tok.getIdentifierInfo()->isStr("implements");
+}
+
 Parser::DeclGroupPtrTy Parser::ParseNamespace(DeclaratorContext Context,
                                               SourceLocation &DeclEnd,
                                               SourceLocation InlineLoc) {
@@ -1853,8 +1859,10 @@ void Parser::ParseClassSpecifier(tok::TokenKind TagTokKind,
   else if (Tok.is(tok::l_brace) ||
            (DSC != DeclSpecContext::DSC_association &&
             getLangOpts().CPlusPlus && Tok.is(tok::colon)) ||
+           isCNxtImplementsKeyword(getLangOpts(), Tok) ||
            (isClassCompatibleKeyword() &&
             (NextToken().is(tok::l_brace) || NextToken().is(tok::colon) ||
+             isCNxtImplementsKeyword(getLangOpts(), NextToken()) ||
              isClassCompatibleKeyword(NextToken())))) {
     if (DS.isFriendSpecified()) {
       // C++ [class.friend]p2:
@@ -1907,7 +1915,8 @@ void Parser::ParseClassSpecifier(tok::TokenKind TagTokKind,
       }
     }
 
-    if (Tok.isOneOf(tok::l_brace, tok::colon))
+    if (Tok.isOneOf(tok::l_brace, tok::colon) ||
+        isCNxtImplementsKeyword(getLangOpts(), Tok))
       TUK = TagUseKind::Definition;
     else
       TUK = TagUseKind::Reference;
@@ -1966,7 +1975,8 @@ void Parser::ParseClassSpecifier(tok::TokenKind TagTokKind,
     // If we are parsing a definition and stop at a base-clause, continue on
     // until the semicolon.  Continuing from the comma will just trick us into
     // thinking we are seeing a variable declaration.
-    if (TUK == TagUseKind::Definition && Tok.is(tok::colon))
+    if (TUK == TagUseKind::Definition &&
+        (Tok.is(tok::colon) || isCNxtImplementsKeyword(getLangOpts(), Tok)))
       SkipUntil(tok::semi, StopBeforeMatch);
     else
       SkipUntil(tok::comma, StopAtSemi);
@@ -2160,6 +2170,13 @@ void Parser::ParseClassSpecifier(tok::TokenKind TagTokKind,
       diagsFromTag.redelay();
   }
 
+  if (TUK == TagUseKind::Definition &&
+      isCNxtImplementsKeyword(getLangOpts(), Tok)) {
+    ParseScope InheritanceScope(this, getCurScope()->getFlags() |
+                                          Scope::ClassInheritanceScope);
+    ParseCNxtImplementsClause(TagOrTempResult.get());
+  }
+
   // If there is a body, parse it and inform the actions module.
   if (TUK == TagUseKind::Definition) {
     assert(Tok.is(tok::l_brace) ||
@@ -2269,6 +2286,28 @@ void Parser::ParseBaseClause(Decl *ClassDecl) {
   }
 
   // Attach the base specifiers
+  Actions.ActOnBaseSpecifiers(ClassDecl, BaseInfo);
+}
+
+void Parser::ParseCNxtImplementsClause(Decl *ClassDecl) {
+  assert(isCNxtImplementsKeyword(getLangOpts(), Tok) &&
+         "Not a cNxt implements clause");
+  ConsumeToken();
+
+  SmallVector<CXXBaseSpecifier *, 8> BaseInfo;
+
+  while (true) {
+    BaseResult Result = ParseBaseSpecifier(ClassDecl);
+    if (!Result.isUsable()) {
+      SkipUntil(tok::comma, tok::l_brace, StopAtSemi | StopBeforeMatch);
+    } else {
+      BaseInfo.push_back(Result.get());
+    }
+
+    if (!TryConsumeToken(tok::comma))
+      break;
+  }
+
   Actions.ActOnBaseSpecifiers(ClassDecl, BaseInfo);
 }
 
@@ -3332,13 +3371,14 @@ void Parser::SkipCXXMemberSpecification(SourceLocation RecordLoc,
   // This can only happen if we had malformed misplaced attributes;
   // we only get called if there is a colon or left-brace after the
   // attributes.
-  if (Tok.isNot(tok::colon) && Tok.isNot(tok::l_brace))
+  if (Tok.isNot(tok::colon) && Tok.isNot(tok::l_brace) &&
+      !isCNxtImplementsKeyword(getLangOpts(), Tok))
     return;
 
   // Skip the base clauses. This requires actually parsing them, because
   // otherwise we can't be sure where they end (a left brace may appear
   // within a template argument).
-  if (Tok.is(tok::colon)) {
+  if (Tok.is(tok::colon) || isCNxtImplementsKeyword(getLangOpts(), Tok)) {
     // Enter the scope of the class so that we can correctly parse its bases.
     ParseScope ClassScope(this, Scope::ClassScope | Scope::DeclScope);
     ParsingClassDefinition ParsingDef(*this, TagDecl, /*NonNestedClass*/ true,
@@ -3347,7 +3387,10 @@ void Parser::SkipCXXMemberSpecification(SourceLocation RecordLoc,
         Actions.ActOnTagStartSkippedDefinition(getCurScope(), TagDecl);
 
     // Parse the bases but don't attach them to the class.
-    ParseBaseClause(nullptr);
+    if (Tok.is(tok::colon))
+      ParseBaseClause(nullptr);
+    else
+      ParseCNxtImplementsClause(nullptr);
 
     Actions.ActOnTagFinishSkippedDefinition(OldContext);
 
@@ -3610,11 +3653,14 @@ void Parser::ParseCXXMemberSpecification(SourceLocation RecordLoc,
     }
   }
 
-  if (Tok.is(tok::colon)) {
+  if (Tok.is(tok::colon) || isCNxtImplementsKeyword(getLangOpts(), Tok)) {
     ParseScope InheritanceScope(this, getCurScope()->getFlags() |
                                           Scope::ClassInheritanceScope);
 
-    ParseBaseClause(TagDecl);
+    if (Tok.is(tok::colon))
+      ParseBaseClause(TagDecl);
+    else
+      ParseCNxtImplementsClause(TagDecl);
     if (!Tok.is(tok::l_brace)) {
       bool SuggestFixIt = false;
       SourceLocation BraceLoc = PP.getLocForEndOfToken(PrevTokLocation);

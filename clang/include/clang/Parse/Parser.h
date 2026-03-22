@@ -3577,6 +3577,14 @@ private:
   /// \endverbatim
   void ParseBaseClause(Decl *ClassDecl);
 
+  /// ParseCNxtImplementsClause - Parse a cNxt class implements clause.
+  ///
+  /// \verbatim
+  ///       implements-clause : [cNxt]
+  ///         'implements' base-specifier-list
+  /// \endverbatim
+  void ParseCNxtImplementsClause(Decl *ClassDecl);
+
   /// ParseBaseSpecifier - Parse a C++ base-specifier. A base-specifier is
   /// one entry in the base class list of a class specifier, for example:
   ///    class foo : public bar, virtual private baz {

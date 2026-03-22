@@ -130,7 +130,7 @@ Deliverables:
 - [x] M8-01 Write `cnxt/specs/cnxt-interface-class.md` with interface/class
   syntax, conformance rules, and dispatch semantics.
 - [x] M8-02 Add parser support for `interface` declarations in cNxt mode.
-- [ ] M8-03 Add parser support for class-to-interface implementation syntax
+- [x] M8-03 Add parser support for class-to-interface implementation syntax
   (cNxt-native spelling, not C++ `: Base` inheritance syntax).
 - [ ] M8-04 Add Sema conformance checks: required methods, signature matching,
   visibility, and implementation completeness diagnostics.
@@ -190,6 +190,38 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M8-03
+
+- Completed item: add parser support for cNxt `class ... implements ...`
+  syntax.
+- What changed:
+  - taught `clang/lib/Parse/ParseDeclCXX.cpp` to treat identifier-spelled
+    `implements` as a cNxt-only class-definition clause and parse its
+    comma-separated interface list through the existing base-specifier parser.
+  - consumed `implements` clauses before class body parsing so cNxt class
+    definitions now enter their normal member-parsing path with the `{` token
+    in place, while raw `:` base clauses continue to hit the existing cNxt
+    inheritance rejection.
+  - added `clang/test/Parser/cnxt-implements.cpp` covering native
+    `implements` syntax, multiple interfaces, continued use of `implements` as
+    an ordinary identifier outside class headers, and the unchanged rejection
+    of raw inheritance syntax.
+- Follow-up notes:
+  - the parsed interface list currently reuses base-specifier plumbing as a
+    parser-side representation; semantic conformance rules still need to be
+    enforced in M8-04.
+  - unresolved interface names or incomplete interface declarations still
+    surface as ordinary sema issues until cNxt-specific conformance checking
+    lands.
+- What is now unblocked:
+  - M8-04 can enforce required-method and signature-matching rules against a
+    parsed `implements` list.
+  - M8-08 can later refine diagnostics on invalid `implements` clauses without
+    reopening parser support.
+- Direction check:
+  - roadmap remains directionally correct; M8-04 is next because the parser
+    surface for both `interface` and `implements` is now in place.
 
 ### 2026-03-21 - M8-02
 

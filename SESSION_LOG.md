@@ -274,3 +274,16 @@
   - `build/bin/llvm-lit -sv clang/test/Parser/cnxt-interface-decls.cpp clang/test/Parser/cnxt-restrictions.cpp clang/test/Parser/cnxt-recovery.cpp`
   - `git diff --check`
 - Next target: `M8-03`.
+- Completed `M8-03`.
+- Added parser support for `class ... implements ...` in
+  `clang/lib/Parse/ParseDeclCXX.cpp`, parsing the interface list through the
+  existing base-specifier machinery while still rejecting raw `:` inheritance in
+  cNxt.
+- Added `clang/test/Parser/cnxt-implements.cpp` covering native `implements`
+  clauses, multiple interfaces, and contextual use of `implements` as an
+  ordinary identifier outside class headers.
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/Parser/cnxt-implements.cpp clang/test/Parser/cnxt-interface-decls.cpp clang/test/Parser/cnxt-restrictions.cpp clang/test/Parser/cnxt-recovery.cpp`
+  - `git diff --check`
+- Next target: `M8-04`.
