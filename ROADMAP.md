@@ -57,7 +57,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M10-01
 - [x] M10-02
 - [x] M10-03
-- [ ] M10-04 through M10-06
+- [x] M10-04
+- [ ] M10-05 through M10-06
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
@@ -414,6 +415,37 @@ Deliverables:
 - Direction check:
   - roadmap remains directionally correct; the next risk is CI/system coverage,
     not lack of local performance baselines.
+
+### 2026-03-21 - M10-04
+
+- Completed item: add Linux/macOS CI matrix coverage for the cNxt runtime and
+  representative compiler feature slices from M6-M9.
+- What changed:
+  - added `.github/workflows/cnxt-compiler-matrix.yml`, a dedicated GitHub
+    Actions workflow that runs on `ubuntu-24.04` and `macos-14`.
+  - each matrix leg configures and builds the standalone ownership runtime,
+    runs the runtime smoke tests, captures `cnxt_ownership_rt_bench --json`
+    output, then configures a minimal `clang` build and runs a curated
+    `llvm-lit` slice covering M6 ownership runtime/prelude behavior, M7
+    construction and ownership rules, M8 interface dispatch/ownership, and M9
+    FFI/codegen checks.
+  - the workflow uploads per-OS runtime baseline JSON as an artifact so later
+    release-gate work can compare benchmark outputs across runners without
+    re-running local capture commands.
+- Follow-up notes:
+  local validation exercised the Linux command payload for the workflow
+  (standalone runtime configure/build/test plus the full 22-test cNxt lit
+  slice), but the macOS matrix leg still awaits its first hosted GitHub
+  Actions run.
+- What is now unblocked:
+  - M10-05 can point to a concrete cross-platform CI job when documenting the
+    no-glue quickstart path.
+  - M10-06 final acceptance can reference a single workflow artifact source for
+    cross-platform runtime baselines and representative compiler feature
+    coverage.
+- Direction check:
+  - roadmap remains directionally correct; the remaining work is end-user proof
+    and final acceptance framing, not missing CI surface area.
 
 ### 2026-03-21 - M10-01
 

@@ -576,3 +576,23 @@
   - `ctest --test-dir /tmp/cnxt-ownership-bench --output-on-failure`
   - `git diff --check`
 - Next target: `M10-04`.
+
+- Completed `M10-04`.
+- Added `.github/workflows/cnxt-compiler-matrix.yml`, a GitHub Actions matrix
+  workflow for `ubuntu-24.04` and `macos-14` that:
+  configures/builds/tests the standalone ownership runtime, captures
+  `cnxt_ownership_rt_bench --json`, builds a minimal `clang` test toolchain,
+  and runs a curated 22-test cNxt `llvm-lit` slice covering M6-M9 features.
+- Kept the existing Linux-only sanitizer and IDE workflows intact; the new
+  workflow is the cross-platform representative coverage layer rather than a
+  replacement for those focused jobs.
+- Validation:
+  - `cmake -S cnxt/runtime/ownership -B /tmp/cnxt-ownership-bench -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=c++ -DBUILD_TESTING=ON`
+  - `cmake --build /tmp/cnxt-ownership-bench --parallel`
+  - `ctest --test-dir /tmp/cnxt-ownership-bench --output-on-failure`
+  - `build/bin/llvm-lit -sv clang/test/Preprocessor/cnxt-prelude.c clang/test/Parser/cnxt-ownership-runtime-surface.cpp clang/test/CodeGenCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-unique-cleanup.cpp clang/test/CodeGenCXX/cnxt-shared-refcount.cpp clang/test/CodeGenCXX/cnxt-weak-nullability.cpp clang/test/Parser/cnxt-construction.cpp clang/test/SemaCXX/cnxt-construction.cpp clang/test/CodeGenCXX/cnxt-construction.cpp clang/test/CodeGenCXX/cnxt-share-widening.cpp clang/test/SemaCXX/cnxt-ownership-escapes.cpp clang/test/SemaCXX/cnxt-pointer-guidance-fixits.cpp clang/test/Parser/cnxt-interface-decls.cpp clang/test/Parser/cnxt-implements.cpp clang/test/SemaCXX/cnxt-interface-bindings.cpp clang/test/SemaCXX/cnxt-interface-ownership.cpp clang/test/CodeGenCXX/cnxt-interface-dispatch.cpp clang/test/CodeGenCXX/cnxt-interface-ownership.cpp clang/test/Parser/cnxt-ffi-raw-pointers.cpp clang/test/SemaCXX/cnxt-c-abi-pointer-guidance.cpp clang/test/CodeGenCXX/cnxt-c-abi-thunks.cpp clang/test/CodeGenCXX/cnxt-c-abi-ownership-marshalling.cpp`
+  - `git diff --check`
+- Follow-up note:
+  the macOS leg was validated structurally through the workflow definition but
+  still needs its first hosted GitHub Actions run for end-to-end confirmation.
+- Next target: `M10-05`.

@@ -1,0 +1,123 @@
+name: cNxt Compiler Matrix
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+      - cnxt/main
+    paths:
+      - "cnxt/**"
+      - "clang/include/clang/**"
+      - "clang/lib/**"
+      - "clang/test/**/cnxt-*"
+      - ".github/workflows/cnxt-compiler-matrix.yml"
+  pull_request:
+    paths:
+      - "cnxt/**"
+      - "clang/include/clang/**"
+      - "clang/lib/**"
+      - "clang/test/**/cnxt-*"
+      - ".github/workflows/cnxt-compiler-matrix.yml"
+
+jobs:
+  cnxt-runtime-and-compiler:
+    name: cNxt matrix (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - macos-14
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Fetch LLVM sources
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Install Ninja on macOS
+        if: runner.os == 'macOS'
+        run: brew install ninja
+
+      - name: Show toolchain
+        run: |
+          c++ --version
+          cmake --version
+          ninja --version
+
+      - name: Configure ownership runtime build
+        run: >
+          cmake -S cnxt/runtime/ownership
+          -B build-cnxt-runtime
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_CXX_COMPILER=c++
+          -DBUILD_TESTING=ON
+
+      - name: Build ownership runtime targets
+        run: cmake --build build-cnxt-runtime --parallel
+
+      - name: Run ownership runtime tests
+        run: ctest --test-dir build-cnxt-runtime --output-on-failure
+
+      - name: Capture ownership runtime baseline
+        run: >
+          ./build-cnxt-runtime/cnxt_ownership_rt_bench
+          --iterations 100000
+          --json > build-cnxt-runtime/cnxt-runtime-baselines-${{ runner.os }}.json
+
+      - name: Configure clang cNxt test build
+        run: >
+          cmake -S llvm
+          -B build-cnxt-clang
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DLLVM_ENABLE_ASSERTIONS=ON
+          -DLLVM_ENABLE_PROJECTS=clang
+          -DLLVM_TARGETS_TO_BUILD=X86
+          -DLLVM_INCLUDE_BENCHMARKS=OFF
+          -DLLVM_INCLUDE_EXAMPLES=OFF
+
+      - name: Build clang test tools
+        run: >
+          cmake --build build-cnxt-clang --parallel
+          --target clang llvm-lit FileCheck
+
+      - name: Run cNxt compiler feature matrix
+        run: |
+          build-cnxt-clang/bin/llvm-lit -sv \
+            clang/test/Preprocessor/cnxt-prelude.c \
+            clang/test/Parser/cnxt-ownership-runtime-surface.cpp \
+            clang/test/CodeGenCXX/cnxt-ownership-runtime.cpp \
+            clang/test/CodeGenCXX/cnxt-unique-cleanup.cpp \
+            clang/test/CodeGenCXX/cnxt-shared-refcount.cpp \
+            clang/test/CodeGenCXX/cnxt-weak-nullability.cpp \
+            clang/test/Parser/cnxt-construction.cpp \
+            clang/test/SemaCXX/cnxt-construction.cpp \
+            clang/test/CodeGenCXX/cnxt-construction.cpp \
+            clang/test/CodeGenCXX/cnxt-share-widening.cpp \
+            clang/test/SemaCXX/cnxt-ownership-escapes.cpp \
+            clang/test/SemaCXX/cnxt-pointer-guidance-fixits.cpp \
+            clang/test/Parser/cnxt-interface-decls.cpp \
+            clang/test/Parser/cnxt-implements.cpp \
+            clang/test/SemaCXX/cnxt-interface-bindings.cpp \
+            clang/test/SemaCXX/cnxt-interface-ownership.cpp \
+            clang/test/CodeGenCXX/cnxt-interface-dispatch.cpp \
+            clang/test/CodeGenCXX/cnxt-interface-ownership.cpp \
+            clang/test/Parser/cnxt-ffi-raw-pointers.cpp \
+            clang/test/SemaCXX/cnxt-c-abi-pointer-guidance.cpp \
+            clang/test/CodeGenCXX/cnxt-c-abi-thunks.cpp \
+            clang/test/CodeGenCXX/cnxt-c-abi-ownership-marshalling.cpp
+
+      - name: Upload ownership runtime baseline
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: cnxt-runtime-baselines-${{ runner.os }}
+          path: build-cnxt-runtime/cnxt-runtime-baselines-${{ runner.os }}.json
+          retention-days: 5
