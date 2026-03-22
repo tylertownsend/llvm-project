@@ -2,6 +2,21 @@
 
 ## 2026-03-21
 
+- Completed `M10-01`.
+- Extended `cnxt/runtime/ownership/tests/ownership_runtime_smoke.cpp` with
+  `use_after_free` and `weak_lock_stress` modes so the sanitizer harness now
+  covers leak, use-after-free, double-free, and concurrent weak-lock stress.
+- Updated `cnxt/runtime/ownership/CMakeLists.txt` so `ctest` runs the new
+  clean stress case and the new sanitizer-enforced UAF failure case.
+- Updated `cnxt/runtime/ownership/README.md` with the sanitizer/stress
+  invocation used by the ownership-runtime job.
+- Validation:
+  - `cmake -S cnxt/runtime/ownership -B /tmp/cnxt-ownership-stress -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_COMPILER=c++ -DBUILD_TESTING=ON -DCNXT_OWNERSHIP_RT_ENABLE_SANITIZERS=ON`
+  - `cmake --build /tmp/cnxt-ownership-stress --parallel`
+  - `ctest --test-dir /tmp/cnxt-ownership-stress --output-on-failure`
+  - `git diff --check`
+- Next target: `M10-02`.
+
 - Completed `M9-08`.
 - Taught `cnxt/tools/cnxt_build.py` to auto-stage the ownership runtime,
   inject `-fcnxt-ownership-runtime=...`, and link cNxt binaries/tests with an

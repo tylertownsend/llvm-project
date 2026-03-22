@@ -69,7 +69,23 @@ if(BUILD_TESTING)
     COMMAND cnxt_ownership_rt_smoke clean
   )
 
+  add_test(
+    NAME cnxt_ownership_rt.weak_lock_stress
+    COMMAND cnxt_ownership_rt_smoke weak_lock_stress
+  )
+
   if(CNXT_OWNERSHIP_RT_ENABLE_SANITIZERS)
+    add_test(
+      NAME cnxt_ownership_rt.use_after_free
+      COMMAND
+        ${CMAKE_COMMAND}
+        -DTEST_COMMAND=$<TARGET_FILE:cnxt_ownership_rt_smoke>
+        -DTEST_MODE=use_after_free
+        -DASAN_OPTIONS=detect_leaks=0:abort_on_error=1
+        -DEXPECT_SUBSTRING=ERROR:\ AddressSanitizer:\ heap-use-after-free
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/expect_sanitizer_failure.cmake
+    )
+
     add_test(
       NAME cnxt_ownership_rt.double_free
       COMMAND

@@ -54,7 +54,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M9-06
 - [x] M9-07
 - [x] M9-08
-- [ ] M10-01 through M10-06
+- [x] M10-01
+- [ ] M10-02 through M10-06
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
@@ -183,7 +184,7 @@ Goal: make the no-glue ownership/interface path stable enough for default use.
 
 Deliverables:
 
-- [ ] M10-01 Add stress tests for ownership runtime correctness (leak, UAF,
+- [x] M10-01 Add stress tests for ownership runtime correctness (leak, UAF,
   double-free, weak-lock races where applicable).
 - [ ] M10-02 Add parser/sema fuzz inputs around ownership, construction,
   interface, and `unsafe extern` boundaries.
@@ -343,6 +344,34 @@ Deliverables:
   - roadmap remains directionally correct; Milestone 10 can now focus on
     hardening, CI coverage, and release proof rather than missing product-path
     wiring.
+
+### 2026-03-21 - M10-01
+
+- Completed item: extend ownership-runtime hardening coverage to stress leak,
+  use-after-free, double-free, and weak-lock race paths.
+- What changed:
+  - extended `cnxt/runtime/ownership/tests/ownership_runtime_smoke.cpp` with a
+    sanitizer-triggering `use_after_free` mode and a concurrent
+    `weak_lock_stress` mode that exercises `weak_lock`/`shared_release`
+    contention while keeping the control block alive through an explicit weak
+    reference.
+  - updated `cnxt/runtime/ownership/CMakeLists.txt` so `ctest` now runs the
+    new clean stress case and the new sanitizer-enforced UAF failure case in
+    addition to the existing leak and double-free checks.
+  - updated `cnxt/runtime/ownership/README.md` with the sanitizer/stress test
+    invocation used by the repository workflow.
+- Follow-up notes:
+  - the current stress coverage validates atomic lifetime behavior under
+    contention, but it is still a targeted harness rather than a dedicated
+    thread sanitizer matrix.
+- What is now unblocked:
+  - M10-04 CI expansion can incorporate the richer runtime hardening suite as
+    the baseline Linux ownership-runtime job.
+  - M10-06 final acceptance can point to a broader runtime-safety checklist
+    instead of only leak/double-free smoke cases.
+- Direction check:
+  - roadmap remains directionally correct; the next missing hardening slice is
+    parser/sema fuzz coverage rather than more ad hoc runtime cases.
 
 ### 2026-03-21 - M9-03
 
