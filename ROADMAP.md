@@ -141,7 +141,7 @@ Deliverables:
 - [x] M8-06 Implement CodeGen lowering for dynamic interface dispatch calls.
 - [x] M8-07 Integrate ownership handles with interface values
   (`unique<Interface>`, `shared<Interface>` behavior rules).
-- [ ] M8-08 Add focused diagnostics for missing implementations, invalid
+- [x] M8-08 Add focused diagnostics for missing implementations, invalid
   overrides, and ambiguous interface bindings.
 - [ ] M8-09 Update clangd/IDE support for interface/class syntax and symbols.
 - [ ] M8-10 Add parser/sema/codegen regression coverage for interface/class
@@ -192,6 +192,42 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M8-08
+
+- Completed item: add cNxt-specific diagnostics for invalid `implements`
+  clauses and conflicting interface requirements.
+- What changed:
+  - extended `clang/lib/Sema/SemaDeclCXX.cpp` so cNxt `implements` clauses now
+    reject non-interface types directly instead of silently accepting ordinary
+    class/struct bases through reused C++ base-specifier plumbing.
+  - taught the cNxt interface conformance pass to detect conflicting
+    non-overload requirements inherited from multiple interfaces and emit a
+    single focused ambiguity diagnostic with notes pointing at the conflicting
+    interface method declarations.
+  - added new diagnostic definitions in
+    `clang/include/clang/Basic/DiagnosticSemaKinds.td` for invalid
+    `implements` entries and ambiguous interface requirements.
+  - added `clang/test/SemaCXX/cnxt-interface-diagnostics.cpp` to cover missing
+    requirements, invalid overrides, conflicting interface requirements, and
+    non-interface `implements` errors.
+- Follow-up notes:
+  - unresolved names in `implements` clauses still surface through the reused
+    parser/type lookup path before cNxt-specific conformance handling runs.
+  - ambiguity detection is intentionally limited to conflicting non-overload
+    interface requirements; compatible overload sets across interfaces remain
+    valid.
+- What is now unblocked:
+  - M8-09 can extend IDE/clangd support on top of a more stable diagnostic
+    surface for cNxt interfaces.
+  - M8-10 regression expansion can treat interface ambiguity and invalid
+    `implements` handling as baseline-covered behavior.
+  - M8-11 end-to-end samples can rely on clearer diagnostics when interface
+    wiring is wrong.
+- Direction check:
+  - roadmap remains directionally correct; editor/symbol support is the next
+    unblocked milestone item now that the core parser, sema, codegen, and
+    diagnostics path for interfaces is in place.
 
 ### 2026-03-21 - M8-07
 

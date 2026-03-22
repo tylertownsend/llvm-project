@@ -2832,6 +2832,16 @@ CXXBaseSpecifier *Sema::CheckBaseSpecifier(CXXRecordDecl *Class,
     // If the base class is invalid the derived class is as well.
     if (BaseDecl->isInvalidDecl())
       Class->setInvalidDecl();
+
+    if (getLangOpts().CNxt && !Class->isInterface() &&
+        !BaseDecl->isInterface()) {
+      Diag(BaseLoc, diag::err_cnxt_implements_requires_interface)
+          << Class << BaseType;
+      Diag(BaseDecl->getLocation(), diag::note_entity_declared_at)
+          << BaseDecl << BaseDecl->getSourceRange();
+      Class->setInvalidDecl();
+      return nullptr;
+    }
   } else if (BaseType->isDependentType()) {
     // Make sure that we don't make an ill-formed AST where the type of the
     // Class is non-dependent and its attached base class specifier is an
@@ -7028,7 +7038,20 @@ static bool DiagnoseCNxtInterfaceConformance(Sema &SemaRef,
       Record->isDependentType() || Record->isInterface())
     return false;
 
+  struct CNxtRequirementInfo {
+    const CXXRecordDecl *Interface;
+    const CXXMethodDecl *Requirement;
+  };
+
+  auto IsInterfaceRequirement = [](const CXXMethodDecl *Requirement) {
+    return Requirement->isUserProvided() &&
+           !isa<CXXConstructorDecl>(Requirement) &&
+           !isa<CXXDestructorDecl>(Requirement) && !Requirement->isStatic();
+  };
+
   bool Invalid = false;
+  SmallVector<CNxtRequirementInfo, 8> SeenRequirements;
+  SmallVector<DeclarationName, 4> ConflictingRequirementNames;
 
   for (const CXXBaseSpecifier &Base : Record->bases()) {
     const auto *Interface = Base.getType()->getAsCXXRecordDecl();
@@ -7036,8 +7059,55 @@ static bool DiagnoseCNxtInterfaceConformance(Sema &SemaRef,
       continue;
 
     for (const CXXMethodDecl *Requirement : Interface->methods()) {
-      if (!Requirement->isUserProvided() || isa<CXXConstructorDecl>(Requirement) ||
-          isa<CXXDestructorDecl>(Requirement) || Requirement->isStatic())
+      if (!IsInterfaceRequirement(Requirement))
+        continue;
+
+      for (const CNxtRequirementInfo &Seen : SeenRequirements) {
+        if (Seen.Requirement->getDeclName() != Requirement->getDeclName() ||
+            Seen.Interface == Interface)
+          continue;
+
+        if (SemaRef.Context.hasSameType(Seen.Requirement->getType(),
+                                        Requirement->getType()) ||
+            SemaRef.IsOverload(const_cast<CXXMethodDecl *>(Requirement),
+                               const_cast<CXXMethodDecl *>(Seen.Requirement),
+                               false))
+          continue;
+
+        if (!llvm::is_contained(ConflictingRequirementNames,
+                                Requirement->getDeclName())) {
+          SemaRef.Diag(Record->getLocation(),
+                       diag::err_cnxt_interface_ambiguous_requirement)
+              << Record << Requirement->getDeclName() << Seen.Interface
+              << Interface;
+          SemaRef.Diag(
+              Seen.Requirement->getLocation(),
+              diag::note_cnxt_interface_requirement_in_interface_here)
+              << Seen.Requirement->getDeclName() << Seen.Interface;
+          SemaRef.Diag(
+              Requirement->getLocation(),
+              diag::note_cnxt_interface_requirement_in_interface_here)
+              << Requirement->getDeclName() << Interface;
+          ConflictingRequirementNames.push_back(Requirement->getDeclName());
+        }
+
+        Invalid = true;
+        break;
+      }
+
+      SeenRequirements.push_back({Interface, Requirement});
+    }
+  }
+
+  for (const CXXBaseSpecifier &Base : Record->bases()) {
+    const auto *Interface = Base.getType()->getAsCXXRecordDecl();
+    if (!Interface || !Interface->isInterface() || Interface->isInvalidDecl())
+      continue;
+
+    for (const CXXMethodDecl *Requirement : Interface->methods()) {
+      if (!IsInterfaceRequirement(Requirement) ||
+          llvm::is_contained(ConflictingRequirementNames,
+                             Requirement->getDeclName()))
         continue;
 
       const CXXMethodDecl *ExactMatch = nullptr;

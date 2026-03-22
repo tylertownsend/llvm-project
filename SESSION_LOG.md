@@ -2,6 +2,17 @@
 
 ## 2026-03-21
 
+- Completed `M8-08`.
+- Added cNxt-specific diagnostics for non-interface `implements` entries and
+  conflicting interface requirements in `SemaDeclCXX.cpp` /
+  `DiagnosticSemaKinds.td`.
+- Added regression coverage in:
+  - `clang/test/SemaCXX/cnxt-interface-diagnostics.cpp`
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/SemaCXX/cnxt-interface-diagnostics.cpp clang/test/SemaCXX/cnxt-interface-conformance.cpp clang/test/SemaCXX/cnxt-interface-bindings.cpp clang/test/SemaCXX/cnxt-interface-ownership.cpp clang/test/Parser/cnxt-implements.cpp clang/test/Parser/cnxt-interface-decls.cpp clang/test/CodeGenCXX/cnxt-interface-dispatch.cpp clang/test/CodeGenCXX/cnxt-interface-ownership.cpp clang/test/Preprocessor/cnxt-prelude.c`
+  - `git diff --check`
+- Next target: `M8-09`.
 - Completed `M8-07`.
 - Extended the injected ownership prelude so `unique/shared/weak` preserve
   interface views and concrete destruction metadata across handle widening.

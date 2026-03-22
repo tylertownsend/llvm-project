@@ -249,8 +249,15 @@ def err_cnxt_interface_signature_mismatch : Error<
   "cNxt class %0 has method %1 with incompatible signature for interface %2">;
 def err_cnxt_interface_method_not_public : Error<
   "cNxt class %0 must make method %1 public to satisfy interface %2">;
+def err_cnxt_interface_ambiguous_requirement : Error<
+  "cNxt class %0 has conflicting interface requirements for method %1 from %2 "
+  "and %3">;
+def err_cnxt_implements_requires_interface : Error<
+  "cNxt class %0 can only implement interface types; %1 is not an interface">;
 def note_cnxt_interface_requirement_here : Note<
   "interface method %0 is declared here">;
+def note_cnxt_interface_requirement_in_interface_here : Note<
+  "interface method %0 from %1 is declared here">;
 
 // C99 variably modified types
 def err_variably_modified_template_arg : Error<
