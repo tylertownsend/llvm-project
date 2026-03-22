@@ -596,3 +596,20 @@
   the macOS leg was validated structurally through the workflow definition but
   still needs its first hosted GitHub Actions run for end-to-end confirmation.
 - Next target: `M10-05`.
+
+- Completed `M10-05`.
+- Added `cnxt/docs/quickstart.md`, a repo-local quickstart that walks through
+  the no-glue starter app, the direct ownership/interface examples, and the
+  exact checks showing those shipped examples contain no manual `extern "C"` or
+  `unsafe extern` glue.
+- Linked that quickstart from `cnxt/README.md` so the no-glue path is visible
+  from the main cNxt landing page.
+- Validation:
+  - `python3 cnxt/tools/tests/test_e2e_starter_template.py`
+  - `build/bin/llvm-lit -sv clang/test/Driver/cnxt-ownership-example.c clang/test/Driver/cnxt-interface-example.c`
+  - `rg -n 'extern "C"|unsafe extern' cnxt/examples/starter/hello-app cnxt/examples/ownership/class-method.cn cnxt/examples/ownership/interface-counter.cn`
+  - `git diff --check`
+- Follow-up note:
+  the `rg` command is expected to return no matches, and that is the intended
+  success condition recorded by the quickstart.
+- Next target: `M10-06`.

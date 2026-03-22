@@ -200,6 +200,9 @@ unmangled C symbol without hand-written wrapper bodies.
 C ABI migration guide:
 `cnxt/docs/c-abi-migration.md`.
 
+No-glue quickstart:
+`cnxt/docs/quickstart.md`.
+
 Interface/class surface baseline:
 `cnxt/specs/cnxt-interface-class.md`.
 

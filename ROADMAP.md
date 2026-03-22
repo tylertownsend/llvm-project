@@ -58,7 +58,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M10-02
 - [x] M10-03
 - [x] M10-04
-- [ ] M10-05 through M10-06
+- [x] M10-05
+- [ ] M10-06
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
@@ -193,7 +194,7 @@ Deliverables:
   interface, and `unsafe extern` boundaries.
 - [x] M10-03 Add performance baselines for ownership operations and dispatch
   overhead versus current branch behavior.
-- [ ] M10-04 Add CI matrix coverage (Linux/macOS) building and testing runtime +
+- [x] M10-04 Add CI matrix coverage (Linux/macOS) building and testing runtime +
   compiler features introduced in M6-M9.
 - [ ] M10-05 Publish quickstart docs proving normal app development requires no
   manual `extern "C"` glue.
@@ -446,6 +447,28 @@ Deliverables:
 - Direction check:
   - roadmap remains directionally correct; the remaining work is end-user proof
     and final acceptance framing, not missing CI surface area.
+
+### 2026-03-21 - M10-05
+
+- Completed item: publish a repo-local quickstart proving ordinary cNxt apps
+  run without manual `extern "C"` glue.
+- What changed:
+  - added `cnxt/docs/quickstart.md`, a branch-local quickstart that shows how
+    to build `clang++`, run the starter fixture through `cnxt_run.py`, verify
+    the shipped starter/examples contain no manual `extern "C"` or
+    `unsafe extern` glue, and run the ownership/interface no-glue samples.
+  - linked the quickstart directly from `cnxt/README.md` so the no-glue path is
+    discoverable from the repo root instead of buried in milestone notes.
+- Follow-up notes:
+  the quickstart is intentionally anchored to commands and examples already
+  covered by repository tests rather than introducing a second, drift-prone
+  copy of the starter flow.
+- What is now unblocked:
+  - M10-06 final acceptance can reference a published user-facing quickstart
+    instead of scattered README snippets and ad hoc example notes.
+- Direction check:
+  - roadmap remains directionally correct; the last missing piece is to turn
+    the proven quickstart and CI coverage into a final acceptance gate.
 
 ### 2026-03-21 - M10-01
 
