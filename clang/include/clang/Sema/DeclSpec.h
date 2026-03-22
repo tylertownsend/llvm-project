@@ -337,6 +337,8 @@ private:
   unsigned ThreadStorageClassSpec : 2;
   LLVM_PREFERRED_TYPE(bool)
   unsigned SCS_extern_in_linkage_spec : 1;
+  LLVM_PREFERRED_TYPE(bool)
+  unsigned UnsafeSpecified : 1;
 
   // type-specifier
   LLVM_PREFERRED_TYPE(TypeSpecifierWidth)
@@ -410,6 +412,7 @@ private:
   SourceRange Range;
 
   SourceLocation StorageClassSpecLoc, ThreadStorageClassSpecLoc;
+  SourceLocation UnsafeSpecLoc;
   SourceRange TSWRange;
   SourceLocation TSCLoc, TSSLoc, TSTLoc, AltiVecLoc, TSSatLoc, EllipsisLoc;
   /// TSTNameLoc - If TypeSpecType is any of class, enum, struct, union,
@@ -466,6 +469,7 @@ public:
       : StorageClassSpec(SCS_unspecified),
         ThreadStorageClassSpec(TSCS_unspecified),
         SCS_extern_in_linkage_spec(false),
+        UnsafeSpecified(false),
         TypeSpecWidth(static_cast<unsigned>(TypeSpecifierWidth::Unspecified)),
         TypeSpecComplex(TSC_unspecified),
         TypeSpecSign(static_cast<unsigned>(TypeSpecifierSign::Unspecified)),
@@ -489,6 +493,8 @@ public:
   void setExternInLinkageSpec(bool Value) {
     SCS_extern_in_linkage_spec = Value;
   }
+  bool isUnsafeSpecified() const { return UnsafeSpecified; }
+  SourceLocation getUnsafeSpecLoc() const { return UnsafeSpecLoc; }
 
   SourceLocation getStorageClassSpecLoc() const { return StorageClassSpecLoc; }
   SourceLocation getThreadStorageClassSpecLoc() const {
@@ -499,8 +505,10 @@ public:
     StorageClassSpec           = DeclSpec::SCS_unspecified;
     ThreadStorageClassSpec     = DeclSpec::TSCS_unspecified;
     SCS_extern_in_linkage_spec = false;
+    UnsafeSpecified            = false;
     StorageClassSpecLoc        = SourceLocation();
     ThreadStorageClassSpecLoc  = SourceLocation();
+    UnsafeSpecLoc              = SourceLocation();
   }
 
   void ClearTypeSpecType() {
@@ -726,6 +734,8 @@ public:
   bool SetStorageClassSpec(Sema &S, SCS SC, SourceLocation Loc,
                            const char *&PrevSpec, unsigned &DiagID,
                            const PrintingPolicy &Policy);
+  bool SetUnsafeSpecifier(SourceLocation Loc, const char *&PrevSpec,
+                          unsigned &DiagID);
   bool SetStorageClassSpecThread(TSCS TSC, SourceLocation Loc,
                                  const char *&PrevSpec, unsigned &DiagID);
   bool SetTypeSpecWidth(TypeSpecifierWidth W, SourceLocation Loc,

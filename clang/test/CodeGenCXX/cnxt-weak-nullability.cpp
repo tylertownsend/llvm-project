@@ -1,6 +1,6 @@
 // RUN: %clang_cc1 -x cnxt -std=cnxt1 -Wno-return-type-c-linkage -emit-llvm -o - %s | FileCheck %s
 
-extern "C" int default_weak_lock_is_null() {
+unsafe extern "C" int default_weak_lock_is_null() {
   weak<int> observer;
   return observer.lock().get() == nullptr;
 }

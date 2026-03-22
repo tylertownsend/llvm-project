@@ -690,6 +690,19 @@ bool DeclSpec::SetStorageClassSpec(Sema &S, SCS SC, SourceLocation Loc,
   return false;
 }
 
+bool DeclSpec::SetUnsafeSpecifier(SourceLocation Loc, const char *&PrevSpec,
+                                  unsigned &DiagID) {
+  if (UnsafeSpecified) {
+    DiagID = diag::warn_duplicate_declspec;
+    PrevSpec = "unsafe";
+    return true;
+  }
+
+  UnsafeSpecified = true;
+  UnsafeSpecLoc = Loc;
+  return false;
+}
+
 bool DeclSpec::SetStorageClassSpecThread(TSCS TSC, SourceLocation Loc,
                                          const char *&PrevSpec,
                                          unsigned &DiagID) {

@@ -197,3 +197,20 @@
   - `build/bin/llvm-lit -sv clang/test/SemaCXX/cnxt-ownership-escapes.cpp clang/test/Parser/cnxt-unique-lowering.cpp clang/test/Parser/cnxt-shared-lowering.cpp clang/test/Parser/cnxt-weak-lock-required.cpp clang/test/Parser/cnxt-ownership-runtime-surface.cpp clang/test/SemaCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-weak-nullability.cpp clang/test/CodeGenCXX/cnxt-share-widening.cpp clang/test/Preprocessor/cnxt-prelude.c clang/test/Parser/cnxt-construction.cpp clang/test/SemaCXX/cnxt-construction.cpp clang/test/Driver/cnxt-ownership-example.c`
   - `git diff --check`
 - Next target: `M7-07`.
+- Completed `M7-07`.
+- Added a contextual `unsafe` marker before `extern` in cNxt declaration
+  parsing and carried it through `DeclSpec` so `unsafe extern "C"` can mark
+  explicit FFI boundaries.
+- Replaced the old plain-`extern "C"` carveout with an explicit
+  `cnxt_unsafe_extern` annotation on `FunctionDecl`, and switched both
+  raw-pointer signature checks and ownership-handle raw-escape checks to use
+  that explicit boundary.
+- Updated coverage so plain `extern "C"` now remains rejected for raw-pointer
+  signatures and `.get()` / `.release()` escapes, while targeted parser,
+  `SemaCXX`, codegen, and interop tests use `unsafe extern "C"` where they
+  intentionally exercise FFI behavior.
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/Parser/cnxt-ffi-raw-pointers.cpp clang/test/SemaCXX/cnxt-ownership-escapes.cpp clang/test/Parser/cnxt-restrictions.cpp clang/test/CodeGenCXX/cnxt-ownership-interop.cpp clang/test/Parser/cnxt-unique-lowering.cpp clang/test/Parser/cnxt-shared-lowering.cpp clang/test/Parser/cnxt-weak-lock-required.cpp clang/test/Parser/cnxt-ownership-runtime-surface.cpp clang/test/SemaCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-weak-nullability.cpp clang/test/CodeGenCXX/cnxt-share-widening.cpp clang/test/Preprocessor/cnxt-prelude.c clang/test/Parser/cnxt-construction.cpp clang/test/SemaCXX/cnxt-construction.cpp clang/test/Driver/cnxt-ownership-example.c`
+  - `git diff --check`
+- Next target: `M7-08`.

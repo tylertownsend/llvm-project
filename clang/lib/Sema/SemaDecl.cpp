@@ -10110,6 +10110,21 @@ static bool containsCNxtRawPointerType(QualType QT) {
   return false;
 }
 
+static constexpr llvm::StringLiteral CNxtUnsafeExternAnnotation =
+    "cnxt_unsafe_extern";
+
+static bool isCNxtUnsafeExternFunction(const FunctionDecl *FD) {
+  if (!FD || !FD->isExternC())
+    return false;
+
+  for (const auto *AA : FD->specific_attrs<AnnotateAttr>()) {
+    if (AA->getAnnotation() == CNxtUnsafeExternAnnotation)
+      return true;
+  }
+
+  return false;
+}
+
 NamedDecl*
 Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
                               TypeSourceInfo *TInfo, LookupResult &Previous,
@@ -10189,9 +10204,15 @@ Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
   if (IsLocalExternDecl)
     NewFD->setLocalExternDecl();
 
+  if (getLangOpts().CNxt && D.getDeclSpec().isUnsafeSpecified())
+    NewFD->addAttr(AnnotateAttr::CreateImplicit(
+        Context, CNxtUnsafeExternAnnotation, nullptr, 0,
+        SourceRange(D.getDeclSpec().getUnsafeSpecLoc())));
+
   if (getLangOpts().CNxtNoRawOwningPointers &&
       !getSourceManager().isInSystemHeader(NewFD->getLocation()) &&
-      !NewFD->isExternC() && containsCNxtRawPointerType(NewFD->getType())) {
+      !isCNxtUnsafeExternFunction(NewFD) &&
+      containsCNxtRawPointerType(NewFD->getType())) {
     Diag(NewFD->getLocation(), diag::err_cnxt_unsupported_declaration)
         << "raw pointer function signatures outside unsafe FFI boundaries";
     D.setInvalidType();

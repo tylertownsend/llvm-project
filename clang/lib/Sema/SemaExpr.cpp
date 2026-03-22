@@ -82,6 +82,7 @@ static bool diagnoseCNxtInvalidConstructionTarget(Sema &SemaRef,
                                                   SourceLocation CallLoc);
 static bool diagnoseCNxtOwnershipRawEscape(Sema &SemaRef,
                                            const Expr *CalleeExpr);
+static bool isCNxtUnsafeExternFunction(const FunctionDecl *FD);
 }
 
 bool Sema::CanUseDecl(NamedDecl *D, bool TreatUnavailableAsInvalid) {
@@ -9719,6 +9720,21 @@ static bool diagnoseCNxtInvalidConstructionTarget(Sema &SemaRef,
       SemaRef, TemplateArgs.front().getArgument().getAsType(), CallLoc);
 }
 
+static constexpr llvm::StringLiteral CNxtUnsafeExternAnnotation =
+    "cnxt_unsafe_extern";
+
+static bool isCNxtUnsafeExternFunction(const FunctionDecl *FD) {
+  if (!FD || !FD->isExternC())
+    return false;
+
+  for (const auto *AA : FD->specific_attrs<AnnotateAttr>()) {
+    if (AA->getAnnotation() == CNxtUnsafeExternAnnotation)
+      return true;
+  }
+
+  return false;
+}
+
 static bool isCNxtOwnershipEscapeContextAllowed(const Sema &SemaRef,
                                                 SourceLocation CallLoc) {
   if (!SemaRef.getLangOpts().CNxt)
@@ -9729,7 +9745,7 @@ static bool isCNxtOwnershipEscapeContextAllowed(const Sema &SemaRef,
     return true;
 
   const FunctionDecl *FD = SemaRef.getCurFunctionDecl(/*AllowLambda=*/true);
-  return FD && FD->isExternC();
+  return isCNxtUnsafeExternFunction(FD);
 }
 
 static bool diagnoseCNxtOwnershipRawEscape(Sema &SemaRef,

@@ -22,7 +22,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-04 Lower construction expressions to runtime allocation plus constructor/init calls in CodeGen.
 - [x] M7-05 Add builtin conversion API for widening ownership without raw-pointer intermediates.
 - [x] M7-06 Restrict ownership-handle raw pointer escape operations in safe code.
-- [ ] M7-07 Tighten pointer policy from "extern C carveout" to explicit unsafe/FFI boundaries.
+- [x] M7-07 Tighten pointer policy from "extern C carveout" to explicit unsafe/FFI boundaries.
+- [ ] M7-08 Add cNxt diagnostics + fix-its that rewrite pointer-centric usage into ownership-centric forms where safe/possible.
 
 ## Deliverable Status
 
@@ -38,7 +39,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-04
 - [x] M7-05
 - [x] M7-06
-- [ ] M7-07 through M7-10
+- [x] M7-07
+- [ ] M7-08 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
 - [ ] M10-01 through M10-06
@@ -101,9 +103,9 @@ Deliverables:
   constructor/init calls in CodeGen.
 - [x] M7-05 Add builtin conversion API for widening ownership
   (`share(unique<T>) -> shared<T>`) without raw pointer intermediates.
-- [-] M7-06 Restrict ownership-handle raw pointer escape operations (such as
+- [x] M7-06 Restrict ownership-handle raw pointer escape operations (such as
   unrestricted `.get()`) to explicit unsafe/FFI contexts.
-- [ ] M7-07 Tighten pointer policy from "extern C carveout" to explicit
+- [x] M7-07 Tighten pointer policy from "extern C carveout" to explicit
   `unsafe extern` boundary model for pointer-bearing signatures.
 - [ ] M7-08 Add cNxt diagnostics + fix-its that rewrite pointer-centric usage
   into ownership-centric forms where safe/possible.
@@ -182,6 +184,40 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M7-07
+
+- Completed item: replace the implicit `extern "C"` raw-pointer carveout with
+  an explicit `unsafe extern "C"` boundary model for pointer-bearing cNxt
+  signatures and ownership-handle raw escapes.
+- What changed:
+  - added a contextual cNxt `unsafe` declaration marker before `extern` in the
+    parser and threaded that marker through `DeclSpec`.
+  - recorded `unsafe extern` functions on the resulting `FunctionDecl` and
+    switched raw-pointer signature validation from `isExternC()` to the new
+    explicit unsafe-extern annotation.
+  - switched ownership-handle raw escape checks (`.get()` / `.release()`) from
+    the old plain-`extern "C"` allowance to the same explicit unsafe-extern
+    gate.
+  - updated parser, `SemaCXX`, and codegen coverage so plain `extern "C"` now
+    remains rejected for raw-pointer signatures/escapes while
+    `unsafe extern "C"` is accepted where the tests intentionally exercise FFI
+    lowering.
+- Follow-up notes:
+  - the boundary marker now exists and is enforced, but diagnostics still tell
+    users only that pointer-centric code is unsupported; M7-08 should add
+    targeted cNxt fix-its and guidance toward `make<T>(...)`, `share(...)`,
+    and safe ownership surfaces.
+- What is now unblocked:
+  - M7-08 can offer fix-its against a stable explicit boundary model instead of
+    heuristics based on linkage alone.
+  - M7-09 can add cleanup-path coverage for mixed safe/unsafe boundary flows
+    without the old extern-C ambiguity.
+  - M7-10 can present the no-glue example knowing that raw-pointer escape
+    syntax is no longer silently available in ordinary foreign-linkage code.
+- Direction check:
+  - roadmap remains directionally correct; M7-08 is next because the remaining
+    gap is developer ergonomics, not core policy enforcement.
 
 ### 2026-03-21 - M7-06
 

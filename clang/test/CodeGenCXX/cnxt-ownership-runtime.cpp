@@ -1,6 +1,6 @@
 // RUN: %clang_cc1 -x cnxt -std=cnxt1 -emit-llvm -o - %s | FileCheck %s
 
-extern "C" void runtime_surface(shared<int> owner, weak<int> observer) {
+unsafe extern "C" void runtime_surface(shared<int> owner, weak<int> observer) {
   shared<int> copied = owner;
   weak<int> aliased(owner);
   shared<int> recovered = observer.lock();

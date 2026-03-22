@@ -28,7 +28,7 @@ extern "C" shared<int> cnxt_lock(weak<int> weak_handle) {
   return weak_handle.lock();
 }
 
-extern "C" int *cnxt_echo_ptr(int *p) { return p; }
+unsafe extern "C" int *cnxt_echo_ptr(int *p) { return p; }
 
 extern "C" int cnxt_expired(weak<int> weak_handle) {
   return weak_handle.expired();
