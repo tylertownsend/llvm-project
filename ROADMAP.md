@@ -56,7 +56,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M9-08
 - [x] M10-01
 - [x] M10-02
-- [ ] M10-03 through M10-06
+- [x] M10-03
+- [ ] M10-04 through M10-06
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
@@ -189,7 +190,7 @@ Deliverables:
   double-free, weak-lock races where applicable).
 - [x] M10-02 Add parser/sema fuzz inputs around ownership, construction,
   interface, and `unsafe extern` boundaries.
-- [ ] M10-03 Add performance baselines for ownership operations and dispatch
+- [x] M10-03 Add performance baselines for ownership operations and dispatch
   overhead versus current branch behavior.
 - [ ] M10-04 Add CI matrix coverage (Linux/macOS) building and testing runtime +
   compiler features introduced in M6-M9.
@@ -376,6 +377,43 @@ Deliverables:
 - Direction check:
   - roadmap remains directionally correct; the next missing release-gate work
     is performance and CI proof, not parser/sema surface coverage.
+
+### 2026-03-21 - M10-03
+
+- Completed item: add branch-local performance baselines for ownership runtime
+  operations and borrowed interface dispatch.
+- What changed:
+  - added `cnxt/runtime/ownership/benchmarks/ownership_dispatch_bench.cpp`, a
+    standalone microbenchmark binary that measures runtime `unique` drop,
+    `shared` copy/release, `weak_lock` hit/miss, and borrowed witness-table
+    dispatch.
+  - paired each cNxt case with a local baseline path
+    (`std::unique_ptr`, `std::shared_ptr`, `std::weak_ptr`, and direct concrete
+    dispatch) and added `--json` output so current-branch runs produce
+    comparable ns/op snapshots.
+  - updated `cnxt/runtime/ownership/CMakeLists.txt` to build
+    `cnxt_ownership_rt_bench` and to link the existing smoke test target
+    against `Threads::Threads`, which the `weak_lock_stress` harness needs on
+    plain `c++` toolchains.
+  - updated `cnxt/runtime/ownership/README.md` with benchmark build/run
+    commands and the benchmark scope.
+- Follow-up notes:
+  local `--iterations 200000 --json` output on 2026-03-21 measured
+  `runtime_unique_drop` at `26.32 ns/op` versus `std_unique_drop` at
+  `20.78 ns/op` (`1.27x`), `runtime_shared_copy_release` at `16.04 ns/op`
+  versus `std_shared_copy` at `3.83 ns/op` (`4.18x`),
+  `runtime_weak_lock_hit` at `18.87 ns/op` versus `std_weak_lock_hit` at
+  `10.91 ns/op` (`1.73x`), `runtime_weak_lock_miss` at `5.01 ns/op` versus
+  `std_weak_lock_miss` at `3.24 ns/op` (`1.55x`), and `witness_dispatch` at
+  `2.06 ns/op` versus `direct_dispatch` at `1.77 ns/op` (`1.17x`).
+- What is now unblocked:
+  - M10-04 CI expansion can choose a stable benchmark invocation and artifact
+    format for release-gate trend tracking.
+  - M10-06 acceptance criteria can reference concrete branch-local performance
+    baselines instead of undocumented expectations.
+- Direction check:
+  - roadmap remains directionally correct; the next risk is CI/system coverage,
+    not lack of local performance baselines.
 
 ### 2026-03-21 - M10-01
 

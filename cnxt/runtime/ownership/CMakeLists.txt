@@ -3,10 +3,15 @@ cmake_minimum_required(VERSION 3.20)
 project(cnxt_ownership_rt LANGUAGES CXX)
 
 include(CTest)
+find_package(Threads REQUIRED)
 
 option(CNXT_OWNERSHIP_RT_ENABLE_SANITIZERS
   "Build the ownership runtime and smoke tests with AddressSanitizer/LeakSanitizer."
   OFF
+)
+option(CNXT_OWNERSHIP_RT_BUILD_BENCHMARKS
+  "Build the ownership runtime microbenchmark executable."
+  ON
 )
 
 if(CNXT_OWNERSHIP_RT_ENABLE_SANITIZERS
@@ -56,12 +61,24 @@ set_target_properties(cnxt_ownership_rt PROPERTIES
 
 cnxt_ownership_apply_sanitizers(cnxt_ownership_rt)
 
+if(CNXT_OWNERSHIP_RT_BUILD_BENCHMARKS)
+  add_executable(cnxt_ownership_rt_bench
+    benchmarks/ownership_dispatch_bench.cpp
+  )
+  target_compile_features(cnxt_ownership_rt_bench PRIVATE cxx_std_17)
+  target_link_libraries(cnxt_ownership_rt_bench PRIVATE cnxt_ownership_rt)
+  cnxt_ownership_apply_sanitizers(cnxt_ownership_rt_bench)
+endif()
+
 if(BUILD_TESTING)
   add_executable(cnxt_ownership_rt_smoke
     tests/ownership_runtime_smoke.cpp
   )
   target_compile_features(cnxt_ownership_rt_smoke PRIVATE cxx_std_17)
-  target_link_libraries(cnxt_ownership_rt_smoke PRIVATE cnxt_ownership_rt)
+  target_link_libraries(cnxt_ownership_rt_smoke PRIVATE
+    cnxt_ownership_rt
+    Threads::Threads
+  )
   cnxt_ownership_apply_sanitizers(cnxt_ownership_rt_smoke)
 
   add_test(

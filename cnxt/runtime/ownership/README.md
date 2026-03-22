@@ -30,3 +30,22 @@ ctest --test-dir build-cnxt-ownership-sanitizers --output-on-failure
 
 The sanitizer suite covers clean lifecycle, `weak_lock` contention stress,
 leak detection, use-after-free detection, and double-free detection.
+
+Performance baseline example:
+
+```bash
+cmake -S cnxt/runtime/ownership -B build-cnxt-ownership-bench \
+  -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_COMPILER=c++
+
+cmake --build build-cnxt-ownership-bench --parallel
+./build-cnxt-ownership-bench/cnxt_ownership_rt_bench --iterations 200000 --json
+```
+
+The benchmark binary reports branch-local baselines for:
+
+- runtime `unique` allocation/drop versus `std::unique_ptr`
+- runtime `shared` copy/release versus `std::shared_ptr`
+- runtime `weak_lock` hit/miss versus `std::weak_ptr`
+- borrowed witness-table dispatch versus direct concrete method calls

@@ -551,3 +551,28 @@
   - `build/bin/clang-cnxt-fuzzer clang/tools/clang-fuzzer/corpus_examples/cnxt/ownership-lifetimes.cn`
   - `git diff --check`
 - Next target: `M10-03`.
+
+- Completed `M10-03`.
+- Added `cnxt/runtime/ownership/benchmarks/ownership_dispatch_bench.cpp`, a
+  standalone microbenchmark binary that reports ns/op for runtime `unique`
+  drop, `shared` copy/release, `weak_lock` hit/miss, and borrowed witness
+  dispatch alongside `std::*` and direct-call baselines.
+- Updated `cnxt/runtime/ownership/CMakeLists.txt` to build
+  `cnxt_ownership_rt_bench` and link the existing smoke target against
+  `Threads::Threads`, which was required to keep the runtime test build
+  portable on a plain `c++` toolchain.
+- Updated `cnxt/runtime/ownership/README.md` with benchmark build/run commands.
+- Local baseline snapshot from
+  `cnxt_ownership_rt_bench --iterations 200000 --json`:
+  `runtime_unique_drop` `26.32 ns/op` (`1.27x` vs `std_unique_drop`),
+  `runtime_shared_copy_release` `16.04 ns/op` (`4.18x` vs `std_shared_copy`),
+  `runtime_weak_lock_hit` `18.87 ns/op` (`1.73x` vs `std_weak_lock_hit`),
+  `runtime_weak_lock_miss` `5.01 ns/op` (`1.55x` vs `std_weak_lock_miss`),
+  `witness_dispatch` `2.06 ns/op` (`1.17x` vs `direct_dispatch`).
+- Validation:
+  - `cmake -S cnxt/runtime/ownership -B /tmp/cnxt-ownership-bench -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=c++ -DBUILD_TESTING=ON`
+  - `cmake --build /tmp/cnxt-ownership-bench --parallel`
+  - `/tmp/cnxt-ownership-bench/cnxt_ownership_rt_bench --iterations 200000 --json`
+  - `ctest --test-dir /tmp/cnxt-ownership-bench --output-on-failure`
+  - `git diff --check`
+- Next target: `M10-04`.
