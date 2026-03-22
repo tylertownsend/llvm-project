@@ -8,8 +8,10 @@ Status: Milestone 4 build-command baseline.
 2. generate deterministic `Cnxt.lock`
 3. optionally fetch lockfile dependencies
 4. derive build targets (`[targets]` or default `src/main.cn` / `src/lib.cn`)
-5. emit `compile_commands.json`
-6. compile/link targets (or dry-run plan)
+5. stage the compiler-owned ownership runtime in `target/<profile>/`
+6. emit `compile_commands.json`
+7. compile/link targets with automatic `-fcnxt-ownership-runtime=...` wiring
+   for cNxt inputs (or dry-run plan)
 
 Locked replay mode:
 
@@ -27,6 +29,8 @@ When `[targets]` is not specified:
 
 - build binary target from `src/main.cn` named after package
 - build library object target from `src/lib.cn` named after package
+- automatically stage `libcnxt_ownership_rt.so` beside built binaries/tests so
+  starter-layout projects run without manual runtime flags or `LD_LIBRARY_PATH`
 
 When `[targets]` is specified:
 

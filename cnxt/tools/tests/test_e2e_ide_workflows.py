@@ -101,6 +101,7 @@ edition = "cnxt1"
             self.assertEqual(1, len(payload))
             self.assertIn("-x cnxt", payload[0]["command"])
             self.assertIn("-std=cnxt1", payload[0]["command"])
+            self.assertIn("-fcnxt-ownership-runtime=", payload[0]["command"])
 
     def test_workspace_member_path_runs_ide_build_entrypoint(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_str:

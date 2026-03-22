@@ -2,6 +2,25 @@
 
 ## 2026-03-21
 
+- Completed `M9-08`.
+- Taught `cnxt/tools/cnxt_build.py` to auto-stage the ownership runtime,
+  inject `-fcnxt-ownership-runtime=...`, and link cNxt binaries/tests with an
+  `$ORIGIN` rpath so starter-layout projects run without manual runtime flags
+  or `LD_LIBRARY_PATH`.
+- Added the starter-layout fixture at `cnxt/examples/starter/hello-app/` and a
+  real end-to-end tool test in `cnxt/tools/tests/test_e2e_starter_template.py`
+  proving the template builds and runs with no user-written FFI glue.
+- Updated package-tool defaults/docs/tests so `cnxt build` / `cnxt run` now
+  reflect the no-glue starter path.
+- Validation:
+  - `python3 cnxt/tools/tests/test_cnxt_build.py`
+  - `python3 cnxt/tools/tests/test_cnxt_run.py`
+  - `python3 cnxt/tools/tests/test_cnxt_test.py`
+  - `python3 cnxt/tools/tests/test_e2e_ide_workflows.py`
+  - `python3 cnxt/tools/tests/test_e2e_starter_template.py`
+  - `git diff --check`
+- Next target: `M10-01`.
+
 - Completed `M9-07`.
 - Added `cnxt/docs/c-abi-migration.md`, a migration guide covering when to
   replace manual `extern "C"` imports/exports with `cnxt_import_c` /

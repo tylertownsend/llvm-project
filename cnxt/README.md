@@ -215,6 +215,9 @@ Current end-to-end interface ownership example:
 Current safe stdlib hello-world example:
 `cnxt/examples/stdlib/hello-world.cn`.
 
+Starter app template fixture (mirrors intended `cnxt new` output):
+`cnxt/examples/starter/hello-app/`.
+
 Build and run the ownership example on this branch:
 
 ```bash
@@ -281,6 +284,19 @@ manual `extern` declarations or `unsafe extern` wrappers. The current branch
 still expects `-fcnxt-ownership-runtime=...` on cNxt links, so the example
 passes the existing runtime path even though the program itself uses only the
 safe stdlib output surface.
+
+Run the starter-template fixture through the package tool:
+
+```bash
+python3 cnxt/tools/cnxt_run.py cnxt/examples/starter/hello-app \
+  --skip-fetch \
+  --compiler build/bin/clang++
+```
+
+This fixture mirrors the intended `cnxt new` layout (`Cnxt.toml` +
+`src/main.cn`), uses only `cnxt::io::println(...)`, contains no user-written
+FFI glue, and now builds/runs through the package tool without manual runtime
+flags or `LD_LIBRARY_PATH`.
 
 IDE CI integration baseline:
 `cnxt/specs/cnxt-ide-ci.md`.

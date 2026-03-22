@@ -1,0 +1,4 @@
+int main() {
+  cnxt::io::println("hello, cnxt");
+  return 0;
+}

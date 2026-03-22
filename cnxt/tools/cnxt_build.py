@@ -33,6 +33,11 @@ write_lockfile = _lockfile_module.write_lockfile
 fetch_packages = _fetch_module.fetch_packages
 resolve_manifest_input = _workspace_module.resolve_manifest_input
 
+_RUNTIME_INCLUDE_DIR = _TOOLS_DIR.parent / "runtime" / "ownership" / "include"
+_RUNTIME_SOURCE = _TOOLS_DIR.parent / "runtime" / "ownership" / "src" / "ownership_runtime.cpp"
+_RUNTIME_LIBRARY_NAME = "libcnxt_ownership_rt.so"
+_RUNTIME_RPATH = "$ORIGIN"
+
 
 @dataclass(frozen=True)
 class BuildDiagnostic:
@@ -76,6 +81,26 @@ def _profile_flags(profile: str) -> list[str]:
     if profile == "release":
         return ["-O2", "-DNDEBUG"]
     return ["-O0", "-g"]
+
+
+def _cnxt_runtime_flag(runtime_path: Path) -> str:
+    return f"-fcnxt-ownership-runtime={runtime_path}"
+
+
+def _runtime_build_command(compiler: str, target_dir: Path) -> tuple[list[str], Path]:
+    runtime_path = target_dir / _RUNTIME_LIBRARY_NAME
+    command = [
+        compiler,
+        "-shared",
+        "-fPIC",
+        "-std=c++17",
+        "-I",
+        str(_RUNTIME_INCLUDE_DIR),
+        str(_RUNTIME_SOURCE),
+        "-o",
+        str(runtime_path),
+    ]
+    return command, runtime_path
 
 
 def _manifest_diag_to_build(diag: Any) -> BuildDiagnostic:
@@ -138,6 +163,7 @@ def _build_commands_for_target(
     target_dir: Path,
     profile: str,
     target: dict[str, str],
+    runtime_path: Path,
 ) -> tuple[list[list[str]], list[BuildArtifact], list[dict[str, str]]]:
     source = (manifest_dir / target["path"]).resolve()
     obj_name = f"{target['kind']}-{target['name']}.o"
@@ -147,6 +173,7 @@ def _build_commands_for_target(
         "-x",
         "cnxt",
         "-std=cnxt1",
+        _cnxt_runtime_flag(runtime_path),
         *_profile_flags(profile),
         "-c",
         str(source),
@@ -165,12 +192,26 @@ def _build_commands_for_target(
     artifacts: list[BuildArtifact] = []
     if target["kind"] == "bin":
         bin_path = target_dir / target["name"]
-        link_cmd = [compiler, str(obj_path), "-o", str(bin_path)]
+        link_cmd = [
+            compiler,
+            str(obj_path),
+            _cnxt_runtime_flag(runtime_path),
+            f"-Wl,-rpath,{_RUNTIME_RPATH}",
+            "-o",
+            str(bin_path),
+        ]
         commands.append(link_cmd)
         artifacts.append(BuildArtifact(kind="bin", name=target["name"], path=str(bin_path)))
     elif target["kind"] == "test":
         test_bin = target_dir / f"{target['name']}.test"
-        link_cmd = [compiler, str(obj_path), "-o", str(test_bin)]
+        link_cmd = [
+            compiler,
+            str(obj_path),
+            _cnxt_runtime_flag(runtime_path),
+            f"-Wl,-rpath,{_RUNTIME_RPATH}",
+            "-o",
+            str(test_bin),
+        ]
         commands.append(link_cmd)
         artifacts.append(BuildArtifact(kind="test", name=target["name"], path=str(test_bin)))
     else:
@@ -259,7 +300,7 @@ def run_build(
     locked: bool = False,
     registry: Path | str | None = None,
     cache_root: Path | str | None = None,
-    compiler: str = "clang",
+    compiler: str = "clang++",
 ) -> BuildResult:
     discovery_result = resolve_manifest_input(root_manifest)
     diagnostics: list[BuildDiagnostic] = [
@@ -352,12 +393,13 @@ def run_build(
     profile_dir = manifest_path.parent / "target" / profile
     profile_dir.mkdir(parents=True, exist_ok=True)
 
-    all_commands: list[list[str]] = []
+    runtime_command, runtime_path = _runtime_build_command(compiler, profile_dir)
+    all_commands: list[list[str]] = [runtime_command]
     compile_entries: list[dict[str, str]] = []
     artifacts: list[BuildArtifact] = []
     for target in targets:
         target_commands, target_artifacts, target_compile_entries = _build_commands_for_target(
-            compiler, manifest_path.parent, profile_dir, profile, target
+            compiler, manifest_path.parent, profile_dir, profile, target, runtime_path
         )
         all_commands.extend(target_commands)
         compile_entries.extend(target_compile_entries)
@@ -401,7 +443,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--locked", action="store_true", help="Replay existing lockfile without regenerating")
     parser.add_argument("--registry", type=str, default=None, help="Registry root path/URL")
     parser.add_argument("--cache-root", type=Path, default=None, help="Override cache root")
-    parser.add_argument("--compiler", type=str, default="clang", help="Compiler executable")
+    parser.add_argument("--compiler", type=str, default="clang++", help="Compiler executable")
     args = parser.parse_args(argv)
 
     result = run_build(

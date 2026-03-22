@@ -56,6 +56,7 @@ edition = "cnxt1"
             payload = json.loads(compile_commands.read_text(encoding="utf-8"))
             self.assertEqual(1, len(payload))
             self.assertIn("-std=cnxt1", payload[0]["command"])
+            self.assertIn("-fcnxt-ownership-runtime=", payload[0]["command"])
             self.assertEqual({"bin"}, {artifact.kind for artifact in result.artifacts})
 
     def test_build_requires_targets(self) -> None:

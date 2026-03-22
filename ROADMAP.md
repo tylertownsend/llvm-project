@@ -53,7 +53,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M9-05
 - [x] M9-06
 - [x] M9-07
-- [ ] M9-08
+- [x] M9-08
 - [ ] M10-01 through M10-06
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
@@ -174,7 +174,7 @@ Deliverables:
   paths for cNxt <-> C/C++ calls.
 - [x] M9-07 Add migration guide from legacy manual `extern "C"` patterns to
   compiler-managed interop boundaries.
-- [ ] M9-08 Update `cnxt new`/starter template so generated apps compile/run
+- [x] M9-08 Update `cnxt new`/starter template so generated apps compile/run
   without glue files or raw-pointer syntax.
 
 ### Milestone 10 - Hardening and Release Gate
@@ -309,6 +309,40 @@ Deliverables:
 - Direction check:
   - roadmap remains directionally correct; the remaining Milestone 9 work is
     productizing the no-glue path in generated project templates.
+
+### 2026-03-21 - M9-08
+
+- Completed item: make the starter-project path build and run without glue
+  files or raw-pointer syntax.
+- What changed:
+  - taught `cnxt/tools/cnxt_build.py` to stage the ownership runtime into
+    `target/<profile>/libcnxt_ownership_rt.so`, pass
+    `-fcnxt-ownership-runtime=...` automatically for cNxt compilation/linking,
+    and link binaries/tests with an `$ORIGIN` rpath so they can run without
+    `LD_LIBRARY_PATH`.
+  - aligned `cnxt/tools/cnxt_run.py` and `cnxt/tools/cnxt_test.py` to the same
+    default `clang++` toolchain path used by the working cNxt examples.
+  - added `cnxt/examples/starter/hello-app/` as the starter-layout fixture
+    mirroring the intended `cnxt new` output, with a `src/main.cn` that uses
+    only `cnxt::io::println(...)`.
+  - added `cnxt/tools/tests/test_e2e_starter_template.py` and updated existing
+    package-tool tests so the starter layout is verified end-to-end and the
+    generated compile commands record the runtime wiring.
+  - updated `cnxt/README.md`, `cnxt/specs/cnxt-build-command.md`, and
+    `cnxt/specs/cnxt-run-command.md` to describe the no-glue starter flow.
+- Follow-up notes:
+  - the repository still does not have a dedicated `cnxt new` command, so the
+    starter fixture currently serves as the concrete template source of truth
+    for the future command.
+- What is now unblocked:
+  - M10-05 quickstart docs can point at a verified starter project layout
+    instead of hand-written one-off commands.
+  - M10-06 acceptance gating can use the starter-template e2e run as part of
+    the final no-glue app checklist.
+- Direction check:
+  - roadmap remains directionally correct; Milestone 10 can now focus on
+    hardening, CI coverage, and release proof rather than missing product-path
+    wiring.
 
 ### 2026-03-21 - M9-03
 

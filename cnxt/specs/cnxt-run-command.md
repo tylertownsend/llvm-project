@@ -12,6 +12,10 @@ Default behavior:
 2. select a binary target (`--bin` or first built binary)
 3. execute binary with forwarded arguments
 
+Because `cnxt build` now stages the ownership runtime beside built cNxt
+binaries/tests and links them with an `$ORIGIN` rpath, starter-layout projects
+do not need manual runtime flags or `LD_LIBRARY_PATH` during `cnxt run`.
+
 With `--skip-build`, the command runs an existing artifact from:
 
 ```text

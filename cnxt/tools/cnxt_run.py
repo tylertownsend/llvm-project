@@ -117,7 +117,7 @@ def run_package(
     locked: bool = False,
     registry: str | None = None,
     cache_root: Path | str | None = None,
-    compiler: str = "clang",
+    compiler: str = "clang++",
 ) -> RunResult:
     discovery_result = resolve_manifest_input(root_manifest)
     diagnostics: list[RunDiagnostic] = [_to_run_diag(diag) for diag in discovery_result.diagnostics]
@@ -249,7 +249,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--locked", action="store_true", help="Replay existing lockfile without regenerating")
     parser.add_argument("--registry", type=str, default=None, help="Registry root path/URL")
     parser.add_argument("--cache-root", type=Path, default=None, help="Override cache root")
-    parser.add_argument("--compiler", type=str, default="clang", help="Compiler executable")
+    parser.add_argument("--compiler", type=str, default="clang++", help="Compiler executable")
     parser.add_argument("program_args", nargs=argparse.REMAINDER, help="Arguments for the program")
     args = parser.parse_args(argv)
 
