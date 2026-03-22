@@ -6,6 +6,8 @@
 // CHECK-NOT: std::unique_ptr
 // CHECK-NOT: std::shared_ptr
 // CHECK-NOT: std::weak_ptr
+// CHECK: template <typename T> struct __cnxt_iface_witness {
+// CHECK: template <typename T> struct __cnxt_iface_borrowed {
 // CHECK: template <typename T> struct unique {
 // CHECK: template <typename T> struct shared {
 // CHECK: template <typename T> shared<T> share(unique<T> &&Owner) {

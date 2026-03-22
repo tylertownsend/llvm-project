@@ -32,7 +32,8 @@ static bool isCNxtAllowedTemplateId(const UnqualifiedId &TemplateName,
   return TemplateName.Identifier->isStr("unique") ||
          TemplateName.Identifier->isStr("shared") ||
          TemplateName.Identifier->isStr("weak") ||
-         TemplateName.Identifier->isStr("make");
+         TemplateName.Identifier->isStr("make") ||
+         TemplateName.Identifier->isStr("__cnxt_iface_borrowed");
 }
 
 unsigned Parser::ReenterTemplateScopes(MultiParseScope &S, Decl *D) {

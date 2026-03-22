@@ -134,7 +134,7 @@ Deliverables:
   (cNxt-native spelling, not C++ `: Base` inheritance syntax).
 - [x] M8-04 Add Sema conformance checks: required methods, signature matching,
   visibility, and implementation completeness diagnostics.
-- [ ] M8-05a Introduce a cNxt-owned borrowed interface carrier representation
+- [x] M8-05a Introduce a cNxt-owned borrowed interface carrier representation
   (object reference + witness metadata) instead of raw abstract-class objects.
 - [ ] M8-05b Allow interface-valued locals, params, returns, and concrete to
   interface bindings against the borrowed carrier representation.
@@ -192,6 +192,39 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M8-05a
+
+- Completed item: introduce the compiler-owned borrowed interface carrier
+  representation used by later cNxt interface value work.
+- What changed:
+  - extended `clang/lib/Frontend/InitPreprocessor.cpp` with internal
+    `__cnxt_iface_witness<T>` and `__cnxt_iface_borrowed<T>` templates so the
+    injected cNxt prelude now defines an object-reference-plus-witness carrier
+    owned by the compiler instead of relying only on raw abstract-class
+    objects.
+  - expanded the cNxt template-id allowlist in
+    `clang/lib/Parse/ParseTemplate.cpp` so the internal borrowed carrier can
+    be instantiated in cNxt mode for compiler tests and later lowering work.
+  - added focused coverage in `clang/test/Preprocessor/cnxt-prelude.c` and
+    `clang/test/SemaCXX/cnxt-interface-carrier.cpp` to lock in the injected
+    carrier surface and prove it can carry an interface type through locals,
+    parameters, and returns without tripping abstract-type diagnostics.
+- Follow-up notes:
+  - this milestone introduces only the internal carrier representation; user
+    declarations spelled directly as `InterfaceName` still lower through the
+    existing abstract-class paths until M8-05b rewrites them onto the carrier.
+  - witness metadata is still opaque at this stage; method-entry layout and
+    dynamic call lowering remain M8-06 work.
+- What is now unblocked:
+  - M8-05b can now focus on mapping cNxt interface-valued declarations and
+    concrete-to-interface bindings onto the borrowed carrier.
+  - M8-06 can build dynamic dispatch lowering against a fixed compiler-owned
+    carrier layout instead of inventing one while changing semantic rules.
+- Direction check:
+  - roadmap remains directionally correct; M8-05b is the next highest-priority
+    item because the carrier exists and the remaining blocker is teaching
+    cNxt interface spellings to use it.
 
 ### 2026-03-21 - M8-04
 
