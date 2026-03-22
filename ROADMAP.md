@@ -47,8 +47,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-09
 - [x] M7-10
 - [x] M8-01
-- [x] M8-02 through M8-09
-- [ ] M8-10 through M8-11
+- [x] M8-02 through M8-10
+- [ ] M8-11
 - [ ] M9-01 through M9-08
 - [ ] M10-01 through M10-06
 - [x] M1-01 through M1-12
@@ -145,7 +145,7 @@ Deliverables:
 - [x] M8-08 Add focused diagnostics for missing implementations, invalid
   overrides, and ambiguous interface bindings.
 - [x] M8-09 Update clangd/IDE support for interface/class syntax and symbols.
-- [ ] M8-10 Add parser/sema/codegen regression coverage for interface/class
+- [x] M8-10 Add parser/sema/codegen regression coverage for interface/class
   declarations, conformance, and dispatch.
 - [ ] M8-11 Add end-to-end cNxt interface+class sample with unique ownership
   and zero `extern "C"` declarations.
@@ -193,6 +193,33 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M8-10
+
+- Completed item: broaden parser/Sema/CodeGen regression coverage for cNxt
+  interface/class declarations, conformance, and dispatch.
+- What changed:
+  - expanded `clang/test/Parser/cnxt-interface-decls.cpp` to cover multiple
+    interface declarations, a class implementing multiple interfaces, and
+    interface/class-valued function signatures in the declaration surface.
+  - expanded `clang/test/SemaCXX/cnxt-interface-bindings.cpp` so positive Sema
+    coverage now exercises a class implementing multiple interfaces and binding
+    the same concrete object into distinct interface-typed globals, params,
+    locals, and returns.
+  - expanded `clang/test/CodeGenCXX/cnxt-interface-dispatch.cpp` so dispatch
+    lowering now proves both second-slot interface method lookup and dispatch
+    through a secondary interface witness table.
+- Follow-up notes:
+  - milestone 8 regression coverage is now broad enough for the sample work,
+    but the roadmap still needs the dedicated end-to-end interface/class app in
+    M8-11.
+- What is now unblocked:
+  - M8-11 can build the end-to-end sample on top of parser, sema, codegen,
+    ownership, diagnostics, and clangd behavior that all now have focused
+    regression coverage.
+- Direction check:
+  - roadmap remains directionally correct; M8-11 is the only remaining
+    milestone 8 deliverable and the next highest-priority unblocked item.
 
 ### 2026-03-21 - M8-09
 

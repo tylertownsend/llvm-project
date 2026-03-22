@@ -2,6 +2,15 @@
 
 ## 2026-03-21
 
+- Completed `M8-10`.
+- Expanded interface/class regression coverage in:
+  - `clang/test/Parser/cnxt-interface-decls.cpp`
+  - `clang/test/SemaCXX/cnxt-interface-bindings.cpp`
+  - `clang/test/CodeGenCXX/cnxt-interface-dispatch.cpp`
+- Validation:
+  - `build/bin/llvm-lit -sv clang/test/Parser/cnxt-interface-decls.cpp clang/test/Parser/cnxt-implements.cpp clang/test/SemaCXX/cnxt-interface-bindings.cpp clang/test/SemaCXX/cnxt-interface-conformance.cpp clang/test/SemaCXX/cnxt-interface-diagnostics.cpp clang/test/CodeGenCXX/cnxt-interface-dispatch.cpp clang/test/CodeGenCXX/cnxt-interface-ownership.cpp`
+- Next target: `M8-11`.
+
 - Completed `M8-09`.
 - Preserved cNxt interface/class source spellings through interface carrier
   lowering in `SemaType.cpp` so clangd keeps written token locations for

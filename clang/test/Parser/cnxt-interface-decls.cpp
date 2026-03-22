@@ -1,8 +1,20 @@
 // RUN: %clang_cc1 -x cnxt -std=cnxt1 -fsyntax-only -verify %s
 
 interface CounterLike;
+interface Resettable;
 
 interface CounterLike {
+  int next();
+  void reset();
+};
+
+interface Resettable {
+  void reset();
+};
+
+class Counter implements CounterLike, Resettable {
+public:
+  int state;
   int next();
   void reset();
 };
@@ -10,6 +22,9 @@ interface CounterLike {
 CounterLike &pass_through(CounterLike &value) {
   return value;
 }
+
+CounterLike make_view(Counter value);
+Resettable make_resetter(Counter &value);
 
 int interface = 0;
 
