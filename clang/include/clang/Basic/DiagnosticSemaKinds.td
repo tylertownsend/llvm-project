@@ -235,6 +235,8 @@ def err_cnxt_illegal_ownership_conversion : Error<
   "cNxt cannot convert ownership handle '%0' to '%1'; valid flow is unique -> shared -> weak">;
 def err_cnxt_invalid_construction_target : Error<
   "cNxt make<T>(...) cannot construct payload type %0: %1">;
+def err_cnxt_ownership_raw_escape : Error<
+  "cNxt does not allow ownership handle raw-pointer escape via '%0' outside unsafe FFI boundaries">;
 
 // C99 variably modified types
 def err_variably_modified_template_arg : Error<

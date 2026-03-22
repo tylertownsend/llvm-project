@@ -13,8 +13,8 @@ void sema_runtime_surface(unique<int> strong, shared<int> owner,
   bad_shared = observer; // expected-error {{cNxt cannot convert ownership handle 'weak' to 'shared'; valid flow is unique -> shared -> weak}}
   bad_unique = owner;    // expected-error {{cNxt cannot convert ownership handle 'shared' to 'unique'; valid flow is unique -> shared -> weak}}
   (void)observer.get();  // expected-error {{no member named 'get'}}
-  (void)widened.get();
-  (void)copied_owner.get();
+  (void)widened.use_count();
+  (void)copied_owner.use_count();
   (void)aliased.expired();
-  (void)recovered.get();
+  (void)recovered.use_count();
 }

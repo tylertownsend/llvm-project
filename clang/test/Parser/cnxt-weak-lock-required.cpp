@@ -6,5 +6,5 @@ void reject_direct_weak_access(weak<int> observer) {
 
 void require_lock_before_use(weak<int> observer) {
   shared<int> owner = observer.lock();
-  (void)owner.get();
+  (void)owner.use_count();
 }

@@ -2,7 +2,6 @@
 // expected-no-diagnostics
 
 void touch_shared(shared<int> owner) {
-  (void)owner.get();
   (void)owner.use_count();
   owner.reset();
 }

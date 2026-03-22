@@ -10,13 +10,14 @@ void parser_runtime_surface(unique<int> strong, shared<int> owner,
   shared<int> recovered = observer.lock();
   bool expired = observer.expired();
 
-  (void)moved.get();
-  (void)widened.get();
-  (void)copied.get();
+  moved.reset();
+  (void)widened.use_count();
+  (void)copied.use_count();
   (void)aliased.expired();
-  (void)recovered.get();
+  (void)recovered.use_count();
   (void)expired;
 
   copied.reset();
-  moved.reset();
+  widened.reset();
+  recovered.reset();
 }

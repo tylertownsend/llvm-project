@@ -181,3 +181,19 @@
   - `ninja -C build clang`
   - `build/bin/llvm-lit -sv clang/test/Preprocessor/cnxt-prelude.c clang/test/Parser/cnxt-ownership-runtime-surface.cpp clang/test/SemaCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-share-widening.cpp clang/test/CodeGenCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-shared-refcount.cpp clang/test/CodeGenCXX/cnxt-construction.cpp clang/test/SemaCXX/cnxt-construction.cpp clang/test/Parser/cnxt-construction.cpp clang/test/Driver/cnxt-ownership-example.c`
 - Next target: `M7-06`.
+- Completed `M7-06`.
+- Added `err_cnxt_ownership_raw_escape` and an early `BuildCallExpr` check so
+  bound member calls like `unique<T>::get()`, `unique<T>::release()`, and
+  `shared<T>::get()` are rejected in safe cNxt code.
+- Kept the temporary allowance limited to system-header code and `extern "C"`
+  bodies so the injected prelude and current FFI seams continue to compile
+  while M7-07 replaces the linkage carveout with an explicit unsafe model.
+- Updated safe-code parser/`SemaCXX` coverage to stop relying on raw escapes,
+  added `clang/test/SemaCXX/cnxt-ownership-escapes.cpp`, and rewrote
+  `cnxt/examples/ownership/unique-heap.cn` to stay within safe ownership
+  semantics.
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/SemaCXX/cnxt-ownership-escapes.cpp clang/test/Parser/cnxt-unique-lowering.cpp clang/test/Parser/cnxt-shared-lowering.cpp clang/test/Parser/cnxt-weak-lock-required.cpp clang/test/Parser/cnxt-ownership-runtime-surface.cpp clang/test/SemaCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-weak-nullability.cpp clang/test/CodeGenCXX/cnxt-share-widening.cpp clang/test/Preprocessor/cnxt-prelude.c clang/test/Parser/cnxt-construction.cpp clang/test/SemaCXX/cnxt-construction.cpp clang/test/Driver/cnxt-ownership-example.c`
+  - `git diff --check`
+- Next target: `M7-07`.

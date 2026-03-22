@@ -1,4 +1,5 @@
 int main() {
   unique<int> owner = make<int>(42);
-  return *owner.get() == 42 ? 0 : 1;
+  owner.reset();
+  return 0;
 }

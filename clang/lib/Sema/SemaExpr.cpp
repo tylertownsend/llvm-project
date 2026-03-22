@@ -80,6 +80,8 @@ static bool diagnoseCNxtInvalidConstructionTarget(Sema &SemaRef,
 static bool diagnoseCNxtInvalidConstructionTarget(Sema &SemaRef,
                                                   const FunctionDecl *FD,
                                                   SourceLocation CallLoc);
+static bool diagnoseCNxtOwnershipRawEscape(Sema &SemaRef,
+                                           const Expr *CalleeExpr);
 }
 
 bool Sema::CanUseDecl(NamedDecl *D, bool TreatUnavailableAsInvalid) {
@@ -6833,6 +6835,9 @@ ExprResult Sema::BuildCallExpr(Scope *Scope, Expr *Fn, SourceLocation LParenLoc,
       }
     }
 
+    if (diagnoseCNxtOwnershipRawEscape(*this, Fn->IgnoreParens()))
+      return ExprError();
+
     // Determine whether this is a call to an object (C++ [over.call.object]).
     if (Fn->getType()->isRecordType())
       return BuildCallToObjectOfClassType(Scope, Fn, LParenLoc, ArgExprs,
@@ -6890,6 +6895,9 @@ ExprResult Sema::BuildCallExpr(Scope *Scope, Expr *Fn, SourceLocation LParenLoc,
   }
 
   if (diagnoseCNxtInvalidConstructionTarget(*this, NakedFn, Fn->getExprLoc()))
+    return ExprError();
+
+  if (diagnoseCNxtOwnershipRawEscape(*this, NakedFn))
     return ExprError();
 
   if (auto *DRE = dyn_cast<DeclRefExpr>(NakedFn)) {
@@ -9709,6 +9717,51 @@ static bool diagnoseCNxtInvalidConstructionTarget(Sema &SemaRef,
 
   return diagnoseCNxtInvalidConstructionPayload(
       SemaRef, TemplateArgs.front().getArgument().getAsType(), CallLoc);
+}
+
+static bool isCNxtOwnershipEscapeContextAllowed(const Sema &SemaRef,
+                                                SourceLocation CallLoc) {
+  if (!SemaRef.getLangOpts().CNxt)
+    return true;
+
+  CallLoc = SemaRef.getSourceManager().getExpansionLoc(CallLoc);
+  if (SemaRef.getSourceManager().isInSystemHeader(CallLoc))
+    return true;
+
+  const FunctionDecl *FD = SemaRef.getCurFunctionDecl(/*AllowLambda=*/true);
+  return FD && FD->isExternC();
+}
+
+static bool diagnoseCNxtOwnershipRawEscape(Sema &SemaRef,
+                                           const Expr *CalleeExpr) {
+  if (!SemaRef.getLangOpts().CNxt || !CalleeExpr)
+    return false;
+
+  CalleeExpr = CalleeExpr->IgnoreParenImpCasts();
+  const auto *ME = dyn_cast<MemberExpr>(CalleeExpr);
+  if (!ME)
+    return false;
+
+  if (isCNxtOwnershipEscapeContextAllowed(SemaRef, ME->getMemberLoc()))
+    return false;
+
+  IdentifierInfo *II = ME->getMemberDecl()->getIdentifier();
+  if (!II)
+    return false;
+
+  StringRef MemberName = II->getName();
+  CNxtOwnershipKind BaseKind =
+      classifyCNxtOwnershipHandle(ME->getBase()->getType().getCanonicalType());
+  if ((MemberName == "get" &&
+       (BaseKind == CNxtOwnershipKind::Unique ||
+        BaseKind == CNxtOwnershipKind::Shared)) ||
+      (MemberName == "release" && BaseKind == CNxtOwnershipKind::Unique)) {
+    SemaRef.Diag(ME->getMemberLoc(), diag::err_cnxt_ownership_raw_escape)
+        << MemberName;
+    return true;
+  }
+
+  return false;
 }
 
 static bool isAllowedCNxtOwnershipFlow(CNxtOwnershipKind From,

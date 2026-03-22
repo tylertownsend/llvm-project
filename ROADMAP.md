@@ -21,7 +21,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-03 Reject invalid `make<T>(...)` payload targets in cNxt safe code.
 - [x] M7-04 Lower construction expressions to runtime allocation plus constructor/init calls in CodeGen.
 - [x] M7-05 Add builtin conversion API for widening ownership without raw-pointer intermediates.
-- [ ] M7-06 Restrict ownership-handle raw pointer escape operations in safe code.
+- [x] M7-06 Restrict ownership-handle raw pointer escape operations in safe code.
+- [ ] M7-07 Tighten pointer policy from "extern C carveout" to explicit unsafe/FFI boundaries.
 
 ## Deliverable Status
 
@@ -36,7 +37,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-03
 - [x] M7-04
 - [x] M7-05
-- [-] M7-06
+- [x] M7-06
 - [ ] M7-07 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
@@ -181,6 +182,40 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M7-06
+
+- Completed item: restrict ownership-handle raw-pointer escape operations in
+  safe cNxt code so `.get()` / `.release()` only remain available at explicit
+  FFI boundaries.
+- What changed:
+  - added a cNxt-specific `err_cnxt_ownership_raw_escape` diagnostic and wired
+    ownership escape checking into `BuildCallExpr` early enough to catch bound
+    member calls such as `unique<T>::get()` and `shared<T>::get()`.
+  - limited the current carveout to system-header code and `extern "C"`
+    function bodies, which preserves compiler-owned prelude lowering and
+    transitional FFI entry points while rejecting safe-code escape hatches.
+  - updated parser and `SemaCXX` surface tests to stop using `.get()` in safe
+    code, and added `clang/test/SemaCXX/cnxt-ownership-escapes.cpp` to pin the
+    accepted/rejected boundary behavior.
+  - updated `cnxt/examples/ownership/unique-heap.cn` so the end-to-end example
+    stays fully within safe ownership semantics after the new restriction.
+- Follow-up notes:
+  - this still models the boundary as a broad `extern "C"` carveout; M7-07
+    should replace that with an explicit cNxt `unsafe extern` policy so raw
+    pointers are not implicitly allowed throughout all foreign-linkage bodies.
+- What is now unblocked:
+  - M7-07 can narrow pointer-bearing signatures and raw-pointer escape points
+    to an explicit unsafe boundary model instead of today's linkage-based
+    approximation.
+  - M7-08 can build diagnostics and fix-its on top of a stable raw-escape
+    rejection surface.
+  - M7-10 can present a no-glue sample that no longer depends on `.get()` even
+    for trivial success-path checks.
+- Direction check:
+  - roadmap remains directionally correct; M7-07 is next because the largest
+    remaining gap is that raw-pointer permission is still inferred from
+    `extern "C"` instead of an explicit unsafe FFI construct.
 
 ### 2026-03-21 - M7-05
 

@@ -2,6 +2,5 @@
 // expected-no-diagnostics
 
 void touch_unique(unique<int> owner) {
-  (void)owner.get();
   owner.reset();
 }
