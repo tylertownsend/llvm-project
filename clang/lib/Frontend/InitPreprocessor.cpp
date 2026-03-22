@@ -91,6 +91,8 @@ static void AddImplicitCNxtPrelude(MacroBuilder &Builder) {
   Builder.append("unsigned char __cnxt_rt_own_v1_weak_expired(void *control);");
   Builder.append("int puts(const char *text);");
   Builder.append("}");
+  Builder.append("#define cnxt_export_c [[clang::annotate(\"cnxt_export_c\")]]");
+  Builder.append("#define cnxt_import_c [[clang::annotate(\"cnxt_import_c\")]]");
   Builder.append("using __cnxt_size_t = decltype(sizeof(0));");
   Builder.append("namespace cnxt { namespace io {");
   Builder.append("template <__cnxt_size_t N>");

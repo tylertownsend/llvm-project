@@ -7754,6 +7754,7 @@ static void emitCNxtUnsafeExternGuidance(Sema &SemaRef, SourceLocation Loc);
 static void maybeAddCNxtUnsafeExternFixIt(SemaBase::SemaDiagnosticBuilder &DB,
                                           const FunctionDecl *FD,
                                           SourceLocation ExternLoc);
+static void maybeApplyCNxtCABIAnnotation(Sema &SemaRef, FunctionDecl *FD);
 
 NamedDecl *Sema::ActOnVariableDeclarator(
     Scope *S, Declarator &D, DeclContext *DC, TypeSourceInfo *TInfo,
@@ -10120,6 +10121,23 @@ static constexpr llvm::StringLiteral CNxtUnsafeExternAnnotation =
     "cnxt_unsafe_extern";
 static constexpr llvm::StringLiteral CNxtExternLinkageAnnotation =
     "cnxt_extern_linkage";
+static constexpr llvm::StringLiteral CNxtExportCAnnotation =
+    "cnxt_export_c";
+static constexpr llvm::StringLiteral CNxtImportCAnnotation =
+    "cnxt_import_c";
+
+static const AnnotateAttr *getCNxtCABIAnnotation(const FunctionDecl *FD) {
+  if (!FD)
+    return nullptr;
+
+  for (const auto *AA : FD->specific_attrs<AnnotateAttr>()) {
+    if (AA->getAnnotation() == CNxtExportCAnnotation ||
+        AA->getAnnotation() == CNxtImportCAnnotation)
+      return AA;
+  }
+
+  return nullptr;
+}
 
 static bool isCNxtUnsafeExternFunction(const FunctionDecl *FD) {
   if (!FD || !FD->isExternC())
@@ -10131,6 +10149,29 @@ static bool isCNxtUnsafeExternFunction(const FunctionDecl *FD) {
   }
 
   return false;
+}
+
+static void maybeApplyCNxtCABIAnnotation(Sema &SemaRef, FunctionDecl *FD) {
+  if (!SemaRef.getLangOpts().CNxt || !FD)
+    return;
+
+  const AnnotateAttr *AA = getCNxtCABIAnnotation(FD);
+  if (!AA)
+    return;
+
+  if (FD->isExternC() || FD->hasAttr<AsmLabelAttr>())
+    return;
+
+  if (!FD->isGlobal() || isa<CXXMethodDecl>(FD) || !FD->getIdentifier()) {
+    SemaRef.Diag(FD->getLocation(), diag::err_cnxt_unsupported_declaration)
+        << "cnxt_import_c/cnxt_export_c on non-free functions";
+    FD->setInvalidDecl();
+    return;
+  }
+
+  FD->addAttr(
+      AsmLabelAttr::Create(SemaRef.Context, FD->getIdentifier()->getName(),
+                           AA->getRange().getBegin()));
 }
 
 static void emitCNxtOwnershipGuidance(Sema &SemaRef, SourceLocation Loc) {
@@ -10818,6 +10859,7 @@ Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
 
   // Handle attributes.
   ProcessDeclAttributes(S, NewFD, D);
+  maybeApplyCNxtCABIAnnotation(*this, NewFD);
   const auto *NewTVA = NewFD->getAttr<TargetVersionAttr>();
   if (Context.getTargetInfo().getTriple().isAArch64() && NewTVA &&
       !NewTVA->isDefaultVersion() &&

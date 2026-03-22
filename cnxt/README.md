@@ -193,6 +193,10 @@ Construction API baseline:
 FFI boundary baseline:
 `cnxt/specs/cnxt-ffi-boundary.md`.
 
+C ABI import/export surface:
+use `cnxt_export_c` and `cnxt_import_c` on free functions to emit or call an
+unmangled C symbol without hand-written wrapper bodies.
+
 Interface/class surface baseline:
 `cnxt/specs/cnxt-interface-class.md`.
 

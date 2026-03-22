@@ -2,6 +2,19 @@
 
 ## 2026-03-21
 
+- Completed `M9-03`.
+- Added `cnxt_export_c` / `cnxt_import_c` to the injected cNxt prelude and
+  taught `SemaDecl.cpp` to lower those annotations on free functions to
+  unmangled C symbol names, removing the need for user-written wrapper bodies
+  when importing/exporting cNxt functions through the C ABI.
+- Added `clang/test/CodeGenCXX/cnxt-c-abi-thunks.cpp` and updated
+  `cnxt/README.md` to document the new wrapper-free import/export surface.
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/CodeGenCXX/cnxt-c-abi-thunks.cpp clang/test/CodeGenCXX/cnxt-ownership-interop.cpp clang/test/Preprocessor/cnxt-prelude.c`
+  - `git diff --check`
+- Next target: `M9-04`.
+
 - Completed `M9-02`.
 - Added a compiler-owned `cnxt::io::println(...)` prelude surface in
   `InitPreprocessor.cpp`, plus a hello-world example at

@@ -48,8 +48,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-10
 - [x] M8-01
 - [x] M8-02 through M8-11
-- [x] M9-01 through M9-02
-- [ ] M9-03 through M9-08
+- [x] M9-01 through M9-03
+- [ ] M9-04 through M9-08
 - [ ] M10-01 through M10-06
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
@@ -161,7 +161,7 @@ Deliverables:
   `cnxt/specs/cnxt-ffi-boundary.md` (where pointers are legal and why).
 - [x] M9-02 Add safe stdlib modules for basic app entrypoints (for example
   output/logging) so hello-world style programs need no manual extern imports.
-- [ ] M9-03 Add compiler-generated ABI thunk support for exporting/importing
+- [x] M9-03 Add compiler-generated ABI thunk support for exporting/importing
   cNxt functions through C ABI without user-written glue wrappers.
 - [ ] M9-04 Add ownership-handle marshalling rules across ABI thunks.
 - [ ] M9-05 Enforce raw-pointer ban in safe modules with lint + compiler
@@ -193,6 +193,36 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M9-03
+
+- Completed item: add compiler-managed C ABI import/export support for cNxt
+  free functions without requiring hand-written wrapper functions.
+- What changed:
+  - extended the injected cNxt prelude with `cnxt_export_c` and
+    `cnxt_import_c`, which expand to compiler-recognized annotations on free
+    functions.
+  - taught `clang/lib/Sema/SemaDecl.cpp` to translate those cNxt annotations
+    into unmangled asm-label symbol names on eligible free functions, letting
+    definitions export a C symbol and declarations call a C symbol without the
+    user spelling `extern "C"` wrappers.
+  - added `clang/test/CodeGenCXX/cnxt-c-abi-thunks.cpp` covering both export
+    and import flows, including a C++ consumer that calls cNxt-exported handle
+    APIs through ordinary `extern "C"` declarations.
+  - updated `cnxt/README.md` with a short note describing the new
+    `cnxt_export_c` / `cnxt_import_c` surface.
+- Follow-up notes:
+  - this milestone establishes the compiler-owned surface for C symbol
+    import/export; the next milestone still needs to define ownership-handle
+    marshalling expectations across those boundaries.
+- What is now unblocked:
+  - M9-04 can build explicit handle-marshalling rules on top of a working
+    compiler-owned import/export mechanism.
+  - M9-06 mixed-language tests can exercise the new surface instead of only
+    manual `extern "C"` declarations.
+- Direction check:
+  - roadmap remains directionally correct; ownership-handle marshalling is the
+    next real interop risk now that wrapper-free symbol import/export exists.
 
 ### 2026-03-21 - M9-02
 
