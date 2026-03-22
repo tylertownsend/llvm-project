@@ -243,6 +243,14 @@ def err_cnxt_invalid_construction_target : Error<
   "cNxt make<T>(...) cannot construct payload type %0: %1">;
 def err_cnxt_ownership_raw_escape : Error<
   "cNxt does not allow ownership handle raw-pointer escape via '%0' outside unsafe FFI boundaries">;
+def err_cnxt_interface_missing_method : Error<
+  "cNxt class %0 is missing interface method %1 required by %2">;
+def err_cnxt_interface_signature_mismatch : Error<
+  "cNxt class %0 has method %1 with incompatible signature for interface %2">;
+def err_cnxt_interface_method_not_public : Error<
+  "cNxt class %0 must make method %1 public to satisfy interface %2">;
+def note_cnxt_interface_requirement_here : Note<
+  "interface method %0 is declared here">;
 
 // C99 variably modified types
 def err_variably_modified_template_arg : Error<

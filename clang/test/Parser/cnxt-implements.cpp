@@ -9,6 +9,7 @@ interface Resettable {
 };
 
 class Counter implements CounterLike, Resettable {
+public:
   int value;
   int next();
   void reset();

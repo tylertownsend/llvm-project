@@ -132,10 +132,12 @@ Deliverables:
 - [x] M8-02 Add parser support for `interface` declarations in cNxt mode.
 - [x] M8-03 Add parser support for class-to-interface implementation syntax
   (cNxt-native spelling, not C++ `: Base` inheritance syntax).
-- [ ] M8-04 Add Sema conformance checks: required methods, signature matching,
+- [x] M8-04 Add Sema conformance checks: required methods, signature matching,
   visibility, and implementation completeness diagnostics.
-- [ ] M8-05 Implement dispatch representation (vtable/witness-table style) with
-  stable ABI for cNxt-only programs.
+- [ ] M8-05a Introduce a cNxt-owned borrowed interface carrier representation
+  (object reference + witness metadata) instead of raw abstract-class objects.
+- [ ] M8-05b Allow interface-valued locals, params, returns, and concrete to
+  interface bindings against the borrowed carrier representation.
 - [ ] M8-06 Implement CodeGen lowering for dynamic interface dispatch calls.
 - [ ] M8-07 Integrate ownership handles with interface values
   (`unique<Interface>`, `shared<Interface>` behavior rules).
@@ -190,6 +192,42 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M8-04
+
+- Completed item: add cNxt sema conformance checks for implemented
+  interfaces.
+- What changed:
+  - added cNxt-specific diagnostics in
+    `clang/include/clang/Basic/DiagnosticSemaKinds.td` for missing interface
+    methods, incompatible signatures, and non-public implementations, along
+    with notes pointing back to the required interface declaration.
+  - taught `clang/lib/Sema/SemaDeclCXX.cpp` to validate each cNxt
+    `implements` base at class completion time, requiring exact method
+    matches on name and type and enforcing that satisfying methods are public.
+  - added `clang/test/SemaCXX/cnxt-interface-conformance.cpp` to cover the
+    happy path plus missing-method, signature-mismatch, and visibility
+    failures, and updated `clang/test/Parser/cnxt-implements.cpp` so its
+    positive sample remains conformant under the new visibility rule.
+- Follow-up notes:
+  - cNxt interfaces are still represented as abstract C++ base types under the
+    hood, so interface-valued declarations and bindings remain blocked until
+    the representation work lands.
+  - conflicting requirements across multiple interfaces with the same method
+    name are not diagnosed in a cNxt-specific way yet; that remains follow-up
+    work for later interface diagnostics.
+- What is now unblocked:
+  - M8-05a can introduce a cNxt-owned interface carrier without also needing
+    to solve baseline conformance checking.
+  - M8-05b can focus on interface-valued declarations and bindings once the
+    carrier representation exists.
+  - M8-08 can refine ambiguity and invalid-override diagnostics on top of the
+    new conformance baseline.
+- Direction check:
+  - roadmap remains directionally correct, but the original M8-05 was too
+    coarse for commit-sized delivery; it has been split into M8-05a and
+    M8-05b so the remaining interface representation work can land in smaller,
+    safer steps.
 
 ### 2026-03-21 - M8-03
 

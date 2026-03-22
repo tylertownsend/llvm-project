@@ -7021,9 +7021,80 @@ ReportOverrides(Sema &S, unsigned DiagID, const CXXMethodDecl *MD,
   return IssuedDiagnostic;
 }
 
+static bool DiagnoseCNxtInterfaceConformance(Sema &SemaRef,
+                                             CXXRecordDecl *Record) {
+  if (!SemaRef.getLangOpts().CNxt || !Record || Record->isInvalidDecl() ||
+      Record->isDependentType() || Record->isInterface())
+    return false;
+
+  bool Invalid = false;
+
+  for (const CXXBaseSpecifier &Base : Record->bases()) {
+    const auto *Interface = Base.getType()->getAsCXXRecordDecl();
+    if (!Interface || !Interface->isInterface() || Interface->isInvalidDecl())
+      continue;
+
+    for (const CXXMethodDecl *Requirement : Interface->methods()) {
+      if (!Requirement->isUserProvided() || isa<CXXConstructorDecl>(Requirement) ||
+          isa<CXXDestructorDecl>(Requirement) || Requirement->isStatic())
+        continue;
+
+      const CXXMethodDecl *ExactMatch = nullptr;
+      const CXXMethodDecl *SameName = nullptr;
+
+      for (NamedDecl *ND : Record->lookup(Requirement->getDeclName())) {
+        const auto *Method = dyn_cast<CXXMethodDecl>(ND);
+        if (!Method || Method->getParent() != Record)
+          continue;
+
+        if (!SameName)
+          SameName = Method;
+
+        if (SemaRef.Context.hasSameType(Method->getType(),
+                                        Requirement->getType())) {
+          ExactMatch = Method;
+          break;
+        }
+      }
+
+      if (!ExactMatch) {
+        if (SameName) {
+          SemaRef.Diag(SameName->getLocation(),
+                       diag::err_cnxt_interface_signature_mismatch)
+              << Record << Requirement->getDeclName() << Interface;
+        } else {
+          SemaRef.Diag(Record->getLocation(), diag::err_cnxt_interface_missing_method)
+              << Record << Requirement->getDeclName() << Interface;
+        }
+        SemaRef.Diag(Requirement->getLocation(),
+                     diag::note_cnxt_interface_requirement_here)
+            << Requirement->getDeclName();
+        Invalid = true;
+        continue;
+      }
+
+      if (ExactMatch->getAccess() != AS_public) {
+        SemaRef.Diag(ExactMatch->getLocation(),
+                     diag::err_cnxt_interface_method_not_public)
+            << Record << Requirement->getDeclName() << Interface;
+        SemaRef.Diag(Requirement->getLocation(),
+                     diag::note_cnxt_interface_requirement_here)
+            << Requirement->getDeclName();
+        Invalid = true;
+      }
+    }
+  }
+
+  if (Invalid)
+    Record->setInvalidDecl();
+  return Invalid;
+}
+
 void Sema::CheckCompletedCXXClass(Scope *S, CXXRecordDecl *Record) {
   if (!Record)
     return;
+
+  DiagnoseCNxtInterfaceConformance(*this, Record);
 
   if (Record->isAbstract() && !Record->isInvalidDecl()) {
     AbstractUsageInfo Info(*this, Record);

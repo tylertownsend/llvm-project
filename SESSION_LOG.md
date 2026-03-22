@@ -2,6 +2,22 @@
 
 ## 2026-03-21
 
+- Completed `M8-04`.
+- Added cNxt-specific interface conformance diagnostics for missing methods,
+  incompatible signatures, and non-public implementations in
+  `SemaDeclCXX.cpp` / `DiagnosticSemaKinds.td`.
+- Added `clang/test/SemaCXX/cnxt-interface-conformance.cpp` and updated
+  `clang/test/Parser/cnxt-implements.cpp` so positive parser coverage stays
+  valid under the new visibility rule.
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/SemaCXX/cnxt-interface-conformance.cpp clang/test/Parser/cnxt-implements.cpp clang/test/Parser/cnxt-interface-decls.cpp clang/test/Parser/cnxt-restrictions.cpp clang/test/Parser/cnxt-recovery.cpp`
+  - `git diff --check`
+- Direction check:
+  - split the original `M8-05` into `M8-05a` and `M8-05b` because the codebase
+    still models cNxt interfaces as abstract C++ bases, and the next safe
+    steps are to land carrier representation and binding enablement separately.
+- Next target: `M8-05a`.
 - Completed `M6-01`.
 - Added ownership runtime ABI baseline spec at
   `cnxt/specs/cnxt-ownership-runtime.md`.
