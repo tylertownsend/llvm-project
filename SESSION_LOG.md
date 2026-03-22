@@ -2,6 +2,19 @@
 
 ## 2026-03-21
 
+- Completed `M8-05b`.
+- Rewrote cNxt interface-valued declarations in `SemaType.cpp` onto
+  `__cnxt_iface_borrowed<Interface>` for locals, globals, parameters, and
+  returns while excluding type-name-only contexts like `implements`.
+- Extended the injected carrier in `InitPreprocessor.cpp` with a concrete-type
+  constructor so implementing classes bind directly to interface carriers.
+- Added regression coverage in:
+  - `clang/test/SemaCXX/cnxt-interface-bindings.cpp`
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/SemaCXX/cnxt-interface-bindings.cpp clang/test/SemaCXX/cnxt-interface-carrier.cpp clang/test/SemaCXX/cnxt-interface-conformance.cpp clang/test/Preprocessor/cnxt-prelude.c clang/test/Parser/cnxt-implements.cpp clang/test/Parser/cnxt-interface-decls.cpp clang/test/Parser/cnxt-construction.cpp clang/test/SemaCXX/cnxt-construction.cpp`
+  - `git diff --check`
+- Next target: `M8-06`.
 - Completed `M8-05a`.
 - Added compiler-owned borrowed interface carrier templates
   `__cnxt_iface_witness<T>` / `__cnxt_iface_borrowed<T>` to the injected cNxt

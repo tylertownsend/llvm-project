@@ -136,7 +136,7 @@ Deliverables:
   visibility, and implementation completeness diagnostics.
 - [x] M8-05a Introduce a cNxt-owned borrowed interface carrier representation
   (object reference + witness metadata) instead of raw abstract-class objects.
-- [ ] M8-05b Allow interface-valued locals, params, returns, and concrete to
+- [x] M8-05b Allow interface-valued locals, params, returns, and concrete to
   interface bindings against the borrowed carrier representation.
 - [ ] M8-06 Implement CodeGen lowering for dynamic interface dispatch calls.
 - [ ] M8-07 Integrate ownership handles with interface values
@@ -192,6 +192,39 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M8-05b
+
+- Completed item: map cNxt interface-valued declarations and concrete
+  implementing objects onto the compiler-owned borrowed carrier.
+- What changed:
+  - taught `clang/lib/Sema/SemaType.cpp` to rewrite cNxt interface-valued
+    locals, globals, parameters, and returns from the source-spelled interface
+    type onto `__cnxt_iface_borrowed<Interface>` while explicitly excluding
+    pure type-name contexts such as `implements` clauses.
+  - extended the injected carrier in
+    `clang/lib/Frontend/InitPreprocessor.cpp` with a concrete-object
+    constructor so implementing classes bind directly to the borrowed carrier
+    instead of falling back to abstract-base conversions.
+  - added `clang/test/SemaCXX/cnxt-interface-bindings.cpp` to prove
+    interface-valued declarations and concrete-to-interface bindings work
+    across globals, locals, parameters, and returns.
+- Follow-up notes:
+  - the borrowed carrier still stores an opaque witness pointer and does not
+    yet synthesize or consume dispatch tables; dynamic call lowering remains
+    M8-06 work.
+  - field/member interface storage was intentionally left out of this step so
+    the declarator rewrite could land in the smallest safe slice covering the
+    roadmap acceptance criteria.
+- What is now unblocked:
+  - M8-06 can lower method calls on interface-valued expressions against a
+    stable carrier representation rather than abstract-class objects.
+  - M8-07 can define ownership-handle rules for interface payloads on top of
+    the same carrier semantics used by plain borrowed values.
+- Direction check:
+  - roadmap remains directionally correct; with binding semantics in place,
+    dynamic dispatch lowering is the next highest-priority blocker for usable
+    interface programming.
 
 ### 2026-03-21 - M8-05a
 

@@ -75,6 +75,122 @@ static bool isOmittedBlockReturnType(const Declarator &D) {
   return false;
 }
 
+static ClassTemplateDecl *
+lookupCNxtPreludeClassTemplate(Sema &S, StringRef Name, SourceLocation Loc) {
+  if (!S.TUScope)
+    return nullptr;
+
+  IdentifierInfo &II = S.Context.Idents.get(Name);
+  NamedDecl *ND =
+      S.LookupSingleName(S.TUScope, &II, Loc, Sema::LookupOrdinaryName);
+  return dyn_cast_or_null<ClassTemplateDecl>(ND);
+}
+
+static QualType buildCNxtBorrowedInterfaceCarrierType(Sema &S, QualType Ty,
+                                                      SourceLocation Loc) {
+  if (!S.getLangOpts().CNxt || Ty.isNull() || Ty->isDependentType())
+    return Ty;
+
+  QualType UnqualifiedTy = Ty.getUnqualifiedType();
+  const auto *RT = UnqualifiedTy->getAs<RecordType>();
+  if (!RT || !RT->getDecl()->isInterface())
+    return Ty;
+
+  ClassTemplateDecl *CarrierTemplate =
+      lookupCNxtPreludeClassTemplate(S, "__cnxt_iface_borrowed", Loc);
+  if (!CarrierTemplate)
+    return Ty;
+
+  TemplateArgumentListInfo Args(Loc, Loc);
+  TypeSourceInfo *TSI = S.Context.getTrivialTypeSourceInfo(UnqualifiedTy, Loc);
+  Args.addArgument(TemplateArgumentLoc(TemplateArgument(UnqualifiedTy), TSI));
+
+  QualType CarrierTy = S.CheckTemplateIdType(
+      ElaboratedTypeKeyword::None, TemplateName(CarrierTemplate), Loc, Args,
+      /*Scope=*/nullptr, /*ForNestedNameSpecifier=*/false);
+  if (CarrierTy.isNull())
+    return Ty;
+
+  return S.Context.getQualifiedType(CarrierTy, Ty.getQualifiers());
+}
+
+static QualType rewriteCNxtInterfaceValueType(Sema &S, QualType Ty,
+                                              SourceLocation Loc) {
+  if (!S.getLangOpts().CNxt || Ty.isNull() || Ty->isDependentType())
+    return Ty;
+
+  if (const auto *FPT = Ty->getAs<FunctionProtoType>()) {
+    SmallVector<QualType, 8> ParamTypes;
+    ParamTypes.reserve(FPT->getNumParams());
+
+    bool Changed = false;
+    for (QualType ParamTy : FPT->param_types()) {
+      QualType NewParamTy = rewriteCNxtInterfaceValueType(S, ParamTy, Loc);
+      Changed |= NewParamTy != ParamTy;
+      ParamTypes.push_back(NewParamTy);
+    }
+
+    QualType ResultTy = FPT->getReturnType();
+    QualType NewResultTy = rewriteCNxtInterfaceValueType(S, ResultTy, Loc);
+    Changed |= NewResultTy != ResultTy;
+
+    if (!Changed)
+      return Ty;
+
+    return S.Context.getFunctionType(NewResultTy, ParamTypes,
+                                     FPT->getExtProtoInfo());
+  }
+
+  if (const auto *FNT = Ty->getAs<FunctionNoProtoType>()) {
+    QualType ResultTy = FNT->getReturnType();
+    QualType NewResultTy = rewriteCNxtInterfaceValueType(S, ResultTy, Loc);
+    if (NewResultTy == ResultTy)
+      return Ty;
+
+    return S.Context.getFunctionNoProtoType(NewResultTy, FNT->getExtInfo());
+  }
+
+  return buildCNxtBorrowedInterfaceCarrierType(S, Ty, Loc);
+}
+
+static bool shouldRewriteCNxtInterfaceValueDeclarator(const Declarator &D) {
+  switch (D.getContext()) {
+  case DeclaratorContext::File:
+  case DeclaratorContext::Prototype:
+  case DeclaratorContext::ObjCResult:
+  case DeclaratorContext::ObjCParameter:
+  case DeclaratorContext::Member:
+  case DeclaratorContext::Block:
+  case DeclaratorContext::ForInit:
+  case DeclaratorContext::SelectionInit:
+  case DeclaratorContext::Condition:
+  case DeclaratorContext::CXXCatch:
+  case DeclaratorContext::ObjCCatch:
+  case DeclaratorContext::LambdaExprParameter:
+  case DeclaratorContext::TrailingReturn:
+  case DeclaratorContext::TrailingReturnVar:
+    return true;
+
+  case DeclaratorContext::KNRTypeList:
+  case DeclaratorContext::TypeName:
+  case DeclaratorContext::FunctionalCast:
+  case DeclaratorContext::TemplateParam:
+  case DeclaratorContext::CXXNew:
+  case DeclaratorContext::BlockLiteral:
+  case DeclaratorContext::LambdaExpr:
+  case DeclaratorContext::ConversionId:
+  case DeclaratorContext::TemplateArg:
+  case DeclaratorContext::TemplateTypeArg:
+  case DeclaratorContext::AliasDecl:
+  case DeclaratorContext::AliasTemplate:
+  case DeclaratorContext::RequiresExpr:
+  case DeclaratorContext::Association:
+    return false;
+  }
+
+  llvm_unreachable("unexpected declarator context");
+}
+
 /// diagnoseBadTypeAttribute - Diagnoses a type attribute which
 /// doesn't apply to the given type.
 static void diagnoseBadTypeAttribute(Sema &S, const ParsedAttr &attr,
@@ -5769,7 +5885,18 @@ TypeSourceInfo *Sema::GetTypeForDeclarator(Declarator &D) {
   if (D.isPrototypeContext() && getLangOpts().ObjCAutoRefCount)
     inferARCWriteback(state, T);
 
-  return GetFullTypeForDeclarator(state, T, ReturnTypeInfo);
+  TypeSourceInfo *TInfo = GetFullTypeForDeclarator(state, T, ReturnTypeInfo);
+  if (!TInfo)
+    return nullptr;
+
+  QualType RewrittenTy = TInfo->getType();
+  if (shouldRewriteCNxtInterfaceValueDeclarator(D))
+    RewrittenTy =
+        rewriteCNxtInterfaceValueType(*this, TInfo->getType(), D.getBeginLoc());
+  if (RewrittenTy != TInfo->getType())
+    return Context.getTrivialTypeSourceInfo(RewrittenTy, D.getBeginLoc());
+
+  return TInfo;
 }
 
 static void transferARCOwnershipToDeclSpec(Sema &S,
