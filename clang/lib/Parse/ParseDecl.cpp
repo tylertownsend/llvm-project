@@ -41,6 +41,14 @@ using namespace clang;
 // C99 6.7: Declarations.
 //===----------------------------------------------------------------------===//
 
+static bool isCNxtInterfaceDeclKeyword(const LangOptions &LangOpts,
+                                       const Token &Tok,
+                                       const Token &NextTok) {
+  return LangOpts.CNxt && Tok.is(tok::identifier) && Tok.getIdentifierInfo() &&
+         Tok.getIdentifierInfo()->isStr("interface") &&
+         NextTok.is(tok::identifier);
+}
+
 TypeResult Parser::ParseTypeName(SourceRange *Range, DeclaratorContext Context,
                                  AccessSpecifier AS, Decl **OwnedType,
                                  ParsedAttributes *Attrs) {
@@ -3749,6 +3757,20 @@ void Parser::ParseDeclarationSpecifiers(
     case tok::kw_decltype:
     case tok::identifier:
     ParseIdentifier: {
+      if (isCNxtInterfaceDeclKeyword(getLangOpts(), Tok, NextToken())) {
+        ConsumeToken();
+
+        ParsedAttributes Attributes(AttrFactory);
+        ParseClassSpecifier(tok::kw___interface, Loc, DS, TemplateInfo, AS,
+                            EnteringContext, DSContext, Attributes);
+
+        if (!Attributes.empty()) {
+          AttrsLastTime = true;
+          attrs.takeAllAppendingFrom(Attributes);
+        }
+        continue;
+      }
+
       if (getLangOpts().CNxt && Tok.is(tok::identifier) &&
           Tok.getIdentifierInfo()->isStr("unsafe") &&
           NextToken().is(tok::kw_extern)) {
@@ -5593,6 +5615,8 @@ bool Parser::isTypeSpecifierQualifier() {
   default: return false;
 
   case tok::identifier:   // foo::bar
+    if (isCNxtInterfaceDeclKeyword(getLangOpts(), Tok, NextToken()))
+      return true;
     if (TryAltiVecVectorToken())
       return true;
     [[fallthrough]];
@@ -5782,6 +5806,8 @@ bool Parser::isDeclarationSpecifier(
     // Unfortunate hack to support "Class.factoryMethod" notation.
     if (getLangOpts().ObjC && NextToken().is(tok::period))
       return false;
+    if (isCNxtInterfaceDeclKeyword(getLangOpts(), Tok, NextToken()))
+      return true;
     if (TryAltiVecVectorToken())
       return true;
     [[fallthrough]];

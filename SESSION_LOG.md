@@ -261,3 +261,16 @@
 - Validation:
   - `git diff --check`
 - Next target: `M8-02`.
+- Completed `M8-02`.
+- Added a cNxt-only contextual `interface` declaration spelling in
+  `clang/lib/Parse/ParseDecl.cpp` and routed it through the existing
+  `__interface` parser path without making ordinary identifier uses of
+  `interface` illegal in expressions.
+- Added `clang/test/Parser/cnxt-interface-decls.cpp` to cover forward
+  declarations, definitions, contextual-keyword disambiguation, and base-clause
+  rejection on interface declarations.
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/Parser/cnxt-interface-decls.cpp clang/test/Parser/cnxt-restrictions.cpp clang/test/Parser/cnxt-recovery.cpp`
+  - `git diff --check`
+- Next target: `M8-03`.

@@ -129,7 +129,7 @@ Deliverables:
 
 - [x] M8-01 Write `cnxt/specs/cnxt-interface-class.md` with interface/class
   syntax, conformance rules, and dispatch semantics.
-- [ ] M8-02 Add parser support for `interface` declarations in cNxt mode.
+- [x] M8-02 Add parser support for `interface` declarations in cNxt mode.
 - [ ] M8-03 Add parser support for class-to-interface implementation syntax
   (cNxt-native spelling, not C++ `: Base` inheritance syntax).
 - [ ] M8-04 Add Sema conformance checks: required methods, signature matching,
@@ -190,6 +190,35 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M8-02
+
+- Completed item: add cNxt parser support for native `interface`
+  declarations.
+- What changed:
+  - taught `clang/lib/Parse/ParseDecl.cpp` to treat identifier-spelled
+    `interface` as a cNxt-only declaration keyword when it starts an
+    interface declaration, then route it through the existing
+    `__interface` parsing path.
+  - updated declaration/type-specifier disambiguation so `interface Foo {}` and
+    `interface Foo;` parse in cNxt mode without changing non-cNxt behavior.
+  - added `clang/test/Parser/cnxt-interface-decls.cpp` covering forward
+    declarations, definitions, continued use of `interface` as an ordinary
+    identifier in expressions, and rejection of base-clause syntax on an
+    interface declaration.
+- Follow-up notes:
+  - this is still only the declaration surface; cNxt-native conformance syntax
+    and `implements` clauses remain unimplemented.
+  - the contextual spelling is currently conservative and only triggers on the
+    declaration form needed for M8-02.
+- What is now unblocked:
+  - M8-03 can layer `implements` parsing on top of the new native
+    `interface` declaration surface.
+  - M8-04 can start sema conformance work once `class ... implements ...`
+    parsing exists.
+- Direction check:
+  - roadmap remains directionally correct; M8-03 stays the highest-priority
+    next item because explicit conformance syntax is the next parser gap.
 
 ### 2026-03-21 - M8-01
 
