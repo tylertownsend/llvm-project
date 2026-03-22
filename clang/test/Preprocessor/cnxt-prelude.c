@@ -6,6 +6,10 @@
 // CHECK-NOT: std::unique_ptr
 // CHECK-NOT: std::shared_ptr
 // CHECK-NOT: std::weak_ptr
+// CHECK: int puts(const char *text);
+// CHECK: namespace cnxt { namespace io {
+// CHECK: template <__cnxt_size_t N>
+// CHECK: inline void println(const char (&Text)[N]) {
 // CHECK: template <typename T> struct __cnxt_iface_witness {
 // CHECK: template <typename T> struct __cnxt_iface_borrowed {
 // CHECK: template <typename T> struct unique {

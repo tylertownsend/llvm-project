@@ -89,8 +89,15 @@ static void AddImplicitCNxtPrelude(MacroBuilder &Builder) {
   Builder.append("void __cnxt_rt_own_v1_weak_release(void *control);");
   Builder.append("void *__cnxt_rt_own_v1_weak_lock(void *control);");
   Builder.append("unsigned char __cnxt_rt_own_v1_weak_expired(void *control);");
+  Builder.append("int puts(const char *text);");
   Builder.append("}");
   Builder.append("using __cnxt_size_t = decltype(sizeof(0));");
+  Builder.append("namespace cnxt { namespace io {");
+  Builder.append("template <__cnxt_size_t N>");
+  Builder.append("inline void println(const char (&Text)[N]) {");
+  Builder.append("  (void)::puts(Text);");
+  Builder.append("}");
+  Builder.append("} }");
   Builder.append("inline void *operator new(__cnxt_size_t, void *P) noexcept {");
   Builder.append("  return P;");
   Builder.append("}");

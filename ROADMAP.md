@@ -48,8 +48,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-10
 - [x] M8-01
 - [x] M8-02 through M8-11
-- [x] M9-01
-- [ ] M9-02 through M9-08
+- [x] M9-01 through M9-02
+- [ ] M9-03 through M9-08
 - [ ] M10-01 through M10-06
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
@@ -159,7 +159,7 @@ Deliverables:
 
 - [x] M9-01 Specify `unsafe extern` boundary model in
   `cnxt/specs/cnxt-ffi-boundary.md` (where pointers are legal and why).
-- [ ] M9-02 Add safe stdlib modules for basic app entrypoints (for example
+- [x] M9-02 Add safe stdlib modules for basic app entrypoints (for example
   output/logging) so hello-world style programs need no manual extern imports.
 - [ ] M9-03 Add compiler-generated ABI thunk support for exporting/importing
   cNxt functions through C ABI without user-written glue wrappers.
@@ -193,6 +193,37 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M9-02
+
+- Completed item: add a safe stdlib output entrypoint so hello-world style cNxt
+  programs can print without handwritten `extern` imports.
+- What changed:
+  - extended the injected cNxt prelude in `clang/lib/Frontend/InitPreprocessor.cpp`
+    with a compiler-owned `cnxt::io::println(const char (&)[N])` helper backed
+    by libc `puts`, keeping the raw-pointer declaration inside the prelude
+    rather than exposing it in user code.
+  - updated `clang/test/Preprocessor/cnxt-prelude.c` to lock in the new safe
+    output surface alongside the existing ownership/interface prelude content.
+  - added `cnxt/examples/stdlib/hello-world.cn` and
+    `clang/test/Driver/cnxt-hello-world.c` so the repository now has a real
+    hello-world example that compiles and runs with no user-written `extern`
+    declarations.
+  - updated `cnxt/README.md` with build/run commands for the hello-world sample
+    and noted that the current branch still expects the ownership runtime path
+    on cNxt links even though the program itself uses only the safe stdlib
+    output surface.
+- Follow-up notes:
+  - this milestone delivers the user-facing entrypoint surface; automatic
+    runtime autolinking and broader stdlib expansion remain later work.
+- What is now unblocked:
+  - M9-03 can focus on compiler-generated ABI thunks with a no-manual-extern
+    hello-world path already in place.
+  - M9-08 starter templates can target `cnxt::io::println(...)` instead of
+    teaching users to hand-author raw-pointer imports for basic output.
+- Direction check:
+  - roadmap remains directionally correct; generated thunk support is still the
+    next highest-leverage step for shrinking handwritten interop further.
 
 ### 2026-03-21 - M9-01
 

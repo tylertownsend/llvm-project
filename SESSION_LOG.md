@@ -2,6 +2,17 @@
 
 ## 2026-03-21
 
+- Completed `M9-02`.
+- Added a compiler-owned `cnxt::io::println(...)` prelude surface in
+  `InitPreprocessor.cpp`, plus a hello-world example at
+  `cnxt/examples/stdlib/hello-world.cn` and a driver test that builds and runs
+  it without any user-written `extern` declarations.
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/Preprocessor/cnxt-prelude.c clang/test/Driver/cnxt-hello-world.c clang/test/Driver/cnxt-ownership-example.c clang/test/Driver/cnxt-interface-example.c`
+  - `git diff --check`
+- Next target: `M9-03`.
+
 - Completed `M9-01`.
 - Added `cnxt/specs/cnxt-ffi-boundary.md` to define where raw pointers are
   legal today, why `unsafe extern "C"` is required, and how ownership-handle

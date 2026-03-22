@@ -205,6 +205,9 @@ Current end-to-end ownership example:
 Current end-to-end interface ownership example:
 `cnxt/examples/ownership/interface-counter.cn`.
 
+Current safe stdlib hello-world example:
+`cnxt/examples/stdlib/hello-world.cn`.
+
 Build and run the ownership example on this branch:
 
 ```bash
@@ -248,6 +251,29 @@ as `unique<Stepper>`, dispatches interface calls through the owned handle, and
 relies on scope-exit cleanup for the heap object. The program needs no
 user-written `extern "C"` declarations, no raw-pointer allocation syntax, and
 no glue file.
+
+Build and run the hello-world stdlib example on this branch:
+
+```bash
+build/bin/clang++ -shared -fPIC -std=c++17 \
+  -Icnxt/runtime/ownership/include \
+  cnxt/runtime/ownership/src/ownership_runtime.cpp \
+  -o /tmp/libcnxt_ownership_rt.so
+
+build/bin/clang++ -x cnxt -std=cnxt1 \
+  cnxt/examples/stdlib/hello-world.cn \
+  -fcnxt-ownership-runtime=/tmp/libcnxt_ownership_rt.so \
+  -o /tmp/cnxt-hello-world
+
+LD_LIBRARY_PATH=/tmp /tmp/cnxt-hello-world
+```
+
+This sample uses the compiler-owned `cnxt::io::println(...)` entrypoint from
+the cNxt prelude, so a hello-world style program can print output without
+manual `extern` declarations or `unsafe extern` wrappers. The current branch
+still expects `-fcnxt-ownership-runtime=...` on cNxt links, so the example
+passes the existing runtime path even though the program itself uses only the
+safe stdlib output surface.
 
 IDE CI integration baseline:
 `cnxt/specs/cnxt-ide-ci.md`.
