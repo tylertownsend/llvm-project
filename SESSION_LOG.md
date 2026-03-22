@@ -2,6 +2,16 @@
 
 ## 2026-03-21
 
+- Completed `M9-06`.
+- Added `clang/test/Driver/cnxt-c-abi-mixed-interop.c`, a split-file
+  build-and-run test that links one cNxt file with separate C and C++
+  translation units through `cnxt_import_c` / `cnxt_export_c`.
+- The new executable validates cNxt importing C and C++ symbols plus C and
+  C++ callers invoking cNxt-exported symbols, then prints a success message.
+- Validation:
+  - `build/bin/llvm-lit -sv clang/test/Driver/cnxt-c-abi-mixed-interop.c`
+- Next target: `M9-07`.
+
 - Completed `M9-05`.
 - Aligned cNxt raw-pointer diagnostics so `cnxt_import_c` / `cnxt_export_c`
   are explicitly described as ownership-handle ABI surfaces, with guidance

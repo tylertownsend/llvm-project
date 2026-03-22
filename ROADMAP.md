@@ -51,7 +51,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M9-01 through M9-03
 - [x] M9-04
 - [x] M9-05
-- [ ] M9-06 through M9-08
+- [x] M9-06
+- [ ] M9-07 through M9-08
 - [ ] M10-01 through M10-06
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
@@ -168,7 +169,7 @@ Deliverables:
 - [x] M9-04 Add ownership-handle marshalling rules across ABI thunks.
 - [x] M9-05 Enforce raw-pointer ban in safe modules with lint + compiler
   diagnostics aligned to `unsafe extern` policy.
-- [ ] M9-06 Add mixed-language interoperability tests validating generated thunk
+- [x] M9-06 Add mixed-language interoperability tests validating generated thunk
   paths for cNxt <-> C/C++ calls.
 - [ ] M9-07 Add migration guide from legacy manual `extern "C"` patterns to
   compiler-managed interop boundaries.
@@ -256,6 +257,32 @@ Deliverables:
 - Direction check:
   - roadmap remains directionally correct; the next meaningful step is proving
     the generated symbol surface end-to-end in mixed-language tests.
+
+### 2026-03-21 - M9-06
+
+- Completed item: add mixed-language interoperability coverage for the
+  compiler-managed `cnxt_import_c` / `cnxt_export_c` path.
+- What changed:
+  - added `clang/test/Driver/cnxt-c-abi-mixed-interop.c`, a split-file driver
+    test that builds a cNxt translation unit together with separate C and C++
+    object files.
+  - the new test validates all four runtime paths in one executable:
+    cNxt importing a C function, cNxt importing a C++ `extern "C"` function,
+    a C object calling a `cnxt_export_c` function, and a C++ object calling a
+    `cnxt_export_c` function.
+  - the executable links through the existing ownership runtime flag and
+    asserts successful end-to-end execution by printing a success message.
+- Follow-up notes:
+  - this locks in thunk behavior for scalar C ABI traffic; ownership-handle
+    marshalling remains covered separately by the codegen-focused M9-04 tests.
+- What is now unblocked:
+  - M9-07 can document migration from handwritten wrappers against a tested,
+    end-to-end compiler-managed interop flow instead of IR-only examples.
+  - M9-08 starter templates can rely on verified mixed-language linkage when
+    examples or templates need to call into legacy C/C++ code.
+- Direction check:
+  - roadmap remains directionally correct; the next gap is documentation and
+    template cleanup rather than new interop mechanics.
 
 ### 2026-03-21 - M9-03
 
