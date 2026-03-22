@@ -8,6 +8,7 @@
 // CHECK-NOT: std::weak_ptr
 // CHECK: template <typename T> struct unique {
 // CHECK: template <typename T> struct shared {
+// CHECK: template <typename T> shared<T> share(unique<T> &&Owner) {
 // CHECK: template <typename T> struct weak {
 
 unique<int> U;

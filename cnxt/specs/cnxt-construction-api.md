@@ -80,8 +80,8 @@ unique<Point> point = make<Point>(1, 2);
   destruction rules.
 - If the resulting `unique<T>` is moved, ownership transfers exactly once.
 - If the result needs shared ownership, the program must perform an explicit
-  ownership-widening step after construction rather than constructing
-  `shared<T>` directly.
+  ownership-widening step (`share(unique<T>) -> shared<T>`) after construction
+  rather than constructing `shared<T>` directly.
 
 ## Runtime / Lowering Contract
 

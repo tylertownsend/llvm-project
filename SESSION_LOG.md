@@ -163,3 +163,21 @@
   - `ninja -C build clang`
   - `build/bin/llvm-lit -sv clang/test/CodeGenCXX/cnxt-construction.cpp clang/test/SemaCXX/cnxt-construction.cpp clang/test/Parser/cnxt-construction.cpp clang/test/Parser/cnxt-ownership.cpp clang/test/Parser/cnxt-restrictions.cpp clang/test/Preprocessor/cnxt-prelude.c clang/test/Driver/cnxt-ownership-example.c clang/test/CodeGenCXX/cnxt-unique-cleanup.cpp clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp`
 - Next target: `M7-05`.
+- Completed `M7-05`.
+- Added compiler-owned `share(unique<T> &&)` widening in the injected prelude,
+  backed by `__cnxt_rt_own_v1_shared_from_unique`, so safe cNxt code can move
+  from `unique<T>` to `shared<T>` without raw-pointer intermediates.
+- Added payload metadata helpers so unique cleanup and shared widening preserve
+  destructor, size, and alignment metadata for non-trivial payloads.
+- Updated `cnxt/specs/cnxt-construction-api.md` to name
+  `share(unique<T>) -> shared<T>` as the explicit post-construction widening
+  step.
+- Added focused coverage in:
+  - `clang/test/Preprocessor/cnxt-prelude.c`
+  - `clang/test/Parser/cnxt-ownership-runtime-surface.cpp`
+  - `clang/test/SemaCXX/cnxt-ownership-runtime.cpp`
+  - `clang/test/CodeGenCXX/cnxt-share-widening.cpp`
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/Preprocessor/cnxt-prelude.c clang/test/Parser/cnxt-ownership-runtime-surface.cpp clang/test/SemaCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-share-widening.cpp clang/test/CodeGenCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-shared-refcount.cpp clang/test/CodeGenCXX/cnxt-construction.cpp clang/test/SemaCXX/cnxt-construction.cpp clang/test/Parser/cnxt-construction.cpp clang/test/Driver/cnxt-ownership-example.c`
+- Next target: `M7-06`.

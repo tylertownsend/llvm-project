@@ -20,7 +20,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-02 Parse/type-check construction expressions that return `unique<T>`.
 - [x] M7-03 Reject invalid `make<T>(...)` payload targets in cNxt safe code.
 - [x] M7-04 Lower construction expressions to runtime allocation plus constructor/init calls in CodeGen.
-- [ ] M7-05 Add builtin conversion API for widening ownership without raw-pointer intermediates.
+- [x] M7-05 Add builtin conversion API for widening ownership without raw-pointer intermediates.
+- [ ] M7-06 Restrict ownership-handle raw pointer escape operations in safe code.
 
 ## Deliverable Status
 
@@ -34,8 +35,9 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-02
 - [x] M7-03
 - [x] M7-04
-- [-] M7-05
-- [ ] M7-06 through M7-10
+- [x] M7-05
+- [-] M7-06
+- [ ] M7-07 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
 - [ ] M10-01 through M10-06
@@ -96,9 +98,9 @@ Deliverables:
   `unique<T>` and reject pointer-returning construction in safe code.
 - [x] M7-04 Lower construction expressions to runtime allocation plus
   constructor/init calls in CodeGen.
-- [-] M7-05 Add builtin conversion API for widening ownership
+- [x] M7-05 Add builtin conversion API for widening ownership
   (`share(unique<T>) -> shared<T>`) without raw pointer intermediates.
-- [ ] M7-06 Restrict ownership-handle raw pointer escape operations (such as
+- [-] M7-06 Restrict ownership-handle raw pointer escape operations (such as
   unrestricted `.get()`) to explicit unsafe/FFI contexts.
 - [ ] M7-07 Tighten pointer policy from "extern C carveout" to explicit
   `unsafe extern` boundary model for pointer-bearing signatures.
@@ -179,6 +181,40 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M7-05
+
+- Completed item: add a compiler-owned widening API so cNxt code can convert
+  `unique<T>` into `shared<T>` without spelling raw pointers or runtime ABI
+  calls in user source.
+- What changed:
+  - extended the injected cNxt prelude with the runtime declaration for
+    `__cnxt_rt_own_v1_shared_from_unique` and a new `share(unique<T> &&)`
+    helper that lowers unique-to-shared widening through that ABI.
+  - added compiler-owned payload metadata helpers so unique cleanup and shared
+    widening can preserve destructor/size/alignment information without
+    injecting host STL ownership types.
+  - updated the construction spec to name `share(unique<T>) -> shared<T>` as
+    the explicit widening step after `make<T>(...)`.
+  - added parser, `SemaCXX`, preprocessor, and codegen coverage for the new
+    widening surface, including a non-trivial payload case that proves the
+    runtime receives destructor metadata.
+- Follow-up notes:
+  - widening now has a glue-free compiler-owned path, but raw-pointer escape
+    methods like `unique<T>::get()` / `release()` still exist on the handle
+    surface and need policy tightening in M7-06.
+- What is now unblocked:
+  - M7-06 can narrow the remaining handle escape hatches without blocking
+    shared ownership adoption for safe-code construction flows.
+  - M7-09 can cover cleanup behavior for values that are widened from unique to
+    shared ownership mid-scope.
+  - M7-10 can show object construction plus shared ownership adoption without
+    any raw-pointer glue in the sample path.
+- Direction check:
+  - roadmap remains directionally correct; M7-06 is next because the language
+    now has the intended construction and widening surfaces, and the highest
+    remaining safety risk is unrestricted raw-pointer escape on ownership
+    handles.
 
 ### 2026-03-21 - M7-04
 
