@@ -2,6 +2,19 @@
 
 ## 2026-03-21
 
+- Completed `M8-11`.
+- Added `cnxt/examples/ownership/interface-counter.cn` as the end-to-end
+  interface/class sample for unique ownership with no user-written
+  `extern "C"` declarations.
+- Added `clang/test/Driver/cnxt-interface-example.c` and updated
+  `cnxt/README.md` so the documented flow now builds and runs the sample
+  against the compiler-owned ownership runtime.
+- Validation:
+  - `build/bin/llvm-lit -sv clang/test/Driver/cnxt-interface-example.c clang/test/Driver/cnxt-ownership-example.c`
+  - `build/bin/llvm-lit -sv clang/test/CodeGenCXX/cnxt-interface-ownership.cpp clang/test/CodeGenCXX/cnxt-interface-dispatch.cpp clang/test/SemaCXX/cnxt-interface-bindings.cpp`
+  - `git diff --check`
+- Next target: `M9-01`.
+
 - Completed `M8-10`.
 - Expanded interface/class regression coverage in:
   - `clang/test/Parser/cnxt-interface-decls.cpp`

@@ -1,0 +1,25 @@
+interface Stepper {
+  int next();
+};
+
+class Counter implements Stepper {
+public:
+  int value;
+
+  Counter(int Start) : value(Start) {}
+  ~Counter() {}
+
+  int next() {
+    value = value + 1;
+    return value;
+  }
+};
+
+int main() {
+  unique<Stepper> owner = make<Counter>(41);
+  if (owner.next() != 42)
+    return 1;
+  if (owner.next() != 43)
+    return 2;
+  return 0;
+}

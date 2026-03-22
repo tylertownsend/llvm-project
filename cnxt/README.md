@@ -190,11 +190,17 @@ Ownership runtime ABI baseline:
 Construction API baseline:
 `cnxt/specs/cnxt-construction-api.md`.
 
+Interface/class surface baseline:
+`cnxt/specs/cnxt-interface-class.md`.
+
 Ownership runtime skeleton sources:
 `cnxt/runtime/ownership/`.
 
 Current end-to-end ownership example:
 `cnxt/examples/ownership/class-method.cn`.
+
+Current end-to-end interface ownership example:
+`cnxt/examples/ownership/interface-counter.cn`.
 
 Build and run the ownership example on this branch:
 
@@ -216,7 +222,29 @@ This sample uses the compiler-owned `make<T>(...)` construction surface to
 allocate an owned class instance, calls a method with ordinary class syntax,
 and relies on scope-exit cleanup for the owned heap object. The program needs
 no user-written `extern "C"` declarations, no raw-pointer allocation syntax,
-and no glue file. Interface-specific surface work remains in Milestone 8.
+and no glue file.
+
+Build and run the interface ownership example on this branch:
+
+```bash
+build/bin/clang++ -shared -fPIC -std=c++17 \
+  -Icnxt/runtime/ownership/include \
+  cnxt/runtime/ownership/src/ownership_runtime.cpp \
+  -o /tmp/libcnxt_ownership_rt.so
+
+build/bin/clang++ -x cnxt -std=cnxt1 \
+  cnxt/examples/ownership/interface-counter.cn \
+  -fcnxt-ownership-runtime=/tmp/libcnxt_ownership_rt.so \
+  -o /tmp/cnxt-interface-counter
+
+LD_LIBRARY_PATH=/tmp /tmp/cnxt-interface-counter
+```
+
+This sample allocates a concrete `Counter` with `make<Counter>(41)`, stores it
+as `unique<Stepper>`, dispatches interface calls through the owned handle, and
+relies on scope-exit cleanup for the heap object. The program needs no
+user-written `extern "C"` declarations, no raw-pointer allocation syntax, and
+no glue file.
 
 IDE CI integration baseline:
 `cnxt/specs/cnxt-ide-ci.md`.

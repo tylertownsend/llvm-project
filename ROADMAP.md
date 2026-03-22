@@ -47,8 +47,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-09
 - [x] M7-10
 - [x] M8-01
-- [x] M8-02 through M8-10
-- [ ] M8-11
+- [x] M8-02 through M8-11
 - [ ] M9-01 through M9-08
 - [ ] M10-01 through M10-06
 - [x] M1-01 through M1-12
@@ -147,7 +146,7 @@ Deliverables:
 - [x] M8-09 Update clangd/IDE support for interface/class syntax and symbols.
 - [x] M8-10 Add parser/sema/codegen regression coverage for interface/class
   declarations, conformance, and dispatch.
-- [ ] M8-11 Add end-to-end cNxt interface+class sample with unique ownership
+- [x] M8-11 Add end-to-end cNxt interface+class sample with unique ownership
   and zero `extern "C"` declarations.
 
 ### Milestone 9 - FFI Containment and No-Glue Standard Library Surface
@@ -193,6 +192,35 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M8-11
+
+- Completed item: add an end-to-end cNxt `interface` + `class` example that
+  uses `unique<Interface>` ownership with no user-written `extern "C"`
+  declarations.
+- What changed:
+  - added `cnxt/examples/ownership/interface-counter.cn`, a stateful sample
+    that allocates `Counter` with `make<Counter>(41)`, stores it as
+    `unique<Stepper>`, then dispatches interface calls through the owned handle
+    while validating stateful behavior across calls.
+  - added `clang/test/Driver/cnxt-interface-example.c` so lit now builds the
+    ownership runtime, compiles the new sample in `-x cnxt` mode, and runs it
+    end-to-end on Linux.
+  - updated `cnxt/README.md` to reference
+    `cnxt/specs/cnxt-interface-class.md`, document the new sample path, and
+    publish concrete build/run commands for the no-glue interface ownership
+    flow.
+- Follow-up notes:
+  - Milestone 8 is now complete; the next backlog focus shifts to FFI
+    containment and safe stdlib surface work in Milestone 9.
+- What is now unblocked:
+  - M9-01 can define the `unsafe extern` boundary model against a roadmap that
+    now has end-to-end no-glue coverage for ownership, construction, and
+    interface dispatch.
+- Direction check:
+  - roadmap remains directionally correct; `unsafe extern` policy and stdlib
+    surface work are still the next highest-risk items before broader release
+    hardening.
 
 ### 2026-03-21 - M8-10
 
