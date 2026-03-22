@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 from pathlib import Path
 import shutil
 import sys
@@ -11,7 +12,12 @@ import unittest
 TOOLS_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = TOOLS_DIR.parents[1]
 STARTER_TEMPLATE_DIR = REPO_ROOT / "cnxt" / "examples" / "starter" / "hello-app"
-CLANGXX = REPO_ROOT / "build" / "bin" / "clang++"
+CLANGXX = Path(
+    os.environ.get(
+        "CNXT_TEST_CLANGXX",
+        str(REPO_ROOT / "build" / "bin" / "clang++"),
+    )
+)
 
 
 def _load_module(name: str, filename: str):

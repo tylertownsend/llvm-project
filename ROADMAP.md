@@ -59,7 +59,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M10-03
 - [x] M10-04
 - [x] M10-05
-- [ ] M10-06
+- [x] M10-06
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
@@ -196,9 +196,9 @@ Deliverables:
   overhead versus current branch behavior.
 - [x] M10-04 Add CI matrix coverage (Linux/macOS) building and testing runtime +
   compiler features introduced in M6-M9.
-- [ ] M10-05 Publish quickstart docs proving normal app development requires no
+- [x] M10-05 Publish quickstart docs proving normal app development requires no
   manual `extern "C"` glue.
-- [ ] M10-06 Add final acceptance checklist and gate milestone completion on an
+- [x] M10-06 Add final acceptance checklist and gate milestone completion on an
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
@@ -469,6 +469,35 @@ Deliverables:
 - Direction check:
   - roadmap remains directionally correct; the last missing piece is to turn
     the proven quickstart and CI coverage into a final acceptance gate.
+
+### 2026-03-21 - M10-06
+
+- Completed item: add the final acceptance checklist and wire CI to gate
+  milestone completion on a no-glue sample app test.
+- What changed:
+  - added `cnxt/docs/acceptance-checklist.md`, which names the exact
+    workflows, artifacts, docs, and starter-template conditions required to
+    treat Milestone 10 as complete.
+  - updated `cnxt/tools/tests/test_e2e_starter_template.py` to honor
+    `CNXT_TEST_CLANGXX`, allowing CI to run the no-glue starter acceptance
+    test against the compiler built inside the matrix job instead of assuming a
+    hard-coded local build directory.
+  - updated `.github/workflows/cnxt-compiler-matrix.yml` so the Linux matrix
+    leg now runs the no-glue starter-template e2e test after building `clang`,
+    turning the starter app into an explicit release gate instead of an
+    implicitly related side test.
+  - linked the acceptance checklist from `cnxt/README.md`.
+- Follow-up notes:
+  the Linux starter-template gate is the explicit milestone-completion switch
+  today; macOS still contributes runtime/compiler coverage and benchmark
+  artifacts through the matrix, but does not yet run the package-tool starter
+  flow.
+- What is now unblocked:
+  - Milestone 10 is fully complete; no remaining roadmap items are blocked on
+    acceptance wiring.
+- Direction check:
+  - roadmap remains directionally correct and the post-M5 no-glue compiler plan
+    is now fully represented by completed deliverables.
 
 ### 2026-03-21 - M10-01
 

@@ -203,6 +203,9 @@ C ABI migration guide:
 No-glue quickstart:
 `cnxt/docs/quickstart.md`.
 
+Milestone 10 acceptance checklist:
+`cnxt/docs/acceptance-checklist.md`.
+
 Interface/class surface baseline:
 `cnxt/specs/cnxt-interface-class.md`.
 

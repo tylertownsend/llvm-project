@@ -87,6 +87,12 @@ jobs:
           cmake --build build-cnxt-clang --parallel
           --target clang llvm-lit FileCheck
 
+      - name: Gate no-glue starter app
+        if: runner.os == 'Linux'
+        env:
+          CNXT_TEST_CLANGXX: ${{ github.workspace }}/build-cnxt-clang/bin/clang++
+        run: python3 cnxt/tools/tests/test_e2e_starter_template.py
+
       - name: Run cNxt compiler feature matrix
         run: |
           build-cnxt-clang/bin/llvm-lit -sv \

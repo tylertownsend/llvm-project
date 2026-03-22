@@ -613,3 +613,20 @@
   the `rg` command is expected to return no matches, and that is the intended
   success condition recorded by the quickstart.
 - Next target: `M10-06`.
+
+- Completed `M10-06`.
+- Added `cnxt/docs/acceptance-checklist.md`, which names the exact workflows,
+  artifacts, docs, and starter-template conditions that must be true before
+  Milestone 10 is considered complete.
+- Updated `cnxt/tools/tests/test_e2e_starter_template.py` to accept
+  `CNXT_TEST_CLANGXX`, then wired `.github/workflows/cnxt-compiler-matrix.yml`
+  to run that starter-template e2e test on the Linux matrix leg after building
+  `clang`, making the no-glue sample app an explicit CI gate.
+- Linked the acceptance checklist from `cnxt/README.md`.
+- Validation:
+  - `CNXT_TEST_CLANGXX=$(pwd)/build/bin/clang++ python3 cnxt/tools/tests/test_e2e_starter_template.py`
+  - `git diff --check`
+- Follow-up note:
+  the macOS matrix leg still contributes cross-platform runtime/compiler
+  coverage, but the explicit package-tool starter gate is Linux-only today.
+- Next target: none; Milestone 10 backlog is complete.
