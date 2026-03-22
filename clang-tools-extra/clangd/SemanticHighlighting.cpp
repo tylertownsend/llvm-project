@@ -105,6 +105,8 @@ std::optional<HighlightingKind> kindForDecl(const NamedDecl *D,
     // We don't want to highlight lambdas like classes.
     if (RD->isLambda())
       return std::nullopt;
+    if (RD->isInterface())
+      return HighlightingKind::Interface;
     return HighlightingKind::Class;
   }
   if (isa<ClassTemplateDecl, RecordDecl, CXXConstructorDecl, ObjCInterfaceDecl,

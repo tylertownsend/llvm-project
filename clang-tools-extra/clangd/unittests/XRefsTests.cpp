@@ -550,6 +550,32 @@ TEST(LocateSymbol, CNxtFile) {
               ElementsAre(sym("make", T.range("mk"), T.range("mk"))));
 }
 
+TEST(LocateSymbol, CNxtInterfaceAndImplements) {
+  Annotations T(R"cnxt(
+    interface $iface[[Greeter]] {
+      void greet();
+    };
+    class $klass[[ConsoleGreeter]] implements G$p1^reeter {
+    public:
+      void greet() {}
+    };
+    int main() {
+      ConsoleGr$p2^eeter value;
+      return 0;
+    }
+  )cnxt");
+  auto TU = TestTU::withCode(T.code().str());
+  TU.Filename = "TestTU.cn";
+  TU.ExtraArgs = {"-x", "cnxt", "-std=cnxt1"};
+  auto AST = TU.build();
+
+  EXPECT_THAT(locateSymbolAt(AST, T.point("p1")),
+              ElementsAre(sym("Greeter", T.range("iface"), T.range("iface"))));
+  EXPECT_THAT(
+      locateSymbolAt(AST, T.point("p2")),
+      ElementsAre(sym("ConsoleGreeter", T.range("klass"), T.range("klass"))));
+}
+
 TEST(LocateSymbol, All) {
   // Ranges in tests:
   //   $decl is the declaration location (if absent, no symbol is located)
@@ -2445,11 +2471,41 @@ TEST(FindReferences, WithinAST) {
 TEST(FindReferences, CNxtWithinAST) {
   checkFindRefsCNxt(R"cnxt(
     struct Box {};
-    Box $def(main)[[maker]](Box in) { return in; }
+    Box $def[[maker]](Box in) { return in; }
     int main() {
       Box v;
       $(main)[[^maker]](v);
       $(main)[[maker]](v);
+    }
+  )cnxt");
+}
+
+TEST(FindReferences, CNxtInterfaceWithinAST) {
+  checkFindRefsCNxt(R"cnxt(
+    interface $def[[Greeter]] {
+      void greet();
+    };
+    class ConsoleGreeter implements $(ConsoleGreeter)[[Greeter]] {
+    public:
+      void greet() {}
+    };
+    $(makeGreeter)[[^Greeter]] makeGreeter($(makeGreeter)[[Greeter]] input) {
+      return input;
+    }
+  )cnxt");
+}
+
+TEST(FindReferences, CNxtClassWithinAST) {
+  checkFindRefsCNxt(R"cnxt(
+    interface Greeter {
+      void greet();
+    };
+    class $def[[ConsoleGreeter]] implements Greeter {
+    public:
+      void greet() {}
+    };
+    $(makeGreeter)[[^ConsoleGreeter]] makeGreeter($(makeGreeter)[[ConsoleGreeter]] input) {
+      return input;
     }
   )cnxt");
 }

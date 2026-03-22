@@ -2,6 +2,27 @@
 
 ## 2026-03-21
 
+- Completed `M8-09`.
+- Preserved cNxt interface/class source spellings through interface carrier
+  lowering in `SemaType.cpp` so clangd keeps written token locations for
+  document symbols and references.
+- Updated clangd behavior in:
+  - `clang-tools-extra/clangd/FindSymbols.cpp`
+  - `clang-tools-extra/clangd/SemanticHighlighting.cpp`
+- Added/updated clangd regression coverage in:
+  - `clang-tools-extra/clangd/unittests/FindSymbolsTests.cpp`
+  - `clang-tools-extra/clangd/unittests/SemanticHighlightingTests.cpp`
+  - `clang-tools-extra/clangd/unittests/XRefsTests.cpp`
+- Validation:
+  - `ninja -C build ClangdTests`
+  - `build/tools/clang/tools/extra/clangd/unittests/ClangdTests --gtest_filter='DocumentSymbols.CNxtInterfaceAndClass:SemanticHighlighting.CNxtFileCoverage:LocateSymbol.CNxtInterfaceAndImplements:FindReferences.CNxtWithinAST:FindReferences.CNxtInterfaceWithinAST:FindReferences.CNxtClassWithinAST' --gtest_color=no`
+  - `build/bin/llvm-lit -sv clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp clang/test/CodeGenCXX/cnxt-ownership-interop.cpp clang/test/CodeGenCXX/cnxt-unique-cleanup.cpp clang/test/CodeGenCXX/cnxt-shared-refcount.cpp clang/test/CodeGenCXX/cnxt-weak-nullability.cpp clang/test/Preprocessor/cnxt-prelude.c`
+  - `build/bin/llvm-lit -sv clang/test/SemaCXX/cnxt-interface-carrier.cpp clang/test/SemaCXX/cnxt-interface-conformance.cpp clang/test/SemaCXX/cnxt-interface-diagnostics.cpp`
+- Follow-up note:
+  - `CompletionTest.CNxtRankingAdjustments` remains a pre-existing unrelated
+    clangd failure.
+- Next target: `M8-10`.
+
 - Completed `M8-08`.
 - Added cNxt-specific diagnostics for non-interface `implements` entries and
   conflicting interface requirements in `SemaDeclCXX.cpp` /

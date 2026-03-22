@@ -489,6 +489,38 @@ TEST(DocumentSymbols, Concepts) {
               ElementsAre(AllOf(withName("C"), withDetail("concept"))));
 }
 
+TEST(DocumentSymbols, CNxtInterfaceAndClass) {
+  TestTU TU;
+  TU.Filename = "TestTU.cn";
+  TU.ExtraArgs = {"-x", "cnxt", "-std=cnxt1"};
+  TU.Code = R"cnxt(
+      interface Greeter {
+        void greet();
+      };
+      class ConsoleGreeter implements Greeter {
+      public:
+        void greet() {}
+      };
+      Greeter makeGreeter(ConsoleGreeter value) {
+        return value;
+      }
+    )cnxt";
+
+  EXPECT_THAT(
+      getSymbols(TU.build()),
+      ElementsAre(
+          AllOf(withName("Greeter"), withKind(SymbolKind::Interface),
+                withDetail("interface"),
+                children(AllOf(withName("greet"), withKind(SymbolKind::Method),
+                               withDetail("void ()"), children()))),
+          AllOf(withName("ConsoleGreeter"), withKind(SymbolKind::Class),
+                withDetail("class"),
+                children(AllOf(withName("greet"), withKind(SymbolKind::Method),
+                               withDetail("void ()"), children()))),
+          AllOf(withName("makeGreeter"), withKind(SymbolKind::Function),
+                withDetail("Greeter (ConsoleGreeter)"), children())));
+}
+
 TEST(DocumentSymbols, ExternSymbol) {
   TestTU TU;
   TU.AdditionalFiles["foo.h"] = R"cpp(

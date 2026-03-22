@@ -47,7 +47,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-09
 - [x] M7-10
 - [x] M8-01
-- [ ] M8-02 through M8-11
+- [x] M8-02 through M8-09
+- [ ] M8-10 through M8-11
 - [ ] M9-01 through M9-08
 - [ ] M10-01 through M10-06
 - [x] M1-01 through M1-12
@@ -143,7 +144,7 @@ Deliverables:
   (`unique<Interface>`, `shared<Interface>` behavior rules).
 - [x] M8-08 Add focused diagnostics for missing implementations, invalid
   overrides, and ambiguous interface bindings.
-- [ ] M8-09 Update clangd/IDE support for interface/class syntax and symbols.
+- [x] M8-09 Update clangd/IDE support for interface/class syntax and symbols.
 - [ ] M8-10 Add parser/sema/codegen regression coverage for interface/class
   declarations, conformance, and dispatch.
 - [ ] M8-11 Add end-to-end cNxt interface+class sample with unique ownership
@@ -192,6 +193,41 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M8-09
+
+- Completed item: update clangd/editor support for cNxt `interface` / `class`
+  syntax, symbols, and references.
+- What changed:
+  - changed `clang/lib/Sema/SemaType.cpp` so cNxt interface carrier lowering
+    now preserves declaration `TypeSourceInfo` structure while rewriting to
+    adjusted semantic types, keeping written interface/class source ranges
+    available to editor features instead of collapsing them to trivial
+    carrier-only locations.
+  - updated `clang-tools-extra/clangd/FindSymbols.cpp` so document symbols show
+    cNxt-facing `interface` kind text and surface function signatures like
+    `Greeter (ConsoleGreeter)` instead of lowered
+    `__cnxt_iface_borrowed<Greeter>` details.
+  - updated `clang-tools-extra/clangd/SemanticHighlighting.cpp` so cNxt
+    interfaces are classified as `Interface` rather than generic classes.
+  - added/expanded clangd regression coverage in
+    `clang-tools-extra/clangd/unittests/FindSymbolsTests.cpp`,
+    `clang-tools-extra/clangd/unittests/SemanticHighlightingTests.cpp`, and
+    `clang-tools-extra/clangd/unittests/XRefsTests.cpp` for document symbols,
+    semantic tokens, locate-symbol, and find-references behavior on cNxt
+    interface/class constructs.
+- Follow-up notes:
+  - `CompletionTest.CNxtRankingAdjustments` is still failing in
+    `CodeCompleteTests.cpp`; that ranking issue predates this deliverable and
+    was not changed by the M8-09 patch.
+- What is now unblocked:
+  - M8-10 can broaden parser/sema/codegen regression coverage with IDE-facing
+    interface/class behavior now locked in.
+  - M8-11 can rely on editor-visible interface/class symbols and references in
+    the sample path.
+- Direction check:
+  - roadmap remains directionally correct; M8-10 is the next highest-priority
+    unblocked deliverable.
 
 ### 2026-03-21 - M8-08
 

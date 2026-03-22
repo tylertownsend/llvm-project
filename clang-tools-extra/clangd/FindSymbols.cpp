@@ -367,6 +367,12 @@ getWorkspaceSymbols(llvm::StringRef Query, int Limit,
 }
 
 namespace {
+QualType displayType(QualType T) {
+  while (const auto *AT = T->getAs<AdjustedType>())
+    T = AT->getOriginalType();
+  return T;
+}
+
 std::string getSymbolName(ASTContext &Ctx, const NamedDecl &ND) {
   // Print `MyClass(Category)` instead of `Category` and `MyClass()` instead
   // of `anonymous`.
@@ -401,16 +407,31 @@ std::string getSymbolDetail(ASTContext &Ctx, const NamedDecl &ND) {
   if (const auto *VD = dyn_cast<ValueDecl>(&ND)) {
     // FIXME: better printing for dependent type
     if (isa<CXXConstructorDecl>(VD)) {
-      std::string ConstructorType = VD->getType().getAsString(P);
+      std::string ConstructorType = displayType(VD->getType()).getAsString(P);
       // Print constructor type as "(int)" instead of "void (int)".
       llvm::StringRef WithoutVoid = ConstructorType;
       WithoutVoid.consume_front("void ");
       OS << WithoutVoid;
+    } else if (const auto *FD = dyn_cast<FunctionDecl>(VD)) {
+      displayType(FD->getDeclaredReturnType()).print(OS, P);
+      OS << " (";
+      llvm::interleaveComma(FD->parameters(), OS, [&](const ParmVarDecl *Parm) {
+        displayType(Parm->getOriginalType()).print(OS, P);
+      });
+      if (FD->isVariadic()) {
+        if (FD->getNumParams() > 0)
+          OS << ", ";
+        OS << "...";
+      }
+      OS << ")";
     } else if (!isa<CXXDestructorDecl>(VD)) {
-      VD->getType().print(OS, P);
+      displayType(VD->getType()).print(OS, P);
     }
   } else if (const auto *TD = dyn_cast<TagDecl>(&ND)) {
-    OS << TD->getKindName();
+    if (TD->isInterface())
+      OS << "interface";
+    else
+      OS << TD->getKindName();
   } else if (isa<TypedefNameDecl>(&ND)) {
     OS << "type alias";
   } else if (isa<ConceptDecl>(&ND)) {

@@ -150,7 +150,11 @@ static QualType rewriteCNxtInterfaceValueType(Sema &S, QualType Ty,
     return S.Context.getFunctionNoProtoType(NewResultTy, FNT->getExtInfo());
   }
 
-  return buildCNxtBorrowedInterfaceCarrierType(S, Ty, Loc);
+  QualType CarrierTy = buildCNxtBorrowedInterfaceCarrierType(S, Ty, Loc);
+  if (CarrierTy == Ty)
+    return Ty;
+
+  return S.Context.getAdjustedType(Ty, CarrierTy);
 }
 
 static bool shouldRewriteCNxtInterfaceValueDeclarator(const Declarator &D) {
@@ -5893,8 +5897,12 @@ TypeSourceInfo *Sema::GetTypeForDeclarator(Declarator &D) {
   if (shouldRewriteCNxtInterfaceValueDeclarator(D))
     RewrittenTy =
         rewriteCNxtInterfaceValueType(*this, TInfo->getType(), D.getBeginLoc());
-  if (RewrittenTy != TInfo->getType())
-    return Context.getTrivialTypeSourceInfo(RewrittenTy, D.getBeginLoc());
+  if (RewrittenTy != TInfo->getType()) {
+    TypeLocBuilder TLB;
+    TLB.pushFullCopy(TInfo->getTypeLoc());
+    TLB.TypeWasModifiedSafely(RewrittenTy);
+    return TLB.getTypeSourceInfo(Context, RewrittenTy);
+  }
 
   return TInfo;
 }

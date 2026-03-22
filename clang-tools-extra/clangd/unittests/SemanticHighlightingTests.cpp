@@ -1324,13 +1324,15 @@ TEST(SemanticHighlighting, CNxtFileCoverage) {
     TestTU TU;
     TU.Filename = Filename.str();
     TU.Code = R"cnxt(
-      struct Box {
-        int value;
+      interface Greeter {
+        void greet();
       };
-      Box make(Box in) {
-        Box out;
-        out.value = in.value;
-        return out;
+      class ConsoleGreeter implements Greeter {
+      public:
+        void greet() {}
+      };
+      Greeter makeGreeter(ConsoleGreeter value) {
+        return value;
       }
     )cnxt";
     TU.ExtraArgs = {"-x", "cnxt", "-std=cnxt1"};
@@ -1341,8 +1343,15 @@ TEST(SemanticHighlighting, CNxtFileCoverage) {
     EXPECT_THAT(Tokens, testing::Not(IsEmpty()));
 
     auto Annotated = annotate(TU.Code, Tokens);
-    EXPECT_THAT(Annotated, HasSubstr("$Class_def[[Box]]"));
-    EXPECT_THAT(Annotated, HasSubstr("$Function_def[[make]]"));
+    EXPECT_THAT(Annotated,
+                HasSubstr("$Interface_def_abstract_globalScope[[Greeter]]"));
+    EXPECT_THAT(Annotated,
+                HasSubstr("$Class_def_globalScope[[ConsoleGreeter]]"));
+    EXPECT_THAT(
+        Annotated,
+        HasSubstr("implements $Interface_abstract_globalScope[[Greeter]]"));
+    EXPECT_THAT(Annotated,
+                HasSubstr("$Function_def_globalScope[[makeGreeter]]"));
   };
 
   CheckFile("TestTU.cn");
