@@ -48,7 +48,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-10
 - [x] M8-01
 - [x] M8-02 through M8-11
-- [ ] M9-01 through M9-08
+- [x] M9-01
+- [ ] M9-02 through M9-08
 - [ ] M10-01 through M10-06
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
@@ -156,7 +157,7 @@ stdlib APIs and avoids manual ABI glue.
 
 Deliverables:
 
-- [ ] M9-01 Specify `unsafe extern` boundary model in
+- [x] M9-01 Specify `unsafe extern` boundary model in
   `cnxt/specs/cnxt-ffi-boundary.md` (where pointers are legal and why).
 - [ ] M9-02 Add safe stdlib modules for basic app entrypoints (for example
   output/logging) so hello-world style programs need no manual extern imports.
@@ -192,6 +193,33 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M9-01
+
+- Completed item: specify the cNxt `unsafe extern` boundary model for raw
+  pointers and ownership-handle raw escapes.
+- What changed:
+  - added `cnxt/specs/cnxt-ffi-boundary.md` as the Milestone 9 source of truth
+    for where raw pointers are legal, why plain `extern "C"` is insufficient,
+    and which operations remain confined to `unsafe extern "C"` today.
+  - documented the current implementation boundary explicitly: raw-pointer
+    function signatures and ownership-handle raw escapes are legal only at
+    `unsafe extern "C"` boundaries, while raw-pointer globals, locals, and
+    fields remain rejected in user-authored cNxt code.
+  - updated `cnxt/README.md` to point at the new FFI-boundary baseline beside
+    the existing ownership, construction, and interface specs.
+- Follow-up notes:
+  - this document intentionally describes the current manual boundary; thunk
+    generation and stdlib surface reduction remain future Milestone 9 work.
+- What is now unblocked:
+  - M9-02 can add safe stdlib entrypoints against a documented rule that
+    ordinary app code should avoid handwritten `unsafe extern` imports.
+  - M9-03 and M9-04 can define compiler-generated thunk behavior against a
+    fixed safe/unsafe boundary contract.
+- Direction check:
+  - roadmap remains directionally correct; safe stdlib entrypoints and
+    generated ABI thunks are still the next leverage points for shrinking
+    user-written FFI glue.
 
 ### 2026-03-21 - M8-11
 

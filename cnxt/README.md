@@ -190,6 +190,9 @@ Ownership runtime ABI baseline:
 Construction API baseline:
 `cnxt/specs/cnxt-construction-api.md`.
 
+FFI boundary baseline:
+`cnxt/specs/cnxt-ffi-boundary.md`.
+
 Interface/class surface baseline:
 `cnxt/specs/cnxt-interface-class.md`.
 

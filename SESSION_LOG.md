@@ -2,6 +2,16 @@
 
 ## 2026-03-21
 
+- Completed `M9-01`.
+- Added `cnxt/specs/cnxt-ffi-boundary.md` to define where raw pointers are
+  legal today, why `unsafe extern "C"` is required, and how ownership-handle
+  raw escapes fit into that same FFI boundary.
+- Updated `cnxt/README.md` to reference the new FFI-boundary baseline.
+- Validation:
+  - `build/bin/llvm-lit -sv clang/test/Parser/cnxt-ffi-raw-pointers.cpp clang/test/SemaCXX/cnxt-ownership-escapes.cpp clang/test/SemaCXX/cnxt-pointer-guidance-fixits.cpp clang/test/CodeGenCXX/cnxt-ownership-interop.cpp clang/test/CodeGenCXX/cnxt-ownership-runtime.cpp clang/test/CodeGenCXX/cnxt-weak-nullability.cpp`
+  - `git diff --check`
+- Next target: `M9-02`.
+
 - Completed `M8-11`.
 - Added `cnxt/examples/ownership/interface-counter.cn` as the end-to-end
   interface/class sample for unique ownership with no user-written
