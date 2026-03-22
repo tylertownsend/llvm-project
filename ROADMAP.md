@@ -138,7 +138,7 @@ Deliverables:
   (object reference + witness metadata) instead of raw abstract-class objects.
 - [x] M8-05b Allow interface-valued locals, params, returns, and concrete to
   interface bindings against the borrowed carrier representation.
-- [ ] M8-06 Implement CodeGen lowering for dynamic interface dispatch calls.
+- [x] M8-06 Implement CodeGen lowering for dynamic interface dispatch calls.
 - [ ] M8-07 Integrate ownership handles with interface values
   (`unique<Interface>`, `shared<Interface>` behavior rules).
 - [ ] M8-08 Add focused diagnostics for missing implementations, invalid
@@ -192,6 +192,42 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M8-06
+
+- Completed item: lower calls on borrowed cNxt interface values into working
+  dynamic dispatch codegen.
+- What changed:
+  - updated `clang/lib/Frontend/InitPreprocessor.cpp` so
+    `__cnxt_iface_borrowed<T>` stores the interface-view pointer for concrete
+    bindings and constrains its converting constructor to actual implementing
+    types instead of accidentally capturing carrier copies.
+  - taught `clang/lib/Sema/SemaDeclCXX.cpp` to treat cNxt `implements`
+    interface bases as public when no access specifier is written, which makes
+    interface-view pointer recovery legal without exposing C++ inheritance
+    syntax in user code.
+  - taught `clang/lib/Sema/SemaExprMember.cpp` to recover an interface pointer
+    from the borrowed carrier during member lookup, so `view.next()` becomes an
+    internal interface call expression and lowers through Clang's existing
+    virtual-call codegen path.
+  - added `clang/test/CodeGenCXX/cnxt-interface-dispatch.cpp` to lock in the
+    resulting LLVM IR shape for borrowed interface dispatch.
+- Follow-up notes:
+  - dynamic dispatch currently reuses the underlying C++ interface vtable after
+    carrier recovery; the witness slot remains reserved but is not yet the
+    active dispatch source.
+  - this is sufficient for borrowed interface calls, but ownership-handle
+    semantics and any future witness-only ABI tightening still belong to later
+    milestones.
+- What is now unblocked:
+  - M8-07 can define `unique<Interface>` / `shared<Interface>` semantics on
+    top of an interface call path that already executes correctly.
+  - M8-10 can broaden regression coverage across parser, sema, and codegen
+    now that borrowed interface dispatch has a concrete lowered form.
+- Direction check:
+  - roadmap remains directionally correct; ownership integration is the next
+    highest-priority step because ordinary borrowed interface programming now
+    parses, type-checks, binds, and dispatches successfully.
 
 ### 2026-03-21 - M8-05b
 

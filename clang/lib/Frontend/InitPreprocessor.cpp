@@ -129,9 +129,12 @@ static void AddImplicitCNxtPrelude(MacroBuilder &Builder) {
   Builder.append("  const __cnxt_iface_witness<T> *Witness = nullptr;");
   Builder.append("public:");
   Builder.append("  __cnxt_iface_borrowed() = default;");
-  Builder.append("  template <typename U>");
+  Builder.append("  template <typename U,");
+  Builder.append("            typename = decltype(static_cast<T *>(");
+  Builder.append("                static_cast<U *>(nullptr)))>");
   Builder.append("  __cnxt_iface_borrowed(U &RawObject)");
-  Builder.append("      : Object(static_cast<void *>(&RawObject)), Witness(nullptr) {}");
+  Builder.append("      : Object(static_cast<void *>(static_cast<T *>(&RawObject))),");
+  Builder.append("        Witness(nullptr) {}");
   Builder.append("  __cnxt_iface_borrowed(T &RawObject)");
   Builder.append("      : Object(static_cast<void *>(&RawObject)), Witness(nullptr) {}");
   Builder.append("  __cnxt_iface_borrowed(void *RawObject,");

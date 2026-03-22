@@ -1206,6 +1206,59 @@ static bool isPointerToRecordType(QualType T) {
   return false;
 }
 
+static QualType getCNxtBorrowedInterfaceType(Sema &S, QualType Ty) {
+  if (!S.getLangOpts().CNxt || Ty.isNull())
+    return QualType();
+
+  const auto *RT = Ty.getCanonicalType().getTypePtr()->getAs<RecordType>();
+  if (!RT)
+    return QualType();
+
+  const auto *Spec =
+      dyn_cast<ClassTemplateSpecializationDecl>(RT->getDecl());
+  if (!Spec || Spec->getName() != "__cnxt_iface_borrowed" ||
+      Spec->getTemplateArgs().size() != 1)
+    return QualType();
+
+  const TemplateArgument &Arg = Spec->getTemplateArgs()[0];
+  if (Arg.getKind() != TemplateArgument::Type)
+    return QualType();
+
+  return Arg.getAsType();
+}
+
+static ExprResult buildCNxtInterfaceDispatchBase(Sema &S, Expr *BaseExpr,
+                                                 QualType BaseType,
+                                                 SourceLocation OpLoc) {
+  QualType InterfaceTy = getCNxtBorrowedInterfaceType(S, BaseType);
+  if (InterfaceTy.isNull())
+    return ExprEmpty();
+
+  CXXScopeSpec EmptySS;
+  IdentifierInfo &ObjectII = S.Context.Idents.get("__object");
+  DeclarationNameInfo ObjectNameInfo(&ObjectII, OpLoc);
+  ExprResult ObjectRef = S.BuildMemberReferenceExpr(
+      BaseExpr, BaseType, OpLoc, /*IsArrow=*/false, EmptySS,
+      /*TemplateKWLoc=*/SourceLocation(),
+      /*FirstQualifierInScope=*/nullptr, ObjectNameInfo,
+      /*TemplateArgs=*/nullptr, /*S=*/nullptr,
+      /*ExtraArgs=*/nullptr);
+  if (ObjectRef.isInvalid())
+    return ExprError();
+
+  ExprResult ObjectCall = S.BuildCallToMemberFunction(
+      /*S=*/nullptr, ObjectRef.get(), OpLoc, MultiExprArg(),
+      /*RParenLoc=*/OpLoc, /*ExecConfig=*/nullptr, /*IsExecConfig=*/false,
+      /*AllowRecovery=*/false);
+  if (ObjectCall.isInvalid())
+    return ExprError();
+
+  QualType InterfacePtrTy = S.Context.getPointerType(
+      S.Context.getQualifiedType(InterfaceTy.getUnqualifiedType(),
+                                 BaseType.getQualifiers()));
+  return S.ImpCastExprToType(ObjectCall.get(), InterfacePtrTy, CK_BitCast);
+}
+
 ExprResult
 Sema::PerformMemberExprBaseConversion(Expr *Base, bool IsArrow) {
   if (IsArrow && !Base->getType()->isFunctionType())
@@ -1296,6 +1349,19 @@ static ExprResult LookupMemberExpr(Sema &S, LookupResult &R,
     if (LookupMemberExprInRecord(S, R, BaseExpr.get(), BaseType, OpLoc, IsArrow,
                                  SS, HasTemplateArgs, TemplateKWLoc))
       return ExprError();
+
+    if (R.empty()) {
+      ExprResult InterfaceBase =
+          buildCNxtInterfaceDispatchBase(S, BaseExpr.get(), BaseType, OpLoc);
+      if (InterfaceBase.isInvalid())
+        return ExprError();
+      if (InterfaceBase.isUsable()) {
+        BaseExpr = InterfaceBase;
+        IsArrow = true;
+        return LookupMemberExpr(S, R, BaseExpr, IsArrow, OpLoc, SS,
+                                ObjCImpDecl, HasTemplateArgs, TemplateKWLoc);
+      }
+    }
 
     // Returning valid-but-null is how we indicate to the caller that
     // the lookup result was filled in. If typo correction was attempted and

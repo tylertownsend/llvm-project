@@ -2,6 +2,19 @@
 
 ## 2026-03-21
 
+- Completed `M8-06`.
+- Recovered interface pointers from `__cnxt_iface_borrowed<T>` during member
+  lookup so borrowed interface calls like `view.next()` lower through normal
+  virtual-call codegen.
+- Made cNxt `implements` interface bases public by default and tightened the
+  carrier converting constructor so it only accepts actual implementing types.
+- Added regression coverage in:
+  - `clang/test/CodeGenCXX/cnxt-interface-dispatch.cpp`
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/CodeGenCXX/cnxt-interface-dispatch.cpp clang/test/SemaCXX/cnxt-interface-bindings.cpp clang/test/SemaCXX/cnxt-interface-conformance.cpp clang/test/SemaCXX/cnxt-interface-carrier.cpp clang/test/Preprocessor/cnxt-prelude.c clang/test/Parser/cnxt-implements.cpp clang/test/Parser/cnxt-interface-decls.cpp`
+  - `git diff --check`
+- Next target: `M8-07`.
 - Completed `M8-05b`.
 - Rewrote cNxt interface-valued declarations in `SemaType.cpp` onto
   `__cnxt_iface_borrowed<Interface>` for locals, globals, parameters, and

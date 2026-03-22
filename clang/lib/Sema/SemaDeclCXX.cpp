@@ -2848,8 +2848,9 @@ CXXBaseSpecifier *Sema::CheckBaseSpecifier(CXXRecordDecl *Class,
   }
 
   // In HLSL, unspecified class access is public rather than private.
-  if (getLangOpts().HLSL && Class->getTagKind() == TagTypeKind::Class &&
-      Access == AS_none)
+  if (((getLangOpts().HLSL) ||
+       (getLangOpts().CNxt && BaseDecl && BaseDecl->isInterface())) &&
+      Class->getTagKind() == TagTypeKind::Class && Access == AS_none)
     Access = AS_public;
 
   // Create the base specifier.
