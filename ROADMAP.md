@@ -50,7 +50,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M8-02 through M8-11
 - [x] M9-01 through M9-03
 - [x] M9-04
-- [ ] M9-05 through M9-08
+- [x] M9-05
+- [ ] M9-06 through M9-08
 - [ ] M10-01 through M10-06
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
@@ -165,7 +166,7 @@ Deliverables:
 - [x] M9-03 Add compiler-generated ABI thunk support for exporting/importing
   cNxt functions through C ABI without user-written glue wrappers.
 - [x] M9-04 Add ownership-handle marshalling rules across ABI thunks.
-- [ ] M9-05 Enforce raw-pointer ban in safe modules with lint + compiler
+- [x] M9-05 Enforce raw-pointer ban in safe modules with lint + compiler
   diagnostics aligned to `unsafe extern` policy.
 - [ ] M9-06 Add mixed-language interoperability tests validating generated thunk
   paths for cNxt <-> C/C++ calls.
@@ -223,6 +224,38 @@ Deliverables:
   - roadmap remains directionally correct; the next risk is enforcing the
     boundary consistently so safe modules do not drift back toward raw-pointer
     spelling.
+
+### 2026-03-21 - M9-05
+
+- Completed item: align raw-pointer diagnostics on safe cNxt modules with the
+  `unsafe extern "C"` policy, including the compiler-managed C ABI surface.
+- What changed:
+  - taught the cNxt raw-pointer and ownership-escape diagnostics to recognize
+    `cnxt_import_c` / `cnxt_export_c` as ownership-handle ABI surfaces and to
+    emit a dedicated note explaining that raw-pointer FFI still belongs under
+    `unsafe extern "C"`.
+  - extended `clang/test/Parser/cnxt-ffi-raw-pointers.cpp` so compiler-managed
+    C symbol annotations are covered by the same raw-pointer ban as the rest of
+    safe cNxt.
+  - added `clang/test/SemaCXX/cnxt-c-abi-pointer-guidance.cpp` to lock in the
+    new guidance for raw-pointer signatures and ownership-handle escape
+    attempts on `cnxt_import_c` / `cnxt_export_c`.
+  - updated `clang/test/SemaCXX/cnxt-pointer-guidance-fixits.cpp` so the
+    existing `unsafe extern "C"` fix-it coverage matches the current error /
+    note emission order.
+- Follow-up notes:
+  - compiler-managed C symbol annotations now fail with policy-specific notes
+    instead of a generic raw-pointer rejection, but they still do not auto-fix
+    to `unsafe extern "C"` because that rewrite would need to replace a user
+    chosen annotation surface rather than insert one keyword.
+- What is now unblocked:
+  - M9-06 can validate mixed-language thunk paths with the safe/unsafe boundary
+    diagnostics already aligned to the intended interop model.
+  - M9-07 can document migration with a clearer distinction between
+    ownership-handle C symbols and raw-pointer FFI edges.
+- Direction check:
+  - roadmap remains directionally correct; the next meaningful step is proving
+    the generated symbol surface end-to-end in mixed-language tests.
 
 ### 2026-03-21 - M9-03
 

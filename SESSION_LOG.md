@@ -2,6 +2,22 @@
 
 ## 2026-03-21
 
+- Completed `M9-05`.
+- Aligned cNxt raw-pointer diagnostics so `cnxt_import_c` / `cnxt_export_c`
+  are explicitly described as ownership-handle ABI surfaces, with guidance
+  that raw-pointer FFI still belongs under `unsafe extern "C"`.
+- Added parser coverage in `clang/test/Parser/cnxt-ffi-raw-pointers.cpp` and a
+  focused sema guidance test in
+  `clang/test/SemaCXX/cnxt-c-abi-pointer-guidance.cpp`.
+- Updated `clang/test/SemaCXX/cnxt-pointer-guidance-fixits.cpp` so the
+  existing `unsafe extern "C"` fix-it coverage tracks the current diagnostic
+  ordering.
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/Parser/cnxt-ffi-raw-pointers.cpp clang/test/SemaCXX/cnxt-c-abi-pointer-guidance.cpp clang/test/SemaCXX/cnxt-pointer-guidance-fixits.cpp clang/test/SemaCXX/cnxt-ownership-escapes.cpp`
+  - `git diff --check`
+- Next target: `M9-06`.
+
 - Completed `M9-04`.
 - Added ownership-handle marshalling rules to
   `cnxt/specs/cnxt-ffi-boundary.md`, defining how `unique/shared/weak`

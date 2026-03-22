@@ -7493,6 +7493,39 @@ static bool hasParsedAttr(Scope *S, const Declarator &PD,
          PD.getDeclarationAttributes().hasAttribute(Kind);
 }
 
+static bool isCNxtCABIParsedAnnotate(const ParsedAttr &AL) {
+  if (AL.getParsedKind() != ParsedAttr::AT_Annotate || AL.getNumArgs() != 1 ||
+      !AL.isArgExpr(0))
+    return false;
+
+  const auto *SL =
+      dyn_cast<StringLiteral>(AL.getArgAsExpr(0)->IgnoreParenImpCasts());
+  if (!SL)
+    return false;
+
+  return SL->getString() == "cnxt_export_c" ||
+         SL->getString() == "cnxt_import_c";
+}
+
+static bool hasCNxtCABIParsedAttr(const Declarator &D) {
+  auto HasMatchingAttr = [](const ParsedAttributesView &Attrs) {
+    return llvm::any_of(Attrs, [](const ParsedAttr &AL) {
+      return isCNxtCABIParsedAnnotate(AL);
+    });
+  };
+
+  if (HasMatchingAttr(D.getDeclSpec().getAttributes()))
+    return true;
+
+  for (unsigned I = 0, E = D.getNumTypeObjects(); I != E; ++I) {
+    if (HasMatchingAttr(D.getTypeObject(I).getAttrs()))
+      return true;
+  }
+
+  return HasMatchingAttr(D.getAttributes()) ||
+         HasMatchingAttr(D.getDeclarationAttributes());
+}
+
 bool Sema::adjustContextForLocalExternDecl(DeclContext *&DC) {
   if (!DC->isFunctionOrMethod())
     return false;
@@ -10282,20 +10315,6 @@ Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
         Context, CNxtExternLinkageAnnotation, nullptr, 0,
         SourceRange(D.getDeclSpec().getStorageClassSpecLoc())));
 
-  if (getLangOpts().CNxtNoRawOwningPointers &&
-      !getSourceManager().isInSystemHeader(NewFD->getLocation()) &&
-      !isCNxtUnsafeExternFunction(NewFD) &&
-      containsCNxtRawPointerType(NewFD->getType())) {
-    auto DB = Diag(NewFD->getLocation(), diag::err_cnxt_unsupported_declaration)
-              << "raw pointer function signatures outside unsafe FFI boundaries";
-    maybeAddCNxtUnsafeExternFixIt(
-        DB, NewFD, D.getDeclSpec().getStorageClassSpecLoc());
-    emitCNxtOwnershipGuidance(*this, NewFD->getLocation());
-    emitCNxtUnsafeExternGuidance(*this, NewFD->getLocation());
-    D.setInvalidType();
-    NewFD->setInvalidDecl();
-  }
-
   if (getLangOpts().CPlusPlus) {
     // The rules for implicit inlines changed in C++20 for methods and friends
     // with an in-class definition (when such a definition is not attached to
@@ -10859,6 +10878,24 @@ Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
 
   // Handle attributes.
   ProcessDeclAttributes(S, NewFD, D);
+  if (getLangOpts().CNxtNoRawOwningPointers &&
+      !getSourceManager().isInSystemHeader(NewFD->getLocation()) &&
+      !isCNxtUnsafeExternFunction(NewFD) &&
+      containsCNxtRawPointerType(NewFD->getType())) {
+    {
+      auto DB =
+          Diag(NewFD->getLocation(), diag::err_cnxt_unsupported_declaration)
+          << "raw pointer function signatures outside unsafe FFI boundaries";
+      maybeAddCNxtUnsafeExternFixIt(
+          DB, NewFD, D.getDeclSpec().getStorageClassSpecLoc());
+    }
+    if (hasCNxtCABIParsedAttr(D))
+      Diag(NewFD->getLocation(), diag::note_cnxt_c_abi_preserves_handle_surface);
+    emitCNxtOwnershipGuidance(*this, NewFD->getLocation());
+    emitCNxtUnsafeExternGuidance(*this, NewFD->getLocation());
+    D.setInvalidType();
+    NewFD->setInvalidDecl();
+  }
   maybeApplyCNxtCABIAnnotation(*this, NewFD);
   const auto *NewTVA = NewFD->getAttr<TargetVersionAttr>();
   if (Context.getTargetInfo().getTriple().isAArch64() && NewTVA &&

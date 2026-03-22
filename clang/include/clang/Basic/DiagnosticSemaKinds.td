@@ -235,6 +235,8 @@ def note_cnxt_prefer_ownership_surfaces : Note<
   "for cNxt-owned heap values, prefer 'unique<T>' with 'make<T>(...)'; use 'share(...)' when shared ownership is required">;
 def note_cnxt_use_unsafe_extern : Note<
   "use 'unsafe extern \"C\"' when a raw-pointer FFI boundary is required">;
+def note_cnxt_c_abi_preserves_handle_surface : Note<
+  "'cnxt_import_c' and 'cnxt_export_c' preserve ownership-handle ABI surfaces; use 'unsafe extern \"C\"' for raw-pointer FFI">;
 def note_cnxt_prefer_handle_flow : Note<
   "prefer passing or moving ownership handles directly; use 'share(...)' to widen instead of extracting raw pointers">;
 def err_cnxt_illegal_ownership_conversion : Error<

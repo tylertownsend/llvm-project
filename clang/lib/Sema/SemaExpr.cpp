@@ -9724,6 +9724,10 @@ static constexpr llvm::StringLiteral CNxtUnsafeExternAnnotation =
     "cnxt_unsafe_extern";
 static constexpr llvm::StringLiteral CNxtExternLinkageAnnotation =
     "cnxt_extern_linkage";
+static constexpr llvm::StringLiteral CNxtExportCAnnotation =
+    "cnxt_export_c";
+static constexpr llvm::StringLiteral CNxtImportCAnnotation =
+    "cnxt_import_c";
 
 static bool isCNxtUnsafeExternFunction(const FunctionDecl *FD) {
   if (!FD || !FD->isExternC())
@@ -9749,8 +9753,29 @@ static SourceLocation getCNxtExternLoc(const FunctionDecl *FD) {
   return SourceLocation();
 }
 
+static bool hasCNxtCABIAnnotation(const FunctionDecl *FD) {
+  if (!FD)
+    return false;
+
+  for (const auto *AA : FD->specific_attrs<AnnotateAttr>()) {
+    if (AA->getAnnotation() == CNxtExportCAnnotation ||
+        AA->getAnnotation() == CNxtImportCAnnotation)
+      return true;
+  }
+
+  return false;
+}
+
 static void emitCNxtUnsafeExternGuidance(Sema &SemaRef, SourceLocation Loc) {
   SemaRef.Diag(Loc, diag::note_cnxt_use_unsafe_extern);
+}
+
+static void emitCNxtCABIHandleGuidance(Sema &SemaRef, const FunctionDecl *FD,
+                                       SourceLocation Loc) {
+  if (!hasCNxtCABIAnnotation(FD))
+    return;
+
+  SemaRef.Diag(Loc, diag::note_cnxt_c_abi_preserves_handle_surface);
 }
 
 static void maybeAddCNxtUnsafeExternFixIt(SemaBase::SemaDiagnosticBuilder &DB,
@@ -9803,11 +9828,14 @@ static bool diagnoseCNxtOwnershipRawEscape(Sema &SemaRef,
         BaseKind == CNxtOwnershipKind::Shared)) ||
       (MemberName == "release" && BaseKind == CNxtOwnershipKind::Unique)) {
     const FunctionDecl *FD = SemaRef.getCurFunctionDecl(/*AllowLambda=*/true);
-    auto DB =
-        SemaRef.Diag(ME->getMemberLoc(), diag::err_cnxt_ownership_raw_escape)
-        << MemberName;
-    maybeAddCNxtUnsafeExternFixIt(DB, FD);
+    {
+      auto DB =
+          SemaRef.Diag(ME->getMemberLoc(), diag::err_cnxt_ownership_raw_escape)
+          << MemberName;
+      maybeAddCNxtUnsafeExternFixIt(DB, FD);
+    }
     SemaRef.Diag(ME->getMemberLoc(), diag::note_cnxt_prefer_handle_flow);
+    emitCNxtCABIHandleGuidance(SemaRef, FD, ME->getMemberLoc());
     emitCNxtUnsafeExternGuidance(SemaRef, ME->getMemberLoc());
     return true;
   }
