@@ -2,6 +2,20 @@
 
 ## 2026-03-21
 
+- Completed `M9-04`.
+- Added ownership-handle marshalling rules to
+  `cnxt/specs/cnxt-ffi-boundary.md`, defining how `unique/shared/weak`
+  preserve move/copy/weak-observer semantics across `cnxt_export_c` /
+  `cnxt_import_c` instead of being rewritten into raw-pointer adapters.
+- Added `clang/test/CodeGenCXX/cnxt-c-abi-ownership-marshalling.cpp` to cover
+  exported handle signatures, imported handle calls, unique move transfer,
+  shared/weak copy semantics, and runtime-backed `weak.lock()` on the
+  compiler-managed C symbol surface.
+- Validation:
+  - `build/bin/llvm-lit -sv clang/test/CodeGenCXX/cnxt-c-abi-ownership-marshalling.cpp clang/test/CodeGenCXX/cnxt-c-abi-thunks.cpp clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp clang/test/CodeGenCXX/cnxt-ownership-interop.cpp`
+  - `git diff --check`
+- Next target: `M9-05`.
+
 - Completed `M9-03`.
 - Added `cnxt_export_c` / `cnxt_import_c` to the injected cNxt prelude and
   taught `SemaDecl.cpp` to lower those annotations on free functions to

@@ -49,7 +49,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M8-01
 - [x] M8-02 through M8-11
 - [x] M9-01 through M9-03
-- [ ] M9-04 through M9-08
+- [x] M9-04
+- [ ] M9-05 through M9-08
 - [ ] M10-01 through M10-06
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
@@ -163,7 +164,7 @@ Deliverables:
   output/logging) so hello-world style programs need no manual extern imports.
 - [x] M9-03 Add compiler-generated ABI thunk support for exporting/importing
   cNxt functions through C ABI without user-written glue wrappers.
-- [ ] M9-04 Add ownership-handle marshalling rules across ABI thunks.
+- [x] M9-04 Add ownership-handle marshalling rules across ABI thunks.
 - [ ] M9-05 Enforce raw-pointer ban in safe modules with lint + compiler
   diagnostics aligned to `unsafe extern` policy.
 - [ ] M9-06 Add mixed-language interoperability tests validating generated thunk
@@ -193,6 +194,35 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M9-04
+
+- Completed item: define ownership-handle marshalling rules across the
+  compiler-managed `cnxt_export_c` / `cnxt_import_c` surface.
+- What changed:
+  - extended `cnxt/specs/cnxt-ffi-boundary.md` with an explicit marshalling
+    contract for `unique<T>`, `shared<T>`, and `weak<T>` across compiler-owned
+    C symbol import/export, including the rule that this surface preserves
+    ownership-handle semantics instead of rewriting them into raw-pointer
+    adapters.
+  - added `clang/test/CodeGenCXX/cnxt-c-abi-ownership-marshalling.cpp` to lock
+    in exported handle signatures, imported handle calls, unique move transfer,
+    shared/weak copy semantics, and runtime-backed weak-lock behavior through
+    the compiler-managed symbol surface.
+- Follow-up notes:
+  - this milestone documents that compiler-managed C symbols are still an
+    ownership-handle ABI, not a plain-C source surface; raw-pointer C FFI
+    remains the role of `unsafe extern "C"`.
+- What is now unblocked:
+  - M9-05 can align diagnostics and linting around a clearer distinction
+    between ownership-handle interop and raw-pointer FFI.
+  - M9-06 mixed-language tests can validate the generated symbol surface
+    against an explicit handle-marshalling contract instead of inferred
+    behavior.
+- Direction check:
+  - roadmap remains directionally correct; the next risk is enforcing the
+    boundary consistently so safe modules do not drift back toward raw-pointer
+    spelling.
 
 ### 2026-03-21 - M9-03
 

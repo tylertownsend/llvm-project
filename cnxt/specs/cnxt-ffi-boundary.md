@@ -198,6 +198,62 @@ should reduce how often users need to write it directly:
 - M9-05 aligns linting/diagnostics with this boundary as the enforced policy
 - M9-07 documents migration away from ad hoc manual `extern "C"` patterns
 
+## Ownership-Handle Marshalling Across Compiler-Managed C Symbols
+
+Milestones M9-03 and M9-04 add a compiler-managed symbol surface for free
+functions:
+
+- `cnxt_export_c` on a definition exports the function under an unmangled C
+  symbol name
+- `cnxt_import_c` on a declaration imports that same unmangled C symbol name
+
+This surface does not turn ownership handles into raw pointers. Instead, the
+compiler preserves the ownership-handle ABI that cNxt already uses for
+`unique<T>`, `shared<T>`, and `weak<T>`.
+
+### Marshalling Contract
+
+- `unique<T>` crosses the boundary as an owned move-only handle value:
+  - exporting `cnxt_export_c unique<T> f(unique<T>)` keeps the cNxt ownership
+    surface at the boundary; no raw-pointer shim is introduced.
+  - importing `cnxt_import_c unique<T> g(unique<T>)` lowers a call as a move of
+    the caller's handle into the ABI call, and the callee becomes responsible
+    for the received ownership.
+- `shared<T>` crosses the boundary as a shared-ownership handle value:
+  - importing or exporting a `shared<T>` parameter/value preserves reference
+    counting semantics.
+  - a cNxt caller still performs the same copy/destroy operations it would for
+    any other `shared<T>` call site; the compiler-managed symbol name does not
+    bypass those rules.
+- `weak<T>` crosses the boundary as a weak observer handle value:
+  - imported/exported `weak<T>` parameters preserve observer semantics.
+  - `lock()` and `expired()` remain runtime-backed operations on the cNxt side
+    of the boundary.
+
+### Boundary Shape
+
+- compiler-managed C symbols keep ownership vocabulary in the source signature;
+  user code does not write raw-pointer adapters just to pass ownership handles
+- the generated symbol name is C-friendly, but the value contract remains the
+  cNxt ownership-handle ABI defined by the ownership runtime baseline
+- this surface is intended for cNxt-to-cNxt and cNxt-to-C++ interop where both
+  sides understand the handle layout/contract
+- plain C source still cannot author `unique<T>`, `shared<T>`, or `weak<T>`
+  directly; raw-pointer C APIs remain the domain of `unsafe extern "C"`
+
+### Audit Rule
+
+Choose the boundary based on what is being exchanged:
+
+- use `cnxt_export_c` / `cnxt_import_c` when the boundary should remain in
+  ownership-handle terms
+- use `unsafe extern "C"` when the boundary genuinely needs raw addresses or
+  pointer-centric lifetime contracts
+
+The compiler should not silently rewrite ownership-handle signatures into raw
+pointer signatures, because that would hide the exact ownership contract the
+language is trying to preserve.
+
 ## Acceptance Criteria for M9-01
 
 - this spec is the source of truth for where raw pointers are legal in current
