@@ -241,3 +241,15 @@
   - `build/bin/llvm-lit -sv clang/test/CodeGenCXX/cnxt-ownership-cleanup-paths.cpp clang/test/CodeGenCXX/cnxt-unique-cleanup.cpp clang/test/CodeGenCXX/cnxt-construction.cpp clang/test/CodeGenCXX/cnxt-share-widening.cpp clang/test/CodeGenCXX/cnxt-shared-refcount.cpp`
   - `git diff --check`
 - Next target: `M7-10`.
+- Completed `M7-10`.
+- Added `cnxt/examples/ownership/class-method.cn`, which constructs a class
+  instance, calls a method with ordinary class syntax, then creates an owned
+  `unique<Counter>` through `make<Counter>(...)` and lets scope exit clean it
+  up with no raw-pointer syntax or glue file.
+- Updated `cnxt/README.md` and `clang/test/Driver/cnxt-ownership-example.c` so
+  the documented and tested end-to-end flow now builds and runs that no-glue
+  class example against the ownership runtime.
+- Validation:
+  - `build/bin/llvm-lit -sv clang/test/Driver/cnxt-ownership-example.c`
+  - `git diff --check`
+- Next target: `M8-01`.

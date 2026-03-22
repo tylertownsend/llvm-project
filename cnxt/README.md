@@ -194,7 +194,7 @@ Ownership runtime skeleton sources:
 `cnxt/runtime/ownership/`.
 
 Current end-to-end ownership example:
-`cnxt/examples/ownership/unique-heap.cn`.
+`cnxt/examples/ownership/class-method.cn`.
 
 Build and run the ownership example on this branch:
 
@@ -205,18 +205,18 @@ build/bin/clang++ -shared -fPIC -std=c++17 \
   -o /tmp/libcnxt_ownership_rt.so
 
 build/bin/clang++ -x cnxt -std=cnxt1 \
-  cnxt/examples/ownership/unique-heap.cn \
+  cnxt/examples/ownership/class-method.cn \
   -fcnxt-ownership-runtime=/tmp/libcnxt_ownership_rt.so \
-  -o /tmp/cnxt-unique-heap
+  -o /tmp/cnxt-class-method
 
-LD_LIBRARY_PATH=/tmp /tmp/cnxt-unique-heap
+LD_LIBRARY_PATH=/tmp /tmp/cnxt-class-method
 ```
 
-This sample uses the compiler-owned `make<T>(...)` construction surface
-injected by the cNxt prelude, so the program needs no user-written
-`extern "C"` declarations or raw-pointer allocation syntax. Ownership
-conversions and richer interface/class construction are still tracked in later
-Milestone 7 and 8 work.
+This sample uses the compiler-owned `make<T>(...)` construction surface to
+allocate an owned class instance, calls a method with ordinary class syntax,
+and relies on scope-exit cleanup for the owned heap object. The program needs
+no user-written `extern "C"` declarations, no raw-pointer allocation syntax,
+and no glue file. Interface-specific surface work remains in Milestone 8.
 
 IDE CI integration baseline:
 `cnxt/specs/cnxt-ide-ci.md`.

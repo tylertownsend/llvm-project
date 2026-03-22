@@ -25,6 +25,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-07 Tighten pointer policy from "extern C carveout" to explicit unsafe/FFI boundaries.
 - [x] M7-08 Add cNxt diagnostics + fix-its that rewrite pointer-centric usage into ownership-centric forms where safe/possible.
 - [x] M7-09 Add control-flow cleanup tests proving deterministic deallocation semantics.
+- [x] M7-10 Add end-to-end example: class instance construction, method call, and scope-exit cleanup with no raw-pointer syntax and no glue file.
 
 ## Deliverable Status
 
@@ -43,7 +44,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-07
 - [x] M7-08
 - [x] M7-09
-- [ ] M7-10
+- [x] M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
 - [ ] M10-01 through M10-06
@@ -114,7 +115,7 @@ Deliverables:
   into ownership-centric forms where safe/possible.
 - [x] M7-09 Add control-flow cleanup tests (early return/branch paths) proving
   deterministic deallocation semantics.
-- [ ] M7-10 Add end-to-end example: class instance construction, method call,
+- [x] M7-10 Add end-to-end example: class instance construction, method call,
   and scope-exit cleanup with no raw-pointer syntax and no glue file.
 
 ### Milestone 8 - Interface/Class Model (No C++ Inheritance Syntax)
@@ -187,6 +188,34 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M7-10
+
+- Completed item: add the Milestone 7 end-to-end no-glue sample showing class
+  construction, method use, and scope-exit cleanup through the compiler-owned
+  ownership surface.
+- What changed:
+  - added `cnxt/examples/ownership/class-method.cn`, a runtime-backed example
+    that constructs a stack `Counter`, calls `seed.next()`, then constructs an
+    owned `unique<Counter>` via `make<Counter>(...)` and relies on scope-exit
+    cleanup for the heap-owned instance.
+  - updated `cnxt/README.md` so the documented build/run commands now use the
+    new class-method example and explicitly call out that the sample requires
+    no raw-pointer allocation syntax, no user-written `extern "C"` declarations,
+    and no glue file.
+  - repointed the existing driver smoke test to the new example so the branch
+    keeps an executable end-to-end proof of the no-glue ownership flow.
+- Follow-up notes:
+  - Milestone 7 is now complete; the next major gap is Milestone 8's
+    interface/class model, which still needs a cNxt-native implementation
+    syntax beyond plain C++-style structs and methods.
+- What is now unblocked:
+  - Milestone 8 work can build on a stable ownership example that already
+    exercises construction, method use, runtime linking, and automatic cleanup
+    without adapter code.
+- Direction check:
+  - roadmap remains directionally correct; Milestone 7 is complete and the next
+    highest-priority unblocked deliverable is `M8-01`.
 
 ### 2026-03-21 - M7-09
 

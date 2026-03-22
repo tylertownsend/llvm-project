@@ -1,0 +1,14 @@
+struct Counter {
+  int value;
+
+  Counter(int V) : value(V) {}
+  ~Counter() {}
+
+  int next() const { return value + 1; }
+};
+
+int main() {
+  Counter seed(41);
+  unique<Counter> owner = make<Counter>(seed.next());
+  return 0;
+}
