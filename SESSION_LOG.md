@@ -150,3 +150,16 @@
   - `build/bin/llvm-lit -sv clang/test/Parser/cnxt-construction.cpp clang/test/SemaCXX/cnxt-construction.cpp clang/test/Parser/cnxt-ownership.cpp clang/test/Preprocessor/cnxt-prelude.c`
   - `build/bin/llvm-lit -sv clang/test/CodeGenCXX/cnxt-unique-cleanup.cpp clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp`
 - Next target: `M7-04`.
+- Completed `M7-04`.
+- Replaced the injected prelude's declaration-only `make<T>(...)` with a real
+  runtime-backed definition that allocates via `__cnxt_rt_own_v1_alloc`,
+  performs in-place construction, and returns `unique<T>`.
+- Added a system-header-only placement `new` helper plus an
+  `__is_complete_type(T)` guard so valid construction lowers cleanly while
+  incomplete payloads do not emit stray `sizeof(T)` diagnostics.
+- Updated `cnxt/examples/ownership/unique-heap.cn` and `cnxt/README.md` to use
+  `make<T>(...)`, and added `clang/test/CodeGenCXX/cnxt-construction.cpp`.
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/CodeGenCXX/cnxt-construction.cpp clang/test/SemaCXX/cnxt-construction.cpp clang/test/Parser/cnxt-construction.cpp clang/test/Parser/cnxt-ownership.cpp clang/test/Parser/cnxt-restrictions.cpp clang/test/Preprocessor/cnxt-prelude.c clang/test/Driver/cnxt-ownership-example.c clang/test/CodeGenCXX/cnxt-unique-cleanup.cpp clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp`
+- Next target: `M7-05`.

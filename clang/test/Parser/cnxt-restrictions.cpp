@@ -40,7 +40,7 @@ void reject_new() {
   new int(1); // expected-error {{cNxt does not support 'new' expressions}}
 }
 
-void reject_delete(int *ptr) {
+extern "C" void reject_delete(int *ptr) {
   delete ptr; // expected-error {{cNxt does not support 'delete' expressions}}
 }
 

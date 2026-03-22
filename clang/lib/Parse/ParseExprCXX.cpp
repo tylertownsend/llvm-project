@@ -2880,7 +2880,8 @@ Parser::ParseCXXNewExpression(bool UseGlobal, SourceLocation Start) {
   assert(Tok.is(tok::kw_new) && "expected 'new' token");
   ConsumeToken();   // Consume 'new'
 
-  if (getLangOpts().CNxtManagedMemory)
+  if (getLangOpts().CNxtManagedMemory &&
+      !PP.getSourceManager().isInSystemHeader(Start))
     Diag(Start, diag::err_cnxt_unsupported_feature) << "'new' expressions";
 
   // A '(' now can be a new-placement or the '(' wrapping the type-id in the

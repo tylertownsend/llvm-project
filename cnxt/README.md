@@ -212,10 +212,11 @@ build/bin/clang++ -x cnxt -std=cnxt1 \
 LD_LIBRARY_PATH=/tmp /tmp/cnxt-unique-heap
 ```
 
-This sample is intentionally transitional: it uses the compiler-owned
-`make_unique(value)` helper injected by the cNxt prelude so the program needs
-no user-written `extern "C"` declarations, while richer construction syntax is
-still tracked in Milestone 7.
+This sample uses the compiler-owned `make<T>(...)` construction surface
+injected by the cNxt prelude, so the program needs no user-written
+`extern "C"` declarations or raw-pointer allocation syntax. Ownership
+conversions and richer interface/class construction are still tracked in later
+Milestone 7 and 8 work.
 
 IDE CI integration baseline:
 `cnxt/specs/cnxt-ide-ci.md`.

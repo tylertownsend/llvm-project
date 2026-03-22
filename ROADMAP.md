@@ -19,6 +19,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-01 Specify user-facing construction API (no raw-pointer syntax).
 - [x] M7-02 Parse/type-check construction expressions that return `unique<T>`.
 - [x] M7-03 Reject invalid `make<T>(...)` payload targets in cNxt safe code.
+- [x] M7-04 Lower construction expressions to runtime allocation plus constructor/init calls in CodeGen.
+- [ ] M7-05 Add builtin conversion API for widening ownership without raw-pointer intermediates.
 
 ## Deliverable Status
 
@@ -31,7 +33,9 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-01
 - [x] M7-02
 - [x] M7-03
-- [ ] M7-04 through M7-10
+- [x] M7-04
+- [-] M7-05
+- [ ] M7-06 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
 - [ ] M10-01 through M10-06
@@ -90,9 +94,9 @@ Deliverables:
 - [x] M7-02 Implement parser support for cNxt construction expressions.
 - [x] M7-03 Implement Sema rules so construction expressions type-check to
   `unique<T>` and reject pointer-returning construction in safe code.
-- [ ] M7-04 Lower construction expressions to runtime allocation plus
+- [x] M7-04 Lower construction expressions to runtime allocation plus
   constructor/init calls in CodeGen.
-- [ ] M7-05 Add builtin conversion API for widening ownership
+- [-] M7-05 Add builtin conversion API for widening ownership
   (`share(unique<T>) -> shared<T>`) without raw pointer intermediates.
 - [ ] M7-06 Restrict ownership-handle raw pointer escape operations (such as
   unrestricted `.get()`) to explicit unsafe/FFI contexts.
@@ -175,6 +179,43 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M7-04
+
+- Completed item: lower valid cNxt `make<T>(...)` construction calls to the
+  ownership runtime allocation path plus in-place initialization, with no
+  user-authored glue required.
+- What changed:
+  - replaced the compiler-owned prelude's declaration-only `make<T>(...)`
+    surface with a real injected definition that allocates via
+    `__cnxt_rt_own_v1_alloc`, constructs the payload in place, and returns the
+    resulting `unique<T>`.
+  - added a system-header-only placement `new` helper so the injected prelude
+    can perform in-place construction while ordinary cNxt user code still gets
+    the existing `'new' expressions` rejection.
+  - guarded the prelude `make<T>(...)` body with `__is_complete_type(T)` so
+    invalid incomplete payloads do not emit extra `sizeof(T)` follow-on errors
+    after the intended M7-03 diagnostic.
+  - updated the ownership example and README to use the branch's intended
+    compiler-owned `make<T>(...)` surface instead of the transitional
+    `make_unique(value)` helper.
+  - added `clang/test/CodeGenCXX/cnxt-construction.cpp` and adjusted parser
+    coverage to pin runtime allocation plus payload initialization lowering.
+- Follow-up notes:
+  - cNxt now has an executable heap-construction surface for `unique<T>`, but
+    widening ownership still requires M7-05 so constructed values can move into
+    shared ownership without pointer escape hatches.
+- What is now unblocked:
+  - M7-05 can build `share(unique<T>)` on top of a real runtime-backed
+    construction path instead of a declaration-only placeholder.
+  - M7-09 can add cleanup-path coverage for constructed values now that valid
+    construction calls emit allocation and initialization IR.
+  - M7-10 can use `make<T>(...)` in the end-to-end no-glue sample instead of
+    relying on transitional helper naming.
+- Direction check:
+  - roadmap remains directionally correct; M7-05 is next because ownership
+    widening is the highest-value missing operation after construction becomes
+    executable.
 
 ### 2026-03-21 - M7-03
 
