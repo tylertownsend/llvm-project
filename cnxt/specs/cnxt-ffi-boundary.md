@@ -196,7 +196,8 @@ should reduce how often users need to write it directly:
 - M9-03 adds compiler-generated ABI thunks
 - M9-04 defines handle marshalling rules across those thunks
 - M9-05 aligns linting/diagnostics with this boundary as the enforced policy
-- M9-07 documents migration away from ad hoc manual `extern "C"` patterns
+- M9-07 documents migration away from ad hoc manual `extern "C"` patterns in
+  `cnxt/docs/c-abi-migration.md`
 
 ## Ownership-Handle Marshalling Across Compiler-Managed C Symbols
 

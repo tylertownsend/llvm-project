@@ -52,7 +52,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M9-04
 - [x] M9-05
 - [x] M9-06
-- [ ] M9-07 through M9-08
+- [x] M9-07
+- [ ] M9-08
 - [ ] M10-01 through M10-06
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
@@ -171,7 +172,7 @@ Deliverables:
   diagnostics aligned to `unsafe extern` policy.
 - [x] M9-06 Add mixed-language interoperability tests validating generated thunk
   paths for cNxt <-> C/C++ calls.
-- [ ] M9-07 Add migration guide from legacy manual `extern "C"` patterns to
+- [x] M9-07 Add migration guide from legacy manual `extern "C"` patterns to
   compiler-managed interop boundaries.
 - [ ] M9-08 Update `cnxt new`/starter template so generated apps compile/run
   without glue files or raw-pointer syntax.
@@ -283,6 +284,31 @@ Deliverables:
 - Direction check:
   - roadmap remains directionally correct; the next gap is documentation and
     template cleanup rather than new interop mechanics.
+
+### 2026-03-21 - M9-07
+
+- Completed item: add a migration guide from manual `extern "C"` patterns to
+  compiler-managed cNxt interop boundaries.
+- What changed:
+  - added `cnxt/docs/c-abi-migration.md`, a focused guide that maps older
+    scalar imports, wrapper-style exports, ownership-handle boundaries, and
+    raw-pointer FFI to their preferred modern spellings.
+  - linked the new guide from `cnxt/README.md` so the main branch overview now
+    points readers directly to the migration document.
+  - updated `cnxt/specs/cnxt-ffi-boundary.md` so the policy spec now points to
+    the concrete migration guide for replacing ad hoc linkage patterns.
+- Follow-up notes:
+  - the guide explicitly calls out the current limitation that `cnxt_export_c`
+    exports under the function's own identifier, so wrappers remain necessary
+    if a legacy public symbol name must differ.
+- What is now unblocked:
+  - M9-08 can update starter templates against a documented, preferred interop
+    model instead of inventing its own migration story.
+  - M10 quickstart/release docs can point at the migration guide instead of
+    re-explaining the boundary choices inline.
+- Direction check:
+  - roadmap remains directionally correct; the remaining Milestone 9 work is
+    productizing the no-glue path in generated project templates.
 
 ### 2026-03-21 - M9-03
 

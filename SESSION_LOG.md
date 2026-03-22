@@ -2,6 +2,17 @@
 
 ## 2026-03-21
 
+- Completed `M9-07`.
+- Added `cnxt/docs/c-abi-migration.md`, a migration guide covering when to
+  replace manual `extern "C"` imports/exports with `cnxt_import_c` /
+  `cnxt_export_c` and when to keep `unsafe extern "C"` for raw-pointer FFI.
+- Linked the guide from `cnxt/README.md` and `cnxt/specs/cnxt-ffi-boundary.md`
+  so the branch documentation points at one migration source of truth.
+- Validation:
+  - `build/bin/llvm-lit -sv clang/test/Driver/cnxt-c-abi-mixed-interop.c`
+  - `git diff --check`
+- Next target: `M9-08`.
+
 - Completed `M9-06`.
 - Added `clang/test/Driver/cnxt-c-abi-mixed-interop.c`, a split-file
   build-and-run test that links one cNxt file with separate C and C++
