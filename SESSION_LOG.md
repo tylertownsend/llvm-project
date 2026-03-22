@@ -253,3 +253,11 @@
   - `build/bin/llvm-lit -sv clang/test/Driver/cnxt-ownership-example.c`
   - `git diff --check`
 - Next target: `M8-01`.
+- Completed `M8-01`.
+- Added `cnxt/specs/cnxt-interface-class.md` as the Milestone 8 source of
+  truth for `interface` declarations, `class ... implements ...` syntax,
+  conformance rules, witness-table dispatch, and the explicit deferral of
+  ownership-over-interface behavior to `M8-07`.
+- Validation:
+  - `git diff --check`
+- Next target: `M8-02`.

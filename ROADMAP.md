@@ -26,6 +26,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-08 Add cNxt diagnostics + fix-its that rewrite pointer-centric usage into ownership-centric forms where safe/possible.
 - [x] M7-09 Add control-flow cleanup tests proving deterministic deallocation semantics.
 - [x] M7-10 Add end-to-end example: class instance construction, method call, and scope-exit cleanup with no raw-pointer syntax and no glue file.
+- [x] M8-01 Write `cnxt/specs/cnxt-interface-class.md` with interface/class syntax, conformance rules, and dispatch semantics.
 
 ## Deliverable Status
 
@@ -45,7 +46,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M7-08
 - [x] M7-09
 - [x] M7-10
-- [ ] M8-01 through M8-11
+- [x] M8-01
+- [ ] M8-02 through M8-11
 - [ ] M9-01 through M9-08
 - [ ] M10-01 through M10-06
 - [x] M1-01 through M1-12
@@ -125,7 +127,7 @@ without requiring C++ base clauses or manual ABI glue.
 
 Deliverables:
 
-- [ ] M8-01 Write `cnxt/specs/cnxt-interface-class.md` with interface/class
+- [x] M8-01 Write `cnxt/specs/cnxt-interface-class.md` with interface/class
   syntax, conformance rules, and dispatch semantics.
 - [ ] M8-02 Add parser support for `interface` declarations in cNxt mode.
 - [ ] M8-03 Add parser support for class-to-interface implementation syntax
@@ -188,6 +190,32 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M8-01
+
+- Completed item: write the Milestone 8 source-of-truth spec for cNxt
+  interfaces, classes, explicit conformance, and dynamic dispatch.
+- What changed:
+  - added `cnxt/specs/cnxt-interface-class.md` defining the baseline
+    `interface` surface, `class ... implements ...` spelling, method-matching
+    conformance rules, and compiler-owned witness-table dispatch semantics.
+  - explicitly scoped out interface inheritance, default interface methods,
+    raw vtable exposure, and ownership-handle integration for interface values
+    so follow-on milestones have a stable, narrow contract to implement.
+  - documented the transition expectation that existing struct-based examples
+    are temporary and should converge on the new `interface` / `class` /
+    `implements` spellings as Milestone 8 lands.
+- Follow-up notes:
+  - the spec now fixes the intended language surface, but there is no parser
+    support yet; M8-02 should add `interface` parsing directly from this
+    document.
+- What is now unblocked:
+  - M8-02 can implement `interface` declarations against a stable syntax spec.
+  - M8-03 can add `implements` parsing without reopening surface design.
+  - later M8 sema/codegen work can target a fixed witness-table model.
+- Direction check:
+  - roadmap remains directionally correct; M8-02 is next because parser support
+    is the first implementation step on the now-specified interface surface.
 
 ### 2026-03-21 - M7-10
 
