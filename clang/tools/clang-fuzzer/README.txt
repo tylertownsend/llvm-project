@@ -42,6 +42,28 @@ Example:
 
 
 ===================================
+ Building clang-cnxt-fuzzer
+===================================
+clang-cnxt-fuzzer feeds raw text into Clang as ./test.cn with -x cnxt
+-std=cnxt1 and runs the syntax-only frontend action, so it is useful for
+stressing cNxt parser and semantic analysis paths without code generation.
+
+Build it the same way as clang-fuzzer:
+  ninja clang-cnxt-fuzzer
+
+===========================
+ Running clang-cnxt-fuzzer
+===========================
+  bin/clang-cnxt-fuzzer CORPUS_DIR
+
+The example cNxt corpus lives under corpus_examples/cnxt and covers ownership
+handles, make<T>(...) construction, interface bindings, and unsafe extern "C"
+boundaries.
+
+  bin/clang-cnxt-fuzzer <path to corpus_examples/cnxt> <path to new directory to store corpus findings>
+
+
+===================================
  Building clang-objc-fuzzer
 ===================================
 Within your LLVM build directory, run CMake with the following variable

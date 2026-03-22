@@ -535,3 +535,19 @@
   - `build/bin/llvm-lit -sv clang/test/Parser/cnxt-implements.cpp clang/test/Parser/cnxt-interface-decls.cpp clang/test/Parser/cnxt-restrictions.cpp clang/test/Parser/cnxt-recovery.cpp`
   - `git diff --check`
 - Next target: `M8-04`.
+- Completed `M10-02`.
+- Added `clang-cnxt-fuzzer`, a syntax-only cNxt fuzzer entrypoint backed by a
+  new `HandleCXXSyntaxOnly` helper so raw-text fuzzing can run in
+  `-x cnxt -std=cnxt1` mode without changing the existing C++ fuzzer behavior.
+- Added cNxt corpus seeds under `clang/tools/clang-fuzzer/corpus_examples/cnxt/`
+  covering ownership, construction, interface bindings, and `unsafe extern`
+  boundaries, plus `clang/test/Misc/cnxt-fuzzer-corpus.test` to compile those
+  seeds with `-verify`.
+- Updated `clang/tools/clang-fuzzer/README.txt` with build/run instructions for
+  the new cNxt fuzz target and corpus path.
+- Validation:
+  - `ninja -C build clang-fuzzer clang-cnxt-fuzzer`
+  - `build/bin/llvm-lit -sv clang/test/Misc/cnxt-fuzzer-corpus.test`
+  - `build/bin/clang-cnxt-fuzzer clang/tools/clang-fuzzer/corpus_examples/cnxt/ownership-lifetimes.cn`
+  - `git diff --check`
+- Next target: `M10-03`.

@@ -55,7 +55,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M9-07
 - [x] M9-08
 - [x] M10-01
-- [ ] M10-02 through M10-06
+- [x] M10-02
+- [ ] M10-03 through M10-06
 - [x] M1-01 through M1-12
 - [x] M2-01 through M2-14
 - [x] M3-00 through M3-13
@@ -186,7 +187,7 @@ Deliverables:
 
 - [x] M10-01 Add stress tests for ownership runtime correctness (leak, UAF,
   double-free, weak-lock races where applicable).
-- [ ] M10-02 Add parser/sema fuzz inputs around ownership, construction,
+- [x] M10-02 Add parser/sema fuzz inputs around ownership, construction,
   interface, and `unsafe extern` boundaries.
 - [ ] M10-03 Add performance baselines for ownership operations and dispatch
   overhead versus current branch behavior.
@@ -344,6 +345,37 @@ Deliverables:
   - roadmap remains directionally correct; Milestone 10 can now focus on
     hardening, CI coverage, and release proof rather than missing product-path
     wiring.
+
+### 2026-03-21 - M10-02
+
+- Completed item: add cNxt parser/sema fuzz seed inputs and wire them into the
+  existing Clang fuzzing surface.
+- What changed:
+  - added `clang-cnxt-fuzzer`, a dedicated `clang/tools/clang-fuzzer/`
+    entrypoint that feeds raw text through `./test.cn` in `-x cnxt -std=cnxt1`
+    mode and runs syntax-only analysis instead of object emission.
+  - extended `clang/tools/clang-fuzzer/handle-cxx/` with a syntax-only helper
+    so cNxt parser/sema fuzzing can reuse the existing remapped-input harness
+    without changing the behavior of the existing object-emitting fuzzers.
+  - added `clang/tools/clang-fuzzer/corpus_examples/cnxt/` seed inputs
+    covering ownership handles, `make<T>(...)` construction, interface
+    bindings, and `unsafe extern "C"` raw-pointer boundaries.
+  - added `clang/test/Misc/cnxt-fuzzer-corpus.test` so the corpus files are
+    compiled with `-verify` in normal regression runs, and updated
+    `clang/tools/clang-fuzzer/README.txt` with build/run instructions for the
+    new target.
+- Follow-up notes:
+  - the new corpus is intentionally text-seed based; it hardens parser/sema
+    entry points without introducing a structured cNxt protobuf generator yet.
+- What is now unblocked:
+  - M10-03 performance work can proceed on a branch whose no-glue parser/sema
+    surface now has dedicated fuzz seeds instead of only hand-written unit
+    tests.
+  - M10-04 CI planning can choose whether to build/run `clang-cnxt-fuzzer`
+    directly or only keep the corpus lit backstop in non-sanitized jobs.
+- Direction check:
+  - roadmap remains directionally correct; the next missing release-gate work
+    is performance and CI proof, not parser/sema surface coverage.
 
 ### 2026-03-21 - M10-01
 

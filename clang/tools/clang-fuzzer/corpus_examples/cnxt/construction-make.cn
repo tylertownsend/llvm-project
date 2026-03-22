@@ -1,0 +1,36 @@
+// expected-no-diagnostics
+
+struct Pair {
+  int first;
+  int second;
+};
+
+class Counter {
+public:
+  int value;
+
+  Counter(int Start) : value(Start) {}
+  ~Counter() {}
+
+  int next() {
+    value = value + 1;
+    return value;
+  }
+};
+
+unique<Pair> build_pair() {
+  return make<Pair>(1, 2);
+}
+
+int build_values() {
+  unique<int> zero = make<int>();
+  unique<int> one = make<int>(1);
+  unique<Pair> pair = build_pair();
+  unique<Counter> counter = make<Counter>(41);
+  shared<Counter> shared_counter =
+      share(static_cast<unique<Counter> &&>(counter));
+  (void)zero;
+  (void)one;
+  (void)pair;
+  return shared_counter.use_count();
+}

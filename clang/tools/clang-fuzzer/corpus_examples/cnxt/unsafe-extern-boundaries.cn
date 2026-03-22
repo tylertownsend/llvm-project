@@ -1,0 +1,25 @@
+int *global_ptr; // expected-error {{cNxt does not support raw pointer declarations outside unsafe FFI boundaries}}
+
+struct RawFieldHolder {
+  int *field; // expected-error {{cNxt does not support raw pointer fields outside unsafe FFI boundaries}}
+};
+
+int *safe_signature(int *input); // expected-error {{cNxt does not support raw pointer function signatures outside unsafe FFI boundaries}}
+extern "C" int *plain_extern_signature(int *input); // expected-error {{cNxt does not support raw pointer function signatures outside unsafe FFI boundaries}}
+
+unsafe extern "C" int *ffi_signature(int *input);
+
+void reject_safe_escape(unique<int> owner, shared<int> shared_owner) {
+  int *local_ptr; // expected-error {{cNxt does not support raw pointer declarations outside unsafe FFI boundaries}}
+  (void)local_ptr;
+  (void)owner.get();     // expected-error {{cNxt does not allow ownership handle raw-pointer escape via 'get' outside unsafe FFI boundaries}}
+  (void)owner.release(); // expected-error {{cNxt does not allow ownership handle raw-pointer escape via 'release' outside unsafe FFI boundaries}}
+  (void)shared_owner.get(); // expected-error {{cNxt does not allow ownership handle raw-pointer escape via 'get' outside unsafe FFI boundaries}}
+}
+
+unsafe extern "C" void allow_ffi_escape(unique<int> owner,
+                                         shared<int> shared_owner) {
+  (void)owner.get();
+  (void)owner.release();
+  (void)shared_owner.get();
+}

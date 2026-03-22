@@ -1,0 +1,33 @@
+// expected-no-diagnostics
+
+class Box {
+public:
+  int value;
+
+  Box(int Seed) : value(Seed) {}
+  ~Box() {}
+
+  int read() {
+    return value;
+  }
+};
+
+shared<Box> widen(unique<Box> owner) {
+  return share(static_cast<unique<Box> &&>(owner));
+}
+
+int exercise_ownership(unique<Box> strong, shared<Box> shared_owner,
+                       weak<Box> observer) {
+  unique<Box> moved = static_cast<unique<Box> &&>(strong);
+  shared<Box> widened = share(static_cast<unique<Box> &&>(moved));
+  shared<Box> copied = shared_owner;
+  weak<Box> alias(shared_owner);
+  shared<Box> recovered = observer.lock();
+  int total = copied.use_count() + widened.use_count();
+  if (!alias.expired())
+    total = total + recovered.use_count();
+  copied.reset();
+  widened.reset();
+  recovered.reset();
+  return total;
+}

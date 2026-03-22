@@ -1,0 +1,50 @@
+// expected-no-diagnostics
+
+interface Stepper {
+  int next();
+};
+
+interface Resettable {
+  void reset();
+};
+
+class Counter implements Stepper, Resettable {
+public:
+  int value;
+
+  Counter(int Start) : value(Start) {}
+  ~Counter() {}
+
+  int next() {
+    value = value + 1;
+    return value;
+  }
+
+  void reset() {
+    value = 0;
+  }
+};
+
+Stepper make_view(Counter &value) {
+  return value;
+}
+
+Resettable make_resetter(Counter &value) {
+  return value;
+}
+
+unique<Stepper> make_owner() {
+  return make<Counter>(41);
+}
+
+shared<Stepper> make_shared_owner() {
+  unique<Counter> concrete = make<Counter>(7);
+  return share(static_cast<unique<Counter> &&>(concrete));
+}
+
+int drive(shared<Stepper> owner, weak<Stepper> observer) {
+  int total = owner.next();
+  if (!observer.expired())
+    total = total + observer.lock().next();
+  return total;
+}

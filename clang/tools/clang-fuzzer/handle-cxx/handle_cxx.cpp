@@ -14,15 +14,18 @@
 
 #include "clang/CodeGen/CodeGenAction.h"
 #include "clang/Frontend/CompilerInstance.h"
+#include "clang/Frontend/FrontendActions.h"
 #include "clang/Lex/PreprocessorOptions.h"
 #include "clang/Tooling/Tooling.h"
 #include "llvm/Option/Option.h"
 
 using namespace clang;
 
-void clang_fuzzer::HandleCXX(const std::string &S,
-                             const char *FileName,
-                             const std::vector<const char *> &ExtraArgs) {
+namespace {
+
+void handleCXXImpl(const std::string &S, const char *FileName,
+                   const std::vector<const char *> &ExtraArgs,
+                   bool SyntaxOnly) {
   llvm::opt::ArgStringList CC1Args;
   CC1Args.push_back("-cc1");
   for (auto &A : ExtraArgs)
@@ -41,10 +44,27 @@ void clang_fuzzer::HandleCXX(const std::string &S,
       llvm::MemoryBuffer::getMemBuffer(S);
   Invocation->getPreprocessorOpts().addRemappedFile(FileName,
                                                     Input.release());
-  std::unique_ptr<tooling::ToolAction> action(
-      tooling::newFrontendActionFactory<clang::EmitObjAction>());
+  std::unique_ptr<tooling::ToolAction> action;
+  if (SyntaxOnly) {
+    action = tooling::newFrontendActionFactory<clang::SyntaxOnlyAction>();
+  } else {
+    action = tooling::newFrontendActionFactory<clang::EmitObjAction>();
+  }
   std::shared_ptr<PCHContainerOperations> PCHContainerOps =
       std::make_shared<PCHContainerOperations>();
   action->runInvocation(std::move(Invocation), Files.get(), PCHContainerOps,
                         &Diags);
+}
+
+} // namespace
+
+void clang_fuzzer::HandleCXX(const std::string &S, const char *FileName,
+                             const std::vector<const char *> &ExtraArgs) {
+  handleCXXImpl(S, FileName, ExtraArgs, /*SyntaxOnly=*/false);
+}
+
+void clang_fuzzer::HandleCXXSyntaxOnly(
+    const std::string &S, const char *FileName,
+    const std::vector<const char *> &ExtraArgs) {
+  handleCXXImpl(S, FileName, ExtraArgs, /*SyntaxOnly=*/true);
 }

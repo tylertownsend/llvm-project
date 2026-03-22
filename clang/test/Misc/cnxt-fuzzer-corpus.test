@@ -1,0 +1,4 @@
+RUN: %clang_cc1 -x cnxt -std=cnxt1 -fsyntax-only -verify %src_dir/tools/clang-fuzzer/corpus_examples/cnxt/ownership-lifetimes.cn
+RUN: %clang_cc1 -x cnxt -std=cnxt1 -fsyntax-only -verify %src_dir/tools/clang-fuzzer/corpus_examples/cnxt/construction-make.cn
+RUN: %clang_cc1 -x cnxt -std=cnxt1 -fsyntax-only -verify %src_dir/tools/clang-fuzzer/corpus_examples/cnxt/interface-bindings.cn
+RUN: %clang_cc1 -x cnxt -std=cnxt1 -fsyntax-only -verify -verify-ignore-unexpected=note %src_dir/tools/clang-fuzzer/corpus_examples/cnxt/unsafe-extern-boundaries.cn
