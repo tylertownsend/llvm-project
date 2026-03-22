@@ -18,6 +18,7 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-12 Add an end-to-end cNxt example that allocates and drops a heap object with `unique<T>` and no `extern "C"` declarations.
 - [x] M7-01 Specify user-facing construction API (no raw-pointer syntax).
 - [x] M7-02 Parse/type-check construction expressions that return `unique<T>`.
+- [x] M7-03 Reject invalid `make<T>(...)` payload targets in cNxt safe code.
 
 ## Deliverable Status
 
@@ -29,7 +30,8 @@ Source plan: `cnxt/docs/commit-plan.md`.
 - [x] M6-12
 - [x] M7-01
 - [x] M7-02
-- [ ] M7-03 through M7-10
+- [x] M7-03
+- [ ] M7-04 through M7-10
 - [ ] M8-01 through M8-11
 - [ ] M9-01 through M9-08
 - [ ] M10-01 through M10-06
@@ -86,7 +88,7 @@ Deliverables:
 - [x] M7-01 Define construction syntax/API in spec (for example `make<T>(...)`)
   and its ownership/lifetime contract.
 - [x] M7-02 Implement parser support for cNxt construction expressions.
-- [ ] M7-03 Implement Sema rules so construction expressions type-check to
+- [x] M7-03 Implement Sema rules so construction expressions type-check to
   `unique<T>` and reject pointer-returning construction in safe code.
 - [ ] M7-04 Lower construction expressions to runtime allocation plus
   constructor/init calls in CodeGen.
@@ -173,6 +175,39 @@ Deliverables:
   end-to-end no-glue sample app test in CI.
 
 ## Completion Log
+
+### 2026-03-21 - M7-03
+
+- Completed item: enforce cNxt `make<T>(...)` payload restrictions in sema so
+  invalid safe-code construction targets fail with cNxt-specific diagnostics.
+- What changed:
+  - added `err_cnxt_invalid_construction_target` and taught
+    `clang/lib/Sema/SemaExpr.cpp` to reject `make<T>(...)` payloads that are
+    raw pointers, ownership handles, or incomplete types.
+  - added an early explicit-template-argument check for `make<T>(...)` so
+    incomplete payloads fail before temporary cleanup instantiation produces
+    unrelated errors, while keeping a resolved-call fallback for the same
+    diagnostic after overload resolution.
+  - tightened the compiler-owned `unique<T>::reset` prelude implementation so
+    incomplete payloads do not trigger stray `alignof(T)` diagnostics while the
+    intended construction diagnostic is being emitted.
+  - extended `clang/test/SemaCXX/cnxt-construction.cpp` to pin the invalid
+    payload cases.
+- Follow-up notes:
+  - `make<T>(...)` now has the intended safe-code semantic guardrails, but it
+    is still only a typed surface; M7-04 must lower successful calls to runtime
+    allocation plus initialization.
+- What is now unblocked:
+  - M7-04 can implement lowering against a construction surface that already
+    rejects pointer, ownership-handle, and incomplete payload misuse.
+  - M7-08 can reuse a stable cNxt-specific construction diagnostic for
+    pointer-centric fix-its.
+  - M7-09 can focus on cleanup behavior for valid construction paths instead of
+    semantic rejection cases.
+- Direction check:
+  - roadmap remains directionally correct; M7-04 is next because the
+    construction parser+sema contract is now established and the remaining gap
+    is executable lowering.
 
 ### 2026-03-21 - M7-02
 

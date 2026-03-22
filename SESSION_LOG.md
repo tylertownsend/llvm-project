@@ -138,3 +138,15 @@
   - `ninja -C build clang`
   - `build/bin/llvm-lit -sv clang/test/Parser/cnxt-construction.cpp clang/test/SemaCXX/cnxt-construction.cpp clang/test/Parser/cnxt-ownership.cpp clang/test/Preprocessor/cnxt-prelude.c`
 - Next target: `M7-03`.
+- Completed `M7-03`.
+- Added `err_cnxt_invalid_construction_target` and cNxt `make<T>(...)` payload
+  screening in `clang/lib/Sema/SemaExpr.cpp` for explicit-template-argument and
+  resolved-call paths.
+- Updated the compiler-owned `unique<T>::reset` prelude in
+  `clang/lib/Frontend/InitPreprocessor.cpp` so incomplete payloads do not
+  cascade `alignof(T)` diagnostics after the intended construction error.
+- Validation:
+  - `ninja -C build clang`
+  - `build/bin/llvm-lit -sv clang/test/Parser/cnxt-construction.cpp clang/test/SemaCXX/cnxt-construction.cpp clang/test/Parser/cnxt-ownership.cpp clang/test/Preprocessor/cnxt-prelude.c`
+  - `build/bin/llvm-lit -sv clang/test/CodeGenCXX/cnxt-unique-cleanup.cpp clang/test/CodeGenCXX/cnxt-ownership-baseline.cpp`
+- Next target: `M7-04`.

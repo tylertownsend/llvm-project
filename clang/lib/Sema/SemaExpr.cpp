@@ -73,6 +73,15 @@
 using namespace clang;
 using namespace sema;
 
+namespace {
+static bool diagnoseCNxtInvalidConstructionTarget(Sema &SemaRef,
+                                                  const Expr *CalleeExpr,
+                                                  SourceLocation CallLoc);
+static bool diagnoseCNxtInvalidConstructionTarget(Sema &SemaRef,
+                                                  const FunctionDecl *FD,
+                                                  SourceLocation CallLoc);
+}
+
 bool Sema::CanUseDecl(NamedDecl *D, bool TreatUnavailableAsInvalid) {
   // See if this is an auto-typed variable whose initializer we are parsing.
   if (ParsingInitForAutoVars.count(D))
@@ -6709,6 +6718,12 @@ ExprResult Sema::ActOnCallExpr(Scope *Scope, Expr *Fn, SourceLocation LParenLoc,
   if (Call.isInvalid())
     return Call;
 
+  if (const auto *CE = dyn_cast<CallExpr>(Call.get()->IgnoreImplicit())) {
+    if (diagnoseCNxtInvalidConstructionTarget(
+            *this, CE->getDirectCallee(), CE->getExprLoc()))
+      return ExprError();
+  }
+
   // Diagnose uses of the C++20 "ADL-only template-id call" feature in earlier
   // language modes.
   if (const auto *ULE = dyn_cast<UnresolvedLookupExpr>(Fn);
@@ -6873,6 +6888,9 @@ ExprResult Sema::BuildCallExpr(Scope *Scope, Expr *Fn, SourceLocation LParenLoc,
       NakedFn = UnOp->getSubExpr()->IgnoreParens();
     }
   }
+
+  if (diagnoseCNxtInvalidConstructionTarget(*this, NakedFn, Fn->getExprLoc()))
+    return ExprError();
 
   if (auto *DRE = dyn_cast<DeclRefExpr>(NakedFn)) {
     NDecl = DRE->getDecl();
@@ -9610,6 +9628,89 @@ static CNxtOwnershipKind classifyCNxtOwnershipHandle(QualType QT) {
   return CNxtOwnershipKind::None;
 }
 
+static QualType getCNxtOwnershipPayloadType(QualType QT) {
+  QT = QT.getCanonicalType().getUnqualifiedType();
+
+  if (const auto *TST = QT->getAs<TemplateSpecializationType>()) {
+    if (TST->template_arguments().size() >= 1)
+      return TST->template_arguments()[0].getAsType();
+  }
+
+  if (const auto *RT = QT->getAs<RecordType>()) {
+    const auto *Spec = dyn_cast<ClassTemplateSpecializationDecl>(RT->getDecl());
+    if (Spec && Spec->getTemplateArgs().size() >= 1)
+      return Spec->getTemplateArgs()[0].getAsType();
+  }
+
+  return QualType();
+}
+
+static const NamedDecl *getCNxtConstructionSurfaceDecl(const NamedDecl *ND) {
+  if (const auto *FD = dyn_cast_or_null<FunctionDecl>(ND)) {
+    if (const FunctionDecl *Pattern = FD->getTemplateInstantiationPattern())
+      return Pattern;
+    if (const auto *Primary = FD->getPrimaryTemplate())
+      return Primary->getTemplatedDecl();
+    return FD;
+  }
+
+  if (const auto *FTD = dyn_cast_or_null<FunctionTemplateDecl>(ND))
+    return FTD->getTemplatedDecl();
+
+  return nullptr;
+}
+
+static bool isCNxtPreludeMakeSurface(const Sema &SemaRef, const NamedDecl *ND) {
+  const NamedDecl *SurfaceDecl = getCNxtConstructionSurfaceDecl(ND);
+  return SurfaceDecl && SurfaceDecl->getIdentifier() &&
+         SurfaceDecl->getIdentifier()->isStr("make") &&
+         SemaRef.getSourceManager().isInSystemHeader(
+             SurfaceDecl->getLocation());
+}
+
+static bool diagnoseCNxtInvalidConstructionPayload(Sema &SemaRef,
+                                                   QualType PayloadTy,
+                                                   SourceLocation CallLoc) {
+  PayloadTy = PayloadTy.getCanonicalType().getUnqualifiedType();
+  if (PayloadTy.isNull() || PayloadTy->isDependentType())
+    return false;
+
+  StringRef Reason;
+  if (PayloadTy->isPointerType() || PayloadTy->isMemberPointerType())
+    Reason = "raw pointer payloads are not allowed in safe code";
+  else if (classifyCNxtOwnershipHandle(PayloadTy) != CNxtOwnershipKind::None)
+    Reason = "ownership-handle payloads are not allowed";
+  else if (PayloadTy->isIncompleteType())
+    Reason = "incomplete payload types are not allowed";
+  else
+    return false;
+
+  SemaRef.Diag(CallLoc, diag::err_cnxt_invalid_construction_target)
+      << PayloadTy << Reason;
+  return true;
+}
+
+static bool diagnoseCNxtInvalidConstructionTarget(Sema &SemaRef,
+                                                  const Expr *CalleeExpr,
+                                                  SourceLocation CallLoc) {
+  if (!SemaRef.getLangOpts().CNxt || !CalleeExpr)
+    return false;
+
+  CalleeExpr = CalleeExpr->IgnoreParenImpCasts();
+  const auto *DRE = dyn_cast<DeclRefExpr>(CalleeExpr);
+  if (!DRE || !DRE->hasExplicitTemplateArgs() ||
+      !isCNxtPreludeMakeSurface(SemaRef, DRE->getDecl()))
+    return false;
+
+  ArrayRef<TemplateArgumentLoc> TemplateArgs = DRE->template_arguments();
+  if (TemplateArgs.empty() ||
+      TemplateArgs.front().getArgument().getKind() != TemplateArgument::Type)
+    return false;
+
+  return diagnoseCNxtInvalidConstructionPayload(
+      SemaRef, TemplateArgs.front().getArgument().getAsType(), CallLoc);
+}
+
 static bool isAllowedCNxtOwnershipFlow(CNxtOwnershipKind From,
                                        CNxtOwnershipKind To) {
   if (From == To)
@@ -9653,6 +9754,23 @@ static bool diagnoseCNxtIllegalOwnershipAssignment(Sema &SemaRef,
   SemaRef.Diag(OpLoc, diag::err_cnxt_illegal_ownership_conversion)
       << cnxtOwnershipKindToString(RKind) << cnxtOwnershipKindToString(LKind);
   return true;
+}
+
+static bool diagnoseCNxtInvalidConstructionTarget(Sema &SemaRef,
+                                                  const FunctionDecl *FD,
+                                                  SourceLocation CallLoc) {
+  if (!SemaRef.getLangOpts().CNxt || !FD)
+    return false;
+
+  if (!isCNxtPreludeMakeSurface(SemaRef, FD))
+    return false;
+
+  QualType ReturnTy = FD->getReturnType().getCanonicalType();
+  if (classifyCNxtOwnershipHandle(ReturnTy) != CNxtOwnershipKind::Unique)
+    return false;
+
+  return diagnoseCNxtInvalidConstructionPayload(
+      SemaRef, getCNxtOwnershipPayloadType(ReturnTy), CallLoc);
 }
 } // namespace
 

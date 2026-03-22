@@ -233,6 +233,8 @@ def note_vla_unsupported : Note<
 def err_cnxt_unsupported_declaration : Error<"cNxt does not support %0">;
 def err_cnxt_illegal_ownership_conversion : Error<
   "cNxt cannot convert ownership handle '%0' to '%1'; valid flow is unique -> shared -> weak">;
+def err_cnxt_invalid_construction_target : Error<
+  "cNxt make<T>(...) cannot construct payload type %0: %1">;
 
 // C99 variably modified types
 def err_variably_modified_template_arg : Error<

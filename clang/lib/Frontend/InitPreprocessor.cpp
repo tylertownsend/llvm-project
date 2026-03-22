@@ -113,8 +113,11 @@ static void AddImplicitCNxtPrelude(MacroBuilder &Builder) {
   Builder.append("  void reset(T *P = nullptr) {");
   Builder.append("    if (Ptr == P)");
   Builder.append("      return;");
+  Builder.append("    unsigned long long Align = 0;");
+  Builder.append("    if constexpr (__is_complete_type(T))");
+  Builder.append("      Align = static_cast<unsigned long long>(alignof(T));");
   Builder.append("    __cnxt_rt_own_v1_unique_drop(static_cast<void *>(Ptr), nullptr, 0,");
-  Builder.append("                                 static_cast<unsigned long long>(alignof(T)));");
+  Builder.append("                                 Align);");
   Builder.append("    Ptr = P;");
   Builder.append("  }");
   Builder.append("};");
